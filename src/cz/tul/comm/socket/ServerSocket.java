@@ -28,8 +28,6 @@ public class ServerSocket extends Thread implements IService {
         exec = Executors.newCachedThreadPool();
         msgHandlers = new HashSet<>(1);
         run = true;
-
-        socket.setSoTimeout(SOCKET_TIMEOUT);
     }
 
     public void addMessageHandler(final IMessageHandler handler) {
