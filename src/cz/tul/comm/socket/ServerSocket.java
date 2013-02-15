@@ -17,7 +17,6 @@ import java.util.logging.Logger;
  */
 public class ServerSocket extends Thread implements IService {
 
-    private static final int SOCKET_TIMEOUT = 500;
     private final java.net.ServerSocket socket;
     private final ExecutorService exec;
     private final Set<IMessageHandler> msgHandlers;
