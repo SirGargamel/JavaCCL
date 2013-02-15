@@ -84,7 +84,7 @@ public class Comm_Server implements IService {
         final Set<InetAddress> addresses = settings.getClients();
         addresses.clear();
         for (Communicator c : clients.getClients()) {
-            addresses.add(c.getaddress());
+            addresses.add(c.getAddress());
         }
 
         SerializationUtils.saveItemToDisc(new File(Settings.SERIALIZATION_NAME), settings, true);

@@ -26,7 +26,7 @@ public final class Communicator {
         this.responseHandler = handler;
     }
 
-    public InetAddress getaddress() {
+    public InetAddress getAddress() {
         return address;
     }
 
@@ -75,7 +75,7 @@ public final class Communicator {
     public boolean equals(Object o) {
         if (o instanceof Communicator) {
             Communicator cc = (Communicator) o;
-            if (cc.getaddress().equals(address)) {
+            if (cc.getAddress().equals(address)) {
                 return true;
             }
         }

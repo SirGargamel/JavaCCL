@@ -35,7 +35,7 @@ public final class ClientDB {
     public void deregisterClient(final InetAddress adress) {
         final Iterator<Communicator> i = clients.iterator();
         while (i.hasNext()) {
-            if (i.next().getaddress().equals(adress)) {
+            if (i.next().getAddress().equals(adress)) {
                 i.remove();
                 break;
             }
@@ -45,7 +45,7 @@ public final class ClientDB {
 
     public Communicator getClient(final InetAddress adress) {
         for (Communicator cc : clients) {
-            if (cc.getaddress().equals(adress)) {
+            if (cc.getAddress().equals(adress)) {
                 return cc;
             }
         }
