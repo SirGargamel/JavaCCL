@@ -53,7 +53,7 @@ public final class Communicator {
             out.writeObject(data);
             try {
                 responseHandler.registerResponse(address, this);
-                // TODO wait for response
+                
                 synchronized (this) {
                     this.wait();
                 }
