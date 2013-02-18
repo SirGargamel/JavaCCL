@@ -42,7 +42,6 @@ public class DummyClient implements IMessageHandler {
             }
         } else {
             System.err.println("Invalid data from server.");
-            // TODO logging
         }
     }
 }

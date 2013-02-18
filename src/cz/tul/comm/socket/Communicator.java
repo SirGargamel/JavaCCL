@@ -1,11 +1,14 @@
 package cz.tul.comm.socket;
 
 import cz.tul.comm.client.Comm_Client;
+import cz.tul.comm.gui.UserLogging;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -13,6 +16,7 @@ import java.util.Objects;
  */
 public final class Communicator {
 
+    private static final Logger log = Logger.getLogger(Communicator.class.getName());
     private final InetAddress address;
     private final int port;
     private IResponseHandler responseHandler;
@@ -36,8 +40,8 @@ public final class Communicator {
             out.writeObject(data);
             return true;
         } catch (IOException ex) {
-            // TODO logging
-            System.err.println(ex.getLocalizedMessage());
+            log.log(Level.WARNING, "Cannot write to output socket", ex);
+            UserLogging.showWarningToUser("Could not contact client with IP " + address.getHostAddress());
             return false;
         }
     }
@@ -53,19 +57,17 @@ public final class Communicator {
             out.writeObject(data);
             try {
                 responseHandler.registerResponse(address, this);
-                
+
                 synchronized (this) {
                     this.wait();
                 }
                 result = responseHandler.pickupResponse(this);
             } catch (InterruptedException ex) {
-                // TODO logging
-                System.err.println(ex.getLocalizedMessage());
+                log.log(Level.SEVERE, "Communicator wating for response has been interrupted.", ex);
             }
-
         } catch (IOException ex) {
-            // TODO logging
-            System.err.println(ex.getLocalizedMessage());
+            log.log(Level.WARNING, "Cannot write to output socket", ex);
+            UserLogging.showWarningToUser("Could not contact client with IP " + address.getHostAddress());
         }
 
         return result;

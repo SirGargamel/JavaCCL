@@ -6,6 +6,7 @@ import cz.tul.comm.Message;
 import java.net.InetAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 /**
  *
@@ -13,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MessageHandler implements IMessageHandler, IResponseHandler {
 
+    private static final Logger log = Logger.getLogger(MessageHandler.class.getName());
     private final Map<InetAddress, Object> handlers;
     private final Map<Object, Object> messages;
 
@@ -39,8 +41,7 @@ public class MessageHandler implements IMessageHandler, IResponseHandler {
             }
 
         } else {
-            // TOGO logging
-            System.err.println("NULL message");
+            log.warning("NULL message received.");
         }
     }
 
@@ -51,7 +52,7 @@ public class MessageHandler implements IMessageHandler, IResponseHandler {
 
     @Override
     public Object pickupResponse(final Object owner) {
-        Object m = messages.get(owner);
+        final Object m = messages.get(owner);
         return m;
     }
 }

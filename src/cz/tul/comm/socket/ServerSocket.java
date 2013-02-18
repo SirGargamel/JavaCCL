@@ -50,9 +50,9 @@ public class ServerSocket extends Thread implements IService {
             } catch (SocketException ex) {
                 // nothing bad happened
                 // required for proper shutdown
+                log.config("Socket shutdown.");
             } catch (IOException ex) {
-                // TODO logging
-                Logger.getLogger(ServerSocket.class.getName()).log(Level.SEVERE, null, ex);
+                log.log(Level.WARNING, "Server socket IO error occured during waiting for connection.", ex);
             }
         }
         exec.shutdownNow();
@@ -63,8 +63,7 @@ public class ServerSocket extends Thread implements IService {
         try {
             socket.close();
         } catch (IOException ex) {
-            // TODO logging
-            System.err.println("IO Exception during socket closing.\n" + ex.getLocalizedMessage());
+            log.log(Level.WARNING, "Server socket IO error occured during socket closing.", ex);
         }
         run = false;
     }

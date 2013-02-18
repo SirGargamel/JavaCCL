@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -11,6 +13,7 @@ import java.util.Set;
  */
 public class SocketReader implements Runnable {
 
+    private static final Logger log = Logger.getLogger(SocketReader.class.getName());
     private final Socket socket;
     private final Set<IMessageHandler> msgHandlers;
 
@@ -27,9 +30,10 @@ public class SocketReader implements Runnable {
             for (IMessageHandler mh : msgHandlers) {
                 mh.handleMessage(socket.getInetAddress(), o);
             }
-        } catch (IOException | ClassNotFoundException ex) {
-            // TODO logging
-            System.err.println(ex.getLocalizedMessage());
+        } catch (IOException ex) {
+            log.log(Level.WARNING, "Error reading data from socket.", ex);
+        } catch (ClassNotFoundException ex) {
+            log.log(Level.WARNING, "Invalid data received from sender.", ex);
         }
     }
 }

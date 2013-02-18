@@ -61,7 +61,7 @@ public class Comm_Server implements IService {
         try {
             tmp = new ServerSocket(PORT);
         } catch (BindException ex) {
-            UserLogging.showErrorToUser("Error creating server socket on port" + PORT);
+            UserLogging.showErrorToUser("Error creating server socket on port " + PORT);
         }
 
         serverSocket = tmp;

@@ -24,22 +24,22 @@ import java.util.logging.Logger;
  */
 public abstract class SerializationUtils implements Serializable {
 
-    public static void saveItemToDisc(final File dest, final Object data) {
+    private static final Logger log = Logger.getLogger(SerializationUtils.class.getName());
+
+    public static void saveItemToDisc(final File dest, final Object data) throws IOException {
         if (data instanceof Serializable) {
             try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(dest))) {
                 out.writeObject(data);
             } catch (IOException ex) {
-                // TODO logging
-                Logger.getLogger(SerializationUtils.class.getName()).log(Level.SEVERE, null, ex);
+                throw new IOException(ex);
             }
         } else {
-            // TODO logging
-            System.err.println("Object is not serializable.");
+            log.warning("Object is not serializable.");
         }
     }
 
     public static void saveItemToDiscAsXML(final File dest, final Object data) {
-        if (data instanceof Serializable) {
+        if (dest.exists() && data instanceof Serializable) {
             try (XMLEncoder out = new XMLEncoder(new FileOutputStream(dest))) {
                 out.setPersistenceDelegate(Inet4Address.class, new DefaultPersistenceDelegate() {
                     @Override
@@ -51,12 +51,10 @@ public abstract class SerializationUtils implements Serializable {
                 });
                 out.writeObject(data);
             } catch (FileNotFoundException ex) {
-                // TODO logging
-                Logger.getLogger(SerializationUtils.class.getName()).log(Level.SEVERE, null, ex);
+                log.log(Level.WARNING, "Target file for serialization is inaccessible.", ex);
             }
         } else {
-            // TODO logging
-            System.err.println("Object is not serializable.");
+            log.warning("Object is not serializable.");
         }
     }
 
@@ -65,9 +63,10 @@ public abstract class SerializationUtils implements Serializable {
 
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(src))) {
             result = in.readObject();
-        } catch (IOException | ClassNotFoundException ex) {
-            // TODO logging
-            Logger.getLogger(SerializationUtils.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            log.log(Level.WARNING, "Input file for deserialization is inaccessible.", ex);
+        } catch (ClassNotFoundException ex) {
+            log.log(Level.WARNING, "Source file contains unsupported data.", ex);
         }
 
         return result;
@@ -79,10 +78,8 @@ public abstract class SerializationUtils implements Serializable {
         try (XMLDecoder in = new XMLDecoder(new FileInputStream(src))) {
             result = in.readObject();
         } catch (FileNotFoundException ex) {
-            // TODO logging
-            Logger.getLogger(SerializationUtils.class.getName()).log(Level.SEVERE, null, ex);
+            log.log(Level.WARNING, "Input file for deserialization is inaccessible.", ex);
         }
-
 
         return result;
     }
