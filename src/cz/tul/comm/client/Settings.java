@@ -10,18 +10,19 @@ import java.net.InetAddress;
 public class Settings implements Serializable {
 
     public static final String SERIALIZATION_NAME = "clientSettings.xml";
-    private static final long serialVersionUID = 1L;
-    private InetAddress serverAdress;
+    private static final long serialVersionUID = 2L;
+    private static final String DEFAULT_IP = InetAddress.getLoopbackAddress().getHostAddress();
+    private String serverAdress;
 
     public Settings() {
-        serverAdress = InetAddress.getLoopbackAddress();
+        serverAdress = DEFAULT_IP;
     }
 
-    public InetAddress getServerAdress() {
+    public String getServerAdress() {
         return serverAdress;
     }
 
-    public void setServerAdress(InetAddress serverAdress) {
+    public void setServerAdress(String serverAdress) {
         this.serverAdress = serverAdress;
     }
 }

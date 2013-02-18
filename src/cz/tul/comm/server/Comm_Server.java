@@ -8,7 +8,10 @@ import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
 import java.net.BindException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -16,6 +19,7 @@ import java.util.Set;
  */
 public class Comm_Server implements IService {
 
+    private static final Logger log = Logger.getLogger(Comm_Server.class.getName());
     public static final int PORT = 5252;
     private final Settings settings;
     private final ClientDB clients;
@@ -32,8 +36,13 @@ public class Comm_Server implements IService {
             Object in = SerializationUtils.loadXMLItemFromDisc(s);
             if (in instanceof Settings) {
                 settings = (Settings) in;
-                for (InetAddress a : settings.getClients()) {
-                    clients.registerClient(a);
+                for (String a : settings.getClients()) {
+                    try {
+                        clients.registerClient(InetAddress.getByName(a));
+                    } catch (UnknownHostException ex) {
+                        UserLogging.showWarningToUser("Unknown host found in settings - " + ex.getLocalizedMessage());
+                        log.log(Level.WARNING, "Unkonwn host found in settings", ex);
+                    }
                 }
             } else {
                 settings = new Settings();
@@ -78,10 +87,10 @@ public class Comm_Server implements IService {
     }
 
     public void saveData() {
-        final Set<InetAddress> addresses = settings.getClients();
+        final Set<String> addresses = settings.getClients();
         addresses.clear();
         for (Communicator c : clients.getClients()) {
-            addresses.add(c.getAddress());
+            addresses.add(c.getAddress().getHostAddress());
         }
 
         SerializationUtils.saveItemToDiscAsXML(new File(Settings.SERIALIZATION_NAME), settings);

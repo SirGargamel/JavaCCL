@@ -3,16 +3,7 @@
  <object class="cz.tul.comm.server.Settings">
   <void property="clients">
    <void method="add">
-    <object class="java.net.InetAddress" method="getByAddress">
-     <array class="byte" length="4">
-      <void index="0">
-       <byte>127</byte>
-      </void>
-      <void index="3">
-       <byte>1</byte>
-      </void>
-     </array>
-    </object>
+    <string>127.0.0.1</string>
    </void>
   </void>
  </object>

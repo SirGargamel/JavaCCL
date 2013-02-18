@@ -1,7 +1,6 @@
 package cz.tul.comm.server;
 
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,18 +11,18 @@ import java.util.Set;
 public class Settings implements Serializable {
 
     public static final String SERIALIZATION_NAME = "serverSettings.xml";
-    private static final long serialVersionUID = 1L;
-    private Set<InetAddress> clients;
+    private static final long serialVersionUID = 2L;
+    private Set<String> clients;
 
     public Settings() {
         clients = new HashSet<>();
     }
 
-    public Set<InetAddress> getClients() {
+    public Set<String> getClients() {
         return clients;
     }
 
-    public void setClients(Set<InetAddress> clients) {
+    public void setClients(Set<String> clients) {
         this.clients = clients;
     }
 

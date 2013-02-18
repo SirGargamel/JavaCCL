@@ -9,6 +9,9 @@ import cz.tul.comm.server.Comm_Server;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
 import java.net.BindException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -39,9 +42,11 @@ public class Comm_Client implements IService {
                 settings = (Settings) in;
             } else {
                 settings = new Settings();
+                settings.setServerAdress(InetAddress.getLoopbackAddress().getHostAddress());
             }
         } else {
             settings = new Settings();
+            settings.setServerAdress(InetAddress.getLoopbackAddress().getHostAddress());
         }
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -50,7 +55,16 @@ public class Comm_Client implements IService {
             }
         }));
 
-        comm = new Communicator(settings.getServerAdress(), Comm_Server.PORT);
+
+        Communicator c = null;
+        try {
+            InetAddress serverIp = InetAddress.getByName(settings.getServerAdress());
+            c = new Communicator(serverIp, Comm_Server.PORT);
+        } catch (UnknownHostException ex) {
+            UserLogging.showWarningToUser("Unknown host found in settings - " + settings.getServerAdress());
+            log.log(Level.WARNING, "Unkonwn host found in settings", ex);
+        }
+        comm = c;
     }
 
     public void addMessageHandler(final IMessageHandler msgHandler) {
