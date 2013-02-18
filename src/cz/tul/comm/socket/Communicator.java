@@ -7,6 +7,7 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,7 +62,9 @@ public final class Communicator {
                 synchronized (this) {
                     this.wait();
                 }
-                result = responseHandler.pickupResponse(this);
+                Queue<Object> responses = responseHandler.getResponseQueue(this);
+
+                result = responses.poll();
 
                 responseHandler.deregisterResponse(address, this);
             } catch (InterruptedException ex) {

@@ -1,6 +1,7 @@
 package cz.tul.comm.socket;
 
 import java.net.InetAddress;
+import java.util.Queue;
 
 /**
  *
@@ -12,6 +13,6 @@ public interface IResponseHandler {
 
     void deregisterResponse(final InetAddress address, final Object owner);
 
-    Object pickupResponse(final Object owner);
+    Queue<Object> getResponseQueue(final Object owner);
 
 }
