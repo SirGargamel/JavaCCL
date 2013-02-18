@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -48,8 +49,12 @@ public class MessageHandler extends Thread implements IMessageHandler, IResponse
 
     @Override
     public void registerResponse(final InetAddress address, final Object owner) {
-        handlers.put(address, owner);
-        messages.put(owner, new ConcurrentLinkedQueue<>());
+        if (handlers.containsKey(address)) {
+            log.log(Level.WARNING, "Handler fot IP {0} already assigned, no changes made.", address.getHostAddress());
+        } else {
+            handlers.put(address, owner);
+            messages.put(owner, new ConcurrentLinkedQueue<>());
+        }
     }
 
     @Override
@@ -65,7 +70,7 @@ public class MessageHandler extends Thread implements IMessageHandler, IResponse
             handlers.remove(address);
             messages.remove(own);
         } else {
-            log.warning("Wrong owner, no changes made");
+            log.log(Level.WARNING, "Wrong owner for IP {0}, no changes made", address.getHostAddress());
         }
     }
 }
