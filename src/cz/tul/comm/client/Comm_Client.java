@@ -4,11 +4,11 @@ import cz.tul.comm.socket.Communicator;
 import cz.tul.comm.socket.IMessageHandler;
 import cz.tul.comm.IService;
 import cz.tul.comm.SerializationUtils;
+import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.server.Comm_Server;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
+import java.net.BindException;
 import java.util.logging.Logger;
 
 /**
@@ -17,6 +17,7 @@ import java.util.logging.Logger;
  */
 public class Comm_Client implements IService {
 
+    private static final Logger log = Logger.getLogger(Comm_Client.class.getName());
     public static final int PORT = 5253;
     private final ServerSocket serverSocket;
     private final Communicator comm;
@@ -26,10 +27,8 @@ public class Comm_Client implements IService {
         ServerSocket tmp = null;
         try {
             tmp = new ServerSocket(PORT);
-        } catch (IOException ex) {
-            // TODO logging
-            Logger.getLogger(Comm_Server.class.getName()).log(Level.SEVERE, null, ex);
-            // TODO handle that socket cannot be bound
+        } catch (BindException ex) {
+            UserLogging.showErrorToUser("Error creating server socket on port" + PORT);
         }
         serverSocket = tmp;
 

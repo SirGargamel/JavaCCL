@@ -2,14 +2,13 @@ package cz.tul.comm.server;
 
 import cz.tul.comm.IService;
 import cz.tul.comm.SerializationUtils;
+import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.socket.Communicator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
-import java.io.IOException;
+import java.net.BindException;
 import java.net.InetAddress;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -52,10 +51,8 @@ public class Comm_Server implements IService {
         ServerSocket tmp = null;
         try {
             tmp = new ServerSocket(PORT);
-        } catch (IOException ex) {
-            // TODO logging
-            Logger.getLogger(Comm_Server.class.getName()).log(Level.SEVERE, null, ex);
-            // TODO handle that socket cannot be bound
+        } catch (BindException ex) {
+            UserLogging.showErrorToUser("Error creating server socket on port" + PORT);
         }
 
         serverSocket = tmp;
