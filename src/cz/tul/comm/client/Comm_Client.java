@@ -35,7 +35,7 @@ public class Comm_Client implements IService {
 
         File s = new File(Settings.SERIALIZATION_NAME);
         if (s.exists()) {
-            Object in = SerializationUtils.loadItemFromDisc(s, true);
+            Object in = SerializationUtils.loadXMLItemFromDisc(s);
             if (in instanceof Settings) {
                 settings = (Settings) in;
             } else {
@@ -63,7 +63,7 @@ public class Comm_Client implements IService {
     }
 
     public void saveData() {
-        SerializationUtils.saveItemToDisc(new File(Settings.SERIALIZATION_NAME), settings, true);
+        SerializationUtils.saveItemToDiscAsXML(new File(Settings.SERIALIZATION_NAME), settings);
     }
 
     public static Comm_Client initNewClient() {

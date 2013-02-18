@@ -24,30 +24,13 @@ import java.util.logging.Logger;
  */
 public abstract class SerializationUtils implements Serializable {
 
-    public static void saveItemToDisc(final File dest, final Object data, final boolean asXml) {
+    public static void saveItemToDisc(final File dest, final Object data) {
         if (data instanceof Serializable) {
-            if (asXml) {
-                try (XMLEncoder out = new XMLEncoder(new FileOutputStream(dest))) {
-                    out.setPersistenceDelegate(Inet4Address.class, new DefaultPersistenceDelegate() {
-                        @Override
-                        protected Expression instantiate(Object oldInstance, Encoder out) {
-                            InetAddress old = (InetAddress) oldInstance;
-                            return new Expression(oldInstance, InetAddress.class, "getByAddress",
-                                    new Object[]{old.getAddress()});
-                        }
-                    });
-                    out.writeObject(data);
-                } catch (FileNotFoundException ex) {
-                    // TODO logging
-                    Logger.getLogger(SerializationUtils.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            } else {
-                try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(dest))) {
-                    out.writeObject(data);
-                } catch (IOException ex) {
-                    // TODO logging
-                    Logger.getLogger(SerializationUtils.class.getName()).log(Level.SEVERE, null, ex);
-                }
+            try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(dest))) {
+                out.writeObject(data);
+            } catch (IOException ex) {
+                // TODO logging
+                Logger.getLogger(SerializationUtils.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
             // TODO logging
@@ -55,24 +38,51 @@ public abstract class SerializationUtils implements Serializable {
         }
     }
 
-    public static Object loadItemFromDisc(final File src, final boolean isXml) {
-        Object result = null;
-
-        if (isXml) {
-            try (XMLDecoder in = new XMLDecoder(new FileInputStream(src))) {
-                result = in.readObject();
+    public static void saveItemToDiscAsXML(final File dest, final Object data) {
+        if (data instanceof Serializable) {
+            try (XMLEncoder out = new XMLEncoder(new FileOutputStream(dest))) {
+                out.setPersistenceDelegate(Inet4Address.class, new DefaultPersistenceDelegate() {
+                    @Override
+                    protected Expression instantiate(Object oldInstance, Encoder out) {
+                        InetAddress old = (InetAddress) oldInstance;
+                        return new Expression(oldInstance, InetAddress.class, "getByAddress",
+                                new Object[]{old.getAddress()});
+                    }
+                });
+                out.writeObject(data);
             } catch (FileNotFoundException ex) {
                 // TODO logging
                 Logger.getLogger(SerializationUtils.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
-            try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(src))) {
-                result = in.readObject();
-            } catch (IOException | ClassNotFoundException ex) {
-                // TODO logging
-                Logger.getLogger(SerializationUtils.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            // TODO logging
+            System.err.println("Object is not serializable.");
         }
+    }
+
+    public static Object loadItemFromDisc(final File src) {
+        Object result = null;
+
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(src))) {
+            result = in.readObject();
+        } catch (IOException | ClassNotFoundException ex) {
+            // TODO logging
+            Logger.getLogger(SerializationUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return result;
+    }
+
+    public static Object loadXMLItemFromDisc(final File src) {
+        Object result = null;
+
+        try (XMLDecoder in = new XMLDecoder(new FileInputStream(src))) {
+            result = in.readObject();
+        } catch (FileNotFoundException ex) {
+            // TODO logging
+            Logger.getLogger(SerializationUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
 
         return result;
     }

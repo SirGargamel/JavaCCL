@@ -30,7 +30,7 @@ public class Comm_Server implements IService {
         clients = new ClientDB();
         File s = new File(Settings.SERIALIZATION_NAME);
         if (s.exists()) {
-            Object in = SerializationUtils.loadItemFromDisc(s, true);
+            Object in = SerializationUtils.loadXMLItemFromDisc(s);
             if (in instanceof Settings) {
                 settings = (Settings) in;
                 for (InetAddress a : settings.getClients()) {
@@ -87,7 +87,7 @@ public class Comm_Server implements IService {
             addresses.add(c.getAddress());
         }
 
-        SerializationUtils.saveItemToDisc(new File(Settings.SERIALIZATION_NAME), settings, true);
+        SerializationUtils.saveItemToDiscAsXML(new File(Settings.SERIALIZATION_NAME), settings);
     }
 
     public static Comm_Server initNewServer() {
