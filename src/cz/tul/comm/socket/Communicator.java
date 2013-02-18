@@ -62,6 +62,8 @@ public final class Communicator {
                     this.wait();
                 }
                 result = responseHandler.pickupResponse(this);
+
+                responseHandler.deregisterResponse(address, this);
             } catch (InterruptedException ex) {
                 log.log(Level.SEVERE, "Communicator wating for response has been interrupted.", ex);
             }

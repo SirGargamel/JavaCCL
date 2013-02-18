@@ -55,4 +55,14 @@ public class MessageHandler implements IMessageHandler, IResponseHandler {
         final Object m = messages.get(owner);
         return m;
     }
+
+    @Override
+    public void deregisterResponse(final InetAddress address, final Object owner) {
+        Object own = handlers.get(address);
+        if (own == owner) {
+            handlers.remove(address);
+        } else {
+            log.warning("Wrong owner, no changes made");
+        }
+    }
 }

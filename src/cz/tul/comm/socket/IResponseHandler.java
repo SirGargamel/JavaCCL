@@ -8,7 +8,9 @@ import java.net.InetAddress;
  */
 public interface IResponseHandler {
 
-    void registerResponse(final InetAddress adress, final Object owner);
+    void registerResponse(final InetAddress address, final Object owner);
+
+    void deregisterResponse(final InetAddress address, final Object owner);
 
     Object pickupResponse(final Object owner);
 
