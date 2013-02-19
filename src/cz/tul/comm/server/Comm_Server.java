@@ -14,7 +14,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Class enclosing server-client communication. Handles custom data sending to
+ * given client, whole job computation and client status monitoring.
  * @author Petr Ječmen
  */
 public class Comm_Server implements IService {

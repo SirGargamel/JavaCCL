@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * SocketReader read data from socket and gives them to assigned handlers.
  * @author Petr Ječmen
  */
 public class SocketReader implements Runnable {

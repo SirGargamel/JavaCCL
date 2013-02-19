@@ -15,7 +15,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Class enclosing client to server communication. Allows data sending
+ * and has a registry for message handling.
  * @author Petr Ječmen
  */
 public class Comm_Client implements IService {

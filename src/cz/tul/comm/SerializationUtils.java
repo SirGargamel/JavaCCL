@@ -19,10 +19,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Utilities for object persistence.
  * @author Petr Ječmen
  */
-public abstract class SerializationUtils implements Serializable {
+public abstract class SerializationUtils {
 
     private static final Logger log = Logger.getLogger(SerializationUtils.class.getName());
 

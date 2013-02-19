@@ -4,6 +4,7 @@ import cz.tul.comm.client.Comm_Client;
 import cz.tul.comm.gui.UserLogging;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Objects;
@@ -12,7 +13,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Class for communicating with registered client. Data are being sent
+ * using sockets, so data class nedds to implement Serializable and all of
+ * its children nedd to be Serializable as well (recursively).
+ * @see Serializable
  * @author Petr Ječmen
  */
 public final class Communicator {

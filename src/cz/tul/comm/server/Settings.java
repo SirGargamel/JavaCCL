@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- *
+ * Settings for server part.
  * @author Petr Ječmen
  */
 public class Settings implements Serializable {

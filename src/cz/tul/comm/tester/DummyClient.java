@@ -6,7 +6,7 @@ import cz.tul.comm.client.Comm_Client;
 import java.net.InetAddress;
 
 /**
- *
+ * dummy client for testing.
  * @author Petr Ječmen
  */
 public class DummyClient implements IMessageHandler {

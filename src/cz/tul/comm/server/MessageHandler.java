@@ -12,7 +12,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Middle man between server socket and registered handlers. Stores received
+ * data in queues, from which handlers can obtain data.
+ * Handler is notified each time data object is received.
  * @author Petr Ječmen
  */
 public class MessageHandler extends Thread implements IMessageHandler, IResponseHandler {

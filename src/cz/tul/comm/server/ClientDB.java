@@ -9,7 +9,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- *
+ * Database for client handling. Basic registry with additional
+ * info about clients.
  * @author Petr Ječmen
  */
 public final class ClientDB {

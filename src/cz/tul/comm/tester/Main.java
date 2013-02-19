@@ -8,7 +8,7 @@ import java.net.InetAddress;
 import java.util.UUID;
 
 /**
- *
+ * class for testing.
  * @author Petr Ječmen
  */
 public class Main {

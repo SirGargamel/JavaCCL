@@ -13,7 +13,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Listening socket for data receiving. Listens for communication on given port
+ * and when connection is made, server creates new {@link SocketReader} to
+ * handle data receiving and starts listening again.
  * @author Petr Ječmen
  */
 public class ServerSocket extends Thread implements IService {

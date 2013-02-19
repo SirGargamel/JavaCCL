@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.UUID;
 
 /**
- *
+ * Basic communication object between server and client.
  * @author Petr Ječmen
  */
 public class Message implements Serializable {

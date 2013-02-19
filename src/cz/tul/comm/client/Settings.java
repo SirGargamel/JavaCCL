@@ -4,7 +4,8 @@ import java.io.Serializable;
 import java.net.InetAddress;
 
 /**
- *
+ * Settings for client part. Default settings for server address is
+ * loopback adress (eg. server and client are run on same machine).
  * @author Petr Ječmen
  */
 public class Settings implements Serializable {

@@ -3,10 +3,10 @@ package cz.tul.comm.gui;
 import javax.swing.JOptionPane;
 
 /**
- *
+ * Methods for presenting message/warnings/errors to user.
  * @author Petr Ječmen
  */
-public class UserLogging {
+public abstract class UserLogging {
 
     public static void showMessageToUser(final String message) {
         JOptionPane.showMessageDialog(null, message, "Message", JOptionPane.INFORMATION_MESSAGE);
