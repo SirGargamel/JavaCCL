@@ -4,9 +4,10 @@ import cz.tul.comm.socket.Communicator;
 import cz.tul.comm.client.Comm_Client;
 import java.net.InetAddress;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Database for client handling. Basic registry with additional
@@ -18,7 +19,7 @@ public final class ClientDB {
     private final Set<Communicator> clients;
 
     public ClientDB() {
-        clients = new HashSet<>();
+        clients = new CopyOnWriteArraySet<>();
     }
 
     public Communicator registerClient(final InetAddress adress) {

@@ -32,7 +32,7 @@ public class MessageHandler extends Thread implements IMessageHandler, IResponse
     public void handleMessage(final InetAddress address, final Object msg) {
         if (msg != null) {
             if (msg instanceof Message) {
-                Message m = (Message) msg;
+                final Message m = (Message) msg;
 
                 // TODO check for system message
             }

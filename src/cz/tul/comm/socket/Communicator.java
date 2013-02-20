@@ -1,6 +1,5 @@
 package cz.tul.comm.socket;
 
-import cz.tul.comm.client.Comm_Client;
 import cz.tul.comm.gui.UserLogging;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -13,9 +12,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Class for communicating with registered client. Data are being sent
- * using sockets, so data class nedds to implement Serializable and all of
- * its children nedd to be Serializable as well (recursively).
+ * Class for communicating with registered client. Data are being sent using
+ * sockets, so data class nedds to implement Serializable and all of its
+ * children nedd to be Serializable as well (recursively).
+ *
  * @see Serializable
  * @author Petr Ječmen
  */
@@ -40,7 +40,7 @@ public final class Communicator {
     }
 
     public boolean sendData(final Object data) {
-        try (Socket s = new Socket(address, port)) {
+        try (final Socket s = new Socket(address, port)) {
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
             out.writeObject(data);
             return true;
@@ -57,28 +57,21 @@ public final class Communicator {
         }
 
         Object result = null;
-        try (Socket s = new Socket(address, Comm_Client.PORT)) {
-            final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-            out.writeObject(data);
+        responseHandler.registerResponse(address, this);
+        if (sendData(data)) {
             try {
-                responseHandler.registerResponse(address, this);
 
                 synchronized (this) {
                     this.wait();
                 }
-                Queue<Object> responses = responseHandler.getResponseQueue(this);
-
+                final Queue<Object> responses = responseHandler.getResponseQueue(this);
                 result = responses.poll();
-
-                responseHandler.deregisterResponse(address, this);
             } catch (InterruptedException ex) {
                 log.log(Level.SEVERE, "Communicator wating for response has been interrupted.", ex);
             }
-        } catch (IOException ex) {
-            log.log(Level.WARNING, "Cannot write to output socket", ex);
-            UserLogging.showWarningToUser("Could not contact client with IP " + address.getHostAddress());
         }
 
+        responseHandler.deregisterResponse(address, this);
         return result;
     }
 
@@ -96,7 +89,9 @@ public final class Communicator {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 37 * hash + Objects.hashCode(this.address);
+        hash = 23 * hash + Objects.hashCode(this.address);
+        hash = 23 * hash + this.port;
         return hash;
     }
+
 }
