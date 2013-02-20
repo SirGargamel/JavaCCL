@@ -22,10 +22,10 @@ public final class ClientDB {
         clients = new CopyOnWriteArraySet<>();
     }
 
-    public Communicator registerClient(final InetAddress adress) {
+    public Communicator registerClient(final InetAddress adress, final int port) {
         Communicator cc = getClient(adress);
         if (cc == null) {
-            cc = new Communicator(adress, Comm_Client.PORT);
+            cc = new Communicator(adress, port);
             if (cc != null) {
                 clients.add(cc);
             }

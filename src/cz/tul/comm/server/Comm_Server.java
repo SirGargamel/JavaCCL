@@ -16,9 +16,10 @@ import java.util.logging.Logger;
 /**
  * Class enclosing server-client communication. Handles custom data sending to
  * given client, whole job computation and client status monitoring.
+ *
  * @author Petr Ječmen
  */
-public class Comm_Server implements IService {
+public final class Comm_Server implements IService {
 
     private static final Logger log = Logger.getLogger(Comm_Server.class.getName());
     public static final int PORT = 5252;
@@ -39,7 +40,7 @@ public class Comm_Server implements IService {
                 settings = (Settings) in;
                 for (String a : settings.getClients()) {
                     try {
-                        clients.registerClient(InetAddress.getByName(a));
+                        registerClient(InetAddress.getByName(a));
                     } catch (UnknownHostException ex) {
                         UserLogging.showWarningToUser("Unknown host found in settings - " + ex.getLocalizedMessage());
                         log.log(Level.WARNING, "Unkonwn host found in settings", ex);
@@ -69,10 +70,14 @@ public class Comm_Server implements IService {
         serverSocket.addMessageHandler(msgHandler);
     }
 
-    public Communicator registerClient(final InetAddress adress) {
-        Communicator result = clients.registerClient(adress);
+    public Communicator registerClient(final InetAddress adress, final int port) {
+        Communicator result = clients.registerClient(adress, port);
         result.registerMessageHandler(msgHandler);
         return result;
+    }
+
+    public Communicator registerClient(final InetAddress adress) {
+        return registerClient(adress, settings.getDefaultClientPort());
     }
 
     public void deregisterClient(final InetAddress adress) {

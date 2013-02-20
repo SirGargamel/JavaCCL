@@ -5,7 +5,6 @@ import cz.tul.comm.socket.IMessageHandler;
 import cz.tul.comm.IService;
 import cz.tul.comm.SerializationUtils;
 import cz.tul.comm.gui.UserLogging;
-import cz.tul.comm.server.Comm_Server;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
 import java.net.BindException;
@@ -60,7 +59,7 @@ public class Comm_Client implements IService {
         Communicator c = null;
         try {
             InetAddress serverIp = InetAddress.getByName(settings.getServerAdress());
-            c = new Communicator(serverIp, Comm_Server.PORT);
+            c = new Communicator(serverIp, settings.getServerPort());
         } catch (UnknownHostException ex) {
             UserLogging.showWarningToUser("Unknown host found in settings - " + settings.getServerAdress());
             log.log(Level.WARNING, "Unkonwn host found in settings", ex);

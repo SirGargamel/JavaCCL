@@ -1,5 +1,6 @@
 package cz.tul.comm.server;
 
+import cz.tul.comm.client.Comm_Client;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,9 +14,11 @@ public class Settings implements Serializable {
     public static final String SERIALIZATION_NAME = "serverSettings.xml";
     private static final long serialVersionUID = 2L;
     private Set<String> clients;
+    private int defaultClientPort;
 
     public Settings() {
         clients = new HashSet<>();
+        defaultClientPort = Comm_Client.PORT;
     }
 
     public Set<String> getClients() {
@@ -24,6 +27,14 @@ public class Settings implements Serializable {
 
     public void setClients(Set<String> clients) {
         this.clients = clients;
+    }
+
+    public int getDefaultClientPort() {
+        return defaultClientPort;
+    }
+
+    public void setDefaultClientPort(int defaultClientPort) {
+        this.defaultClientPort = defaultClientPort;
     }
 
 }

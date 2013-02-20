@@ -1,5 +1,6 @@
 package cz.tul.comm.client;
 
+import cz.tul.comm.server.Comm_Server;
 import java.io.Serializable;
 import java.net.InetAddress;
 
@@ -14,9 +15,11 @@ public class Settings implements Serializable {
     private static final long serialVersionUID = 2L;
     private static final String DEFAULT_IP = InetAddress.getLoopbackAddress().getHostAddress();
     private String serverAdress;
+    private int serverPort;
 
     public Settings() {
         serverAdress = DEFAULT_IP;
+        serverPort = Comm_Server.PORT;
     }
 
     public String getServerAdress() {
@@ -25,5 +28,13 @@ public class Settings implements Serializable {
 
     public void setServerAdress(String serverAdress) {
         this.serverAdress = serverAdress;
+    }
+
+    public int getServerPort() {
+        return serverPort;
+    }
+
+    public void setServerPort(int serverPort) {
+        this.serverPort = serverPort;
     }
 }
