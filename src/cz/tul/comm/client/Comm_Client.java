@@ -23,7 +23,7 @@ public class Comm_Client implements IService {
     private static final Logger log = Logger.getLogger(Comm_Client.class.getName());
     public static final int PORT = 5253;
     private final ServerSocket serverSocket;
-    private final Communicator comm;
+    private Communicator comm;
     private final Settings settings;
 
     private Comm_Client() {
@@ -32,6 +32,7 @@ public class Comm_Client implements IService {
             tmp = new ServerSocket(PORT);
         } catch (BindException ex) {
             UserLogging.showErrorToUser("Error creating server socket on port" + PORT);
+            log.log(Level.WARNING, "Error binding socket.", ex);
         }
         serverSocket = tmp;
 
@@ -42,11 +43,9 @@ public class Comm_Client implements IService {
                 settings = (Settings) in;
             } else {
                 settings = new Settings();
-                settings.setServerAdress(InetAddress.getLoopbackAddress().getHostAddress());
             }
         } else {
             settings = new Settings();
-            settings.setServerAdress(InetAddress.getLoopbackAddress().getHostAddress());
         }
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -55,20 +54,27 @@ public class Comm_Client implements IService {
             }
         }));
 
-
-        Communicator c = null;
-        try {
-            InetAddress serverIp = InetAddress.getByName(settings.getServerAdress());
-            c = new Communicator(serverIp, settings.getServerPort());
-        } catch (UnknownHostException ex) {
-            UserLogging.showWarningToUser("Unknown host found in settings - " + settings.getServerAdress());
-            log.log(Level.WARNING, "Unkonwn host found in settings", ex);
-        }
-        comm = c;
+        prepareServerCommunicator();
     }
 
-    public void addMessageHandler(final IMessageHandler msgHandler) {
-        serverSocket.addMessageHandler(msgHandler);
+    private void prepareServerCommunicator() {
+        try {
+            InetAddress serverIp = InetAddress.getByName(settings.getServerAdress());
+            comm = new Communicator(serverIp, settings.getServerPort());
+        } catch (UnknownHostException ex) {
+            UserLogging.showWarningToUser("Unknown host set in settings - " + settings.getServerAdress());
+            log.log(Level.WARNING, "Unkonwn host set in settings", ex);
+        }
+    }
+
+    public void setServerAdress(final InetAddress address) {
+        settings.setServerAdress(address.getHostAddress());
+        prepareServerCommunicator();
+    }
+
+    public void setServerPort(final int port) {
+        settings.setServerPort(port);
+        prepareServerCommunicator();
     }
 
     public void sendMessage(final Object data) {
@@ -77,6 +83,10 @@ public class Comm_Client implements IService {
 
     public void saveData() {
         SerializationUtils.saveItemToDiscAsXML(new File(Settings.SERIALIZATION_NAME), settings);
+    }
+
+    public void addMessageHandler(final IMessageHandler msgHandler) {
+        serverSocket.addMessageHandler(msgHandler);
     }
 
     public static Comm_Client initNewClient() {
