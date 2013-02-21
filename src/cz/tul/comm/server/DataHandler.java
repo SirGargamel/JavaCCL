@@ -1,7 +1,7 @@
 package cz.tul.comm.server;
 
 import cz.tul.comm.socket.IResponseHandler;
-import cz.tul.comm.socket.IMessageHandler;
+import cz.tul.comm.socket.IDataHandler;
 import cz.tul.comm.Message;
 import java.net.InetAddress;
 import java.util.Map;
@@ -19,30 +19,41 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class MessageHandler extends Thread implements IMessageHandler, IResponseHandler {
+public class DataHandler extends Thread implements IDataHandler, IResponseHandler {
 
-    private static final Logger log = Logger.getLogger(MessageHandler.class.getName());
+    private static final Logger log = Logger.getLogger(DataHandler.class.getName());
     private final Map<InetAddress, Object> handlersAddress;
     private final Map<UUID, Object> handlersId;
     private final Map<Object, Queue<Object>> messages;
 
-    public MessageHandler() {
+    public DataHandler() {
         handlersAddress = new ConcurrentHashMap<>();
         handlersId = new ConcurrentHashMap<>();
         messages = new ConcurrentHashMap<>();
     }
 
     @Override
-    public void handleMessage(final InetAddress address, final Object msg) {
-        if (msg != null) {
-            if (msg instanceof Message) {
-                final Message m = (Message) msg;
+    public void handleData(final InetAddress address, final Object data) {
+        if (data != null) {
+            if (data instanceof Message) {
+                final Message m = (Message) data;
 
                 // TODO check for system message
+
+                final UUID id = m.getId();
+                if (handlersId.containsKey(id)) {
+                    final Object owner = handlersId.get(id);
+                    messages.get(owner).add(data);
+
+                    synchronized (owner) {
+                        owner.notify();
+                    }
+                }
             }
+            // IP handlers
             if (handlersAddress.containsKey(address)) {
                 final Object owner = handlersAddress.get(address);
-                messages.get(owner).add(msg);
+                messages.get(owner).add(data);
 
                 synchronized (owner) {
                     owner.notify();

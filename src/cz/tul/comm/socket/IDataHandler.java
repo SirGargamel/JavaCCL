@@ -6,8 +6,8 @@ import java.net.InetAddress;
  * Interface for classes able to parse received message from a client.
  * @author Petr Ječmen
  */
-public interface IMessageHandler {
+public interface IDataHandler {
 
-    public void handleMessage(final InetAddress adress, final Object msg);
+    public void handleData(final InetAddress adress, final Object data);
 
 }

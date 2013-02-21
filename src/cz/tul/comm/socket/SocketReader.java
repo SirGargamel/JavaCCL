@@ -15,9 +15,9 @@ public class SocketReader implements Runnable {
 
     private static final Logger log = Logger.getLogger(SocketReader.class.getName());
     private final Socket socket;
-    private final Set<IMessageHandler> msgHandlers;
+    private final Set<IDataHandler> msgHandlers;
 
-    public SocketReader(final Socket socket, final Set<IMessageHandler> msgHandlers) {
+    public SocketReader(final Socket socket, final Set<IDataHandler> msgHandlers) {
         this.socket = socket;
         this.msgHandlers = msgHandlers;
     }
@@ -27,8 +27,8 @@ public class SocketReader implements Runnable {
         try {
             final ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             final Object o = in.readObject();
-            for (IMessageHandler mh : msgHandlers) {
-                mh.handleMessage(socket.getInetAddress(), o);
+            for (IDataHandler mh : msgHandlers) {
+                mh.handleData(socket.getInetAddress(), o);
             }
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error reading data from socket.", ex);

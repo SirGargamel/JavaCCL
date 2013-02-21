@@ -1,6 +1,6 @@
 package cz.tul.comm.tester;
 
-import cz.tul.comm.socket.IMessageHandler;
+import cz.tul.comm.socket.IDataHandler;
 import cz.tul.comm.Message;
 import cz.tul.comm.client.Comm_Client;
 import java.net.InetAddress;
@@ -9,7 +9,7 @@ import java.net.InetAddress;
  * dummy client for testing.
  * @author Petr Ječmen
  */
-public class DummyClient implements IMessageHandler {
+public class DummyClient implements IDataHandler {
 
     private Comm_Client com;
     private boolean state;
@@ -23,7 +23,7 @@ public class DummyClient implements IMessageHandler {
     }
 
     @Override
-    public void handleMessage(final InetAddress adress, final Object msg) {
+    public void handleData(final InetAddress adress, final Object msg) {
         if (msg != null && msg instanceof Message) {
             Message m = (Message) msg;
             switch (m.getData().toString()) {

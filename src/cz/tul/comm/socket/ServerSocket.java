@@ -23,7 +23,7 @@ public class ServerSocket extends Thread implements IService {
     private static final Logger log = Logger.getLogger(ServerSocket.class.getName());
     private final java.net.ServerSocket socket;
     private final ExecutorService exec;
-    private final Set<IMessageHandler> msgHandlers;
+    private final Set<IDataHandler> msgHandlers;
     private boolean run;
 
     public ServerSocket(final int port) throws BindException {
@@ -38,7 +38,7 @@ public class ServerSocket extends Thread implements IService {
         run = true;
     }
 
-    public void addMessageHandler(final IMessageHandler handler) {
+    public void addMessageHandler(final IDataHandler handler) {
         msgHandlers.add(handler);
     }
 

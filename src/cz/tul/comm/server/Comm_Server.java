@@ -26,10 +26,10 @@ public final class Comm_Server implements IService {
     private final Settings settings;
     private final ClientDB clients;
     private final ServerSocket serverSocket;
-    private final MessageHandler msgHandler;
+    private final DataHandler msgHandler;
 
     private Comm_Server() {
-        msgHandler = new MessageHandler();
+        msgHandler = new DataHandler();
 
         // client DB
         clients = new ClientDB();

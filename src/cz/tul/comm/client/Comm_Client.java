@@ -1,7 +1,7 @@
 package cz.tul.comm.client;
 
 import cz.tul.comm.socket.Communicator;
-import cz.tul.comm.socket.IMessageHandler;
+import cz.tul.comm.socket.IDataHandler;
 import cz.tul.comm.IService;
 import cz.tul.comm.SerializationUtils;
 import cz.tul.comm.gui.UserLogging;
@@ -85,7 +85,7 @@ public class Comm_Client implements IService {
         SerializationUtils.saveItemToDiscAsXML(new File(Settings.SERIALIZATION_NAME), settings);
     }
 
-    public void addMessageHandler(final IMessageHandler msgHandler) {
+    public void addMessageHandler(final IDataHandler msgHandler) {
         serverSocket.addMessageHandler(msgHandler);
     }
 
