@@ -1,11 +1,9 @@
 package cz.tul.comm.tester;
 
-import cz.tul.comm.Message;
 import cz.tul.comm.client.Comm_Client;
 import cz.tul.comm.server.Comm_Server;
 import cz.tul.comm.socket.Communicator;
 import java.net.InetAddress;
-import java.util.UUID;
 
 /**
  * class for testing.
@@ -25,15 +23,15 @@ public class Main {
         final Comm_Server s = Comm_Server.initNewServer();
         final Communicator cc = s.registerClient(InetAddress.getLoopbackAddress());
 
-        Message m = new Message(UUID.randomUUID(), "header", "test");
-        Object result = cc.sendAndReceiveData(m);
-        System.out.println(result.toString());
-        m = new Message(UUID.randomUUID(), "header", "config");
-        result = cc.sendData(m);
-        System.out.println(result.toString());
-        m = new Message(UUID.randomUUID(), "header", "test");
-        result = cc.sendAndReceiveData(m);
-        System.out.println(result.toString());
+//        Message m = new Message(UUID.randomUUID(), "header", "test");
+//        Object result = cc.sendData(m);
+//        System.out.println(result.toString());
+//        m = new Message(UUID.randomUUID(), "header", "config");
+//        result = cc.sendData(m);
+//        System.out.println(result.toString());
+//        m = new Message(UUID.randomUUID(), "header", "test");
+//        result = cc.sendData(m);
+//        System.out.println(result.toString());
 
         c.stopService();
         s.stopService();

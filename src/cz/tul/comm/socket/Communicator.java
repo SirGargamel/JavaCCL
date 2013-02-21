@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Objects;
-import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,15 +23,10 @@ public final class Communicator {
     private static final Logger log = Logger.getLogger(Communicator.class.getName());
     private final InetAddress address;
     private final int port;
-    private IResponseHandler responseHandler;
 
     public Communicator(final InetAddress address, final int port) {
         this.address = address;
         this.port = port;
-    }
-
-    public void registerMessageHandler(final IResponseHandler handler) {
-        this.responseHandler = handler;
     }
 
     public InetAddress getAddress() {
@@ -49,30 +43,6 @@ public final class Communicator {
             UserLogging.showWarningToUser("Could not contact client with IP " + address.getHostAddress());
             return false;
         }
-    }
-
-    public Object sendAndReceiveData(final Object data) {
-        if (responseHandler == null) {
-            throw new IllegalStateException("Message handler not assigned.");
-        }
-
-        Object result = null;
-        responseHandler.registerResponse(address, this);
-        if (sendData(data)) {
-            try {
-
-                synchronized (this) {
-                    this.wait();
-                }
-                final Queue<Object> responses = responseHandler.getResponseQueue(this);
-                result = responses.poll();
-            } catch (InterruptedException ex) {
-                log.log(Level.SEVERE, "Communicator wating for response has been interrupted.", ex);
-            }
-        }
-
-        responseHandler.deregisterResponse(address, this);
-        return result;
     }
 
     @Override

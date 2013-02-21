@@ -72,7 +72,6 @@ public final class Comm_Server implements IService {
 
     public Communicator registerClient(final InetAddress adress, final int port) {
         Communicator result = clients.registerClient(adress, port);
-        result.registerMessageHandler(msgHandler);
         return result;
     }
 
