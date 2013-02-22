@@ -26,7 +26,7 @@ public class SocketReader implements Runnable {
 
     @Override
     public void run() {
-        boolean dataReadAndHnadled = false;
+        boolean dataReadAndHandled = false;
 
         try {
             final ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
@@ -34,7 +34,7 @@ public class SocketReader implements Runnable {
             for (IDataHandler mh : msgHandlers) {
                 mh.handleData(socket.getInetAddress(), o);
             }
-            dataReadAndHnadled = true;
+            dataReadAndHandled = true;
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error reading data from socket.", ex);            
         } catch (ClassNotFoundException ex) {
@@ -42,7 +42,7 @@ public class SocketReader implements Runnable {
         }
 
         try (final ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
-            out.writeBoolean(dataReadAndHnadled);
+            out.writeBoolean(dataReadAndHandled);
             out.flush();
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error writing result data to socket.", ex);

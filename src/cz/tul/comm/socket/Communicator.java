@@ -36,18 +36,22 @@ public final class Communicator {
     }
 
     public boolean sendData(final Object data) {
+        boolean result = false;
         try (final Socket s = new Socket(address, port)) {
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
             out.writeObject(data);
             out.flush();
-            final ObjectInputStream in = new ObjectInputStream(s.getInputStream());
-            final boolean result = in.readBoolean();
-            return result;
+            try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
+                result = in.readBoolean();
+            } catch (IOException ex) {
+                log.log(Level.WARNING, "Error receiving response from output socket", ex);
+            }
         } catch (IOException ex) {
             log.log(Level.WARNING, "Cannot write to output socket", ex);
             UserLogging.showWarningToUser("Could not contact client with IP " + address.getHostAddress());
-            return false;
         }
+
+        return result;
     }
 
     @Override
