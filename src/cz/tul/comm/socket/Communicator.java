@@ -28,10 +28,10 @@ public final class Communicator {
 
     public Communicator(final InetAddress address, final int port) {
         if (address == null) {
-            log.log(Level.WARNING, "Invalid IP address - {0}", address);
+            log.log(Level.WARNING, "Invalid IP address - ", address);
             throw new IllegalArgumentException("Invalid address - {0}" + address);
         } else if (port < 0 || port > 65535) {
-            log.log(Level.WARNING, "Invalid port - {0}", port);
+            log.log(Level.WARNING, "Invalid port - ", port);
             throw new IllegalArgumentException("Invalid port - {0}" + port);
         }
 
