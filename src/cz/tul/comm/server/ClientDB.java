@@ -1,12 +1,13 @@
 package cz.tul.comm.server;
 
-import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.socket.Communicator;
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Database for client handling. Basic registry with additional info about
@@ -16,6 +17,7 @@ import java.util.Set;
  */
 public final class ClientDB {
 
+    private static final Logger log = Logger.getLogger(Communicator.class.getName());
     private final Set<Communicator> clients;
 
     public ClientDB() {
@@ -29,7 +31,7 @@ public final class ClientDB {
                 cc = new Communicator(adress, port);
                 clients.add(cc);
             } catch (IllegalArgumentException ex) {
-                UserLogging.showWarningToUser(ex.getLocalizedMessage());
+                log.log(Level.WARNING, "Invalid Communicator parameters.", ex);
             }
         }
 

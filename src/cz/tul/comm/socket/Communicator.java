@@ -1,6 +1,5 @@
 package cz.tul.comm.socket;
 
-import cz.tul.comm.gui.UserLogging;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -27,11 +26,9 @@ public final class Communicator {
     private final int port;
 
     public Communicator(final InetAddress address, final int port) {
-        if (address == null) {
-            log.log(Level.WARNING, "Invalid IP address - ", address);
+        if (address == null) {            
             throw new IllegalArgumentException("Invalid address - {0}" + address);
-        } else if (port < 0 || port > 65535) {
-            log.log(Level.WARNING, "Invalid port - ", port);
+        } else if (port < 0 || port > 65535) {            
             throw new IllegalArgumentException("Invalid port - {0}" + port);
         }
 
@@ -52,11 +49,10 @@ public final class Communicator {
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                 result = in.readBoolean();
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Error receiving response from output socket", ex);
+                log.log(Level.WARNING, "Error receiving response from output socket", ex);                                
             }
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Cannot write to output socket", ex);
-            UserLogging.showWarningToUser("Could not contact client with IP " + address.getHostAddress());
+            log.log(Level.WARNING, "Cannot write to output socket", ex);            
         }
 
         return result;
