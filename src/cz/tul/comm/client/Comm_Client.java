@@ -60,7 +60,7 @@ public class Comm_Client implements IService {
     private void prepareServerCommunicator() {
         try {
             InetAddress serverIp = InetAddress.getByName(settings.getServerAdress());
-            comm = new Communicator(serverIp, settings.getServerPort());
+            comm = Communicator.createCommunicator(serverIp, settings.getServerPort());            
         } catch (UnknownHostException ex) {
             UserLogging.showWarningToUser("Unknown host set in settings - " + settings.getServerAdress());
             log.log(Level.WARNING, "Unkonwn host set in settings", ex);

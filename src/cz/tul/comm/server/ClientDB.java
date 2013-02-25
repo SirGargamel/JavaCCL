@@ -1,12 +1,10 @@
 package cz.tul.comm.server;
 
 import cz.tul.comm.socket.Communicator;
-import cz.tul.comm.client.Comm_Client;
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
@@ -26,8 +24,10 @@ public final class ClientDB {
     public Communicator registerClient(final InetAddress adress, final int port) {
         Communicator cc = getClient(adress);
         if (cc == null) {
-            cc = new Communicator(adress, port);
-            clients.add(cc);
+            cc = Communicator.createCommunicator(adress, port);
+            if (cc != null) {
+                clients.add(cc);
+            }
         }
 
         return cc;
