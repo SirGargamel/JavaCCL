@@ -3,9 +3,9 @@ package cz.tul.comm.server;
 import cz.tul.comm.socket.Communicator;
 import java.net.InetAddress;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Database for client handling. Basic registry with additional info about
@@ -18,7 +18,7 @@ public final class ClientDB {
     private final Set<Communicator> clients;
 
     public ClientDB() {
-        clients = new CopyOnWriteArraySet<>();
+        clients = Collections.synchronizedSet(new HashSet<Communicator>());
     }
 
     public Communicator registerClient(final InetAddress adress, final int port) {
