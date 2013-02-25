@@ -10,8 +10,9 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
- * Database for client handling. Basic registry with additional
- * info about clients.
+ * Database for client handling. Basic registry with additional info about
+ * clients.
+ *
  * @author Petr Ječmen
  */
 public final class ClientDB {
@@ -26,9 +27,7 @@ public final class ClientDB {
         Communicator cc = getClient(adress);
         if (cc == null) {
             cc = new Communicator(adress, port);
-            if (cc != null) {
-                clients.add(cc);
-            }
+            clients.add(cc);
         }
 
         return cc;
