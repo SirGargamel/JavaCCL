@@ -1,5 +1,6 @@
 package cz.tul.comm.server;
 
+import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.socket.Communicator;
 import java.net.InetAddress;
 import java.util.Collections;
@@ -24,9 +25,11 @@ public final class ClientDB {
     public Communicator registerClient(final InetAddress adress, final int port) {
         Communicator cc = getClient(adress);
         if (cc == null) {
-            cc = Communicator.createCommunicator(adress, port);
-            if (cc != null) {
+            try {
+                cc = new Communicator(adress, port);
                 clients.add(cc);
+            } catch (IllegalArgumentException ex) {
+                UserLogging.showWarningToUser(ex.getLocalizedMessage());
             }
         }
 

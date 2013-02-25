@@ -14,8 +14,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Class enclosing client to server communication. Allows data sending
- * and has a registry for message handling.
+ * Class enclosing client to server communication. Allows data sending and has a
+ * registry for message handling.
+ *
  * @author Petr Ječmen
  */
 public class Comm_Client implements IService {
@@ -60,10 +61,13 @@ public class Comm_Client implements IService {
     private void prepareServerCommunicator() {
         try {
             InetAddress serverIp = InetAddress.getByName(settings.getServerAdress());
-            comm = Communicator.createCommunicator(serverIp, settings.getServerPort());            
+            comm = new Communicator(serverIp, settings.getServerPort());
         } catch (UnknownHostException ex) {
             UserLogging.showWarningToUser("Unknown host set in settings - " + settings.getServerAdress());
-            log.log(Level.WARNING, "Unkonwn host set in settings", ex);
+            log.log(Level.WARNING, "Unkonwn host set in settings.", ex);
+        } catch (IllegalArgumentException ex) {
+            UserLogging.showErrorToUser(ex.getLocalizedMessage());
+            log.log(Level.WARNING, "Illegal parameters for Communicator.", ex);
         }
     }
 
@@ -78,7 +82,9 @@ public class Comm_Client implements IService {
     }
 
     public void sendMessage(final Object data) {
-        comm.sendData(data);
+        if (comm != null) {
+            comm.sendData(data);
+        }
     }
 
     public void saveData() {

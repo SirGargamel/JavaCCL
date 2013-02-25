@@ -26,7 +26,15 @@ public final class Communicator {
     private final InetAddress address;
     private final int port;
 
-    private Communicator(final InetAddress address, final int port) {
+    public Communicator(final InetAddress address, final int port) {
+        if (address == null) {
+            log.log(Level.WARNING, "Invalid IP address - {0}", address);
+            throw new IllegalArgumentException("Invalid address - {0}" + address);
+        } else if (port < 0 || port > 65535) {
+            log.log(Level.WARNING, "Invalid port - {0}", port);
+            throw new IllegalArgumentException("Invalid port - {0}" + port);
+        }
+
         this.address = address;
         this.port = port;
     }
@@ -71,18 +79,5 @@ public final class Communicator {
         hash = 23 * hash + Objects.hashCode(this.address);
         hash = 23 * hash + this.port;
         return hash;
-    }
-
-    public static Communicator createCommunicator(final InetAddress address, final int port) {
-        if (address == null) {
-            log.log(Level.WARNING, "Invalid address - {0}", address);
-            return null;
-        } else if (port < 0 || port > 65535) {
-            log.log(Level.WARNING, "Invalid port - {0}", port);
-            return null;
-        } else {
-            return new Communicator(address, port);
-        }
-
     }
 }
