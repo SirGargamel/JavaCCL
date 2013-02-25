@@ -20,26 +20,45 @@ import java.util.logging.Logger;
 
 /**
  * Utilities for object persistence.
+ *
  * @author Petr Ječmen
  */
 public abstract class SerializationUtils {
 
     private static final Logger log = Logger.getLogger(SerializationUtils.class.getName());
 
-    public static void saveItemToDisc(final File dest, final Object data) throws IOException {
+    public static boolean saveItemToDisc(final File dest, final Object data) throws IOException {
+        boolean result = false;
         if (data instanceof Serializable) {
+            if (!dest.exists()) {
+                try {
+                    dest.createNewFile();
+                } catch (IOException ex) {
+                    log.log(Level.WARNING, "Target file for serialization could not be created.", ex);
+                }
+            }
             try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(dest))) {
                 out.writeObject(data);
+                result = true;
             } catch (IOException ex) {
                 throw new IOException(ex);
             }
         } else {
             log.warning("Object is not serializable.");
         }
+        return result;
     }
 
-    public static void saveItemToDiscAsXML(final File dest, final Object data) {
-        if (dest.exists() && data instanceof Serializable) {
+    public static boolean saveItemToDiscAsXML(final File dest, final Object data) {
+        boolean result = false;
+        if (data instanceof Serializable) {
+            if (!dest.exists()) {
+                try {
+                    dest.createNewFile();
+                } catch (IOException ex) {
+                    log.log(Level.WARNING, "Target file for serialization could not be created.", ex);
+                }
+            }
             try (XMLEncoder out = new XMLEncoder(new FileOutputStream(dest))) {
                 out.setPersistenceDelegate(Inet4Address.class, new DefaultPersistenceDelegate() {
                     @Override
@@ -50,12 +69,14 @@ public abstract class SerializationUtils {
                     }
                 });
                 out.writeObject(data);
+                result = true;
             } catch (FileNotFoundException ex) {
                 log.log(Level.WARNING, "Target file for serialization is inaccessible.", ex);
             }
         } else {
             log.warning("Object is not serializable.");
         }
+        return result;
     }
 
     public static Object loadItemFromDisc(final File src) {
