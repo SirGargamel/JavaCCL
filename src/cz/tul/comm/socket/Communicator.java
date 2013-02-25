@@ -78,7 +78,7 @@ public final class Communicator {
             log.log(Level.WARNING, "Invalid address - {0}", address);
             return null;
         } else if (port < 0 || port > 65535) {
-            log.log(Level.WARNING, "Invalid port - {0}", address);
+            log.log(Level.WARNING, "Invalid port - {0}", port);
             return null;
         } else {
             return new Communicator(address, port);
