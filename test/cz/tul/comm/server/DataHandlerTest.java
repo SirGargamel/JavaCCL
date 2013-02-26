@@ -58,5 +58,9 @@ public class DataHandlerTest {
         
         assertEquals(3, instance.getResponseQueue(owner1).size());
         assertEquals(2, instance.getResponseQueue(owner2).size());
+        
+        instance.deregisterResponse(id3, owner2);
+        instance.deregisterResponse(id2, owner2);
+        assertNull(instance.getResponseQueue(owner2));
     }
 }
