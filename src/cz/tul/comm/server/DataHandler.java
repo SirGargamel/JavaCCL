@@ -43,24 +43,26 @@ public class DataHandler extends Thread implements IDataHandler, IResponseHandle
                 final UUID id = m.getId();
                 if (handlersId.containsKey(id)) {
                     final Object owner = handlersId.get(id);
-                    messages.get(owner).add(data);
-
-                    synchronized (owner) {
-                        owner.notify();
-                    }
+                    storeAndNotify(data, owner);
                 }
             }
             // IP handlers
-            if (handlersAddress.containsKey(address)) {
+            if (address != null && handlersAddress.containsKey(address)) {
                 final Object owner = handlersAddress.get(address);
-                messages.get(owner).add(data);
-
-                synchronized (owner) {
-                    owner.notify();
-                }
+                storeAndNotify(data, owner);
             }
         } else {
             log.warning("NULL message received.");
+        }
+    }
+
+    private void storeAndNotify(final Object data, final Object owner) {
+        final Queue<Object> queue = messages.get(owner);
+        if (!queue.contains(data)) {
+            queue.add(data);
+            synchronized (owner) {
+                owner.notify();
+            }
         }
     }
 
