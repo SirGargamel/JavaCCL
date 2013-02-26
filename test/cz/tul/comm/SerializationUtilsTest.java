@@ -35,14 +35,6 @@ public class SerializationUtilsTest {
         }
     }
 
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test of saveItemToDisc method, of class SerializationUtils.
      */
