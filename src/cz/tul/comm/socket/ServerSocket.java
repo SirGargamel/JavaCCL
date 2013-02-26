@@ -2,7 +2,6 @@ package cz.tul.comm.socket;
 
 import cz.tul.comm.IService;
 import java.io.IOException;
-import java.net.BindException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.HashSet;
@@ -16,6 +15,7 @@ import java.util.logging.Logger;
  * Listening socket for data receiving. Listens for communication on given port
  * and when connection is made, server creates new {@link SocketReader} to
  * handle data receiving and starts listening again.
+ *
  * @author Petr Ječmen
  */
 public class ServerSocket extends Thread implements IService {
@@ -26,13 +26,14 @@ public class ServerSocket extends Thread implements IService {
     private final Set<IDataHandler> msgHandlers;
     private boolean run;
 
-    public ServerSocket(final int port) throws BindException {
+    private ServerSocket(final int port) {
+        java.net.ServerSocket s = null;
         try {
-            socket = new java.net.ServerSocket(port);
+            s = new java.net.ServerSocket(port);
         } catch (IOException ex) {
-            log.log(Level.SEVERE, "Error creating socket on port " + port, ex);
-            throw new BindException("Port number - " + port);
+            log.log(Level.SEVERE, "Error creating socket on port " + port, ex);            
         }
+        socket = s;
         exec = Executors.newCachedThreadPool();
         msgHandlers = new HashSet<>(1);
         run = true;
@@ -58,6 +59,12 @@ public class ServerSocket extends Thread implements IService {
             }
         }
         exec.shutdownNow();
+    }
+
+    public static ServerSocket createServerSocket(final int port) {
+        ServerSocket result = new ServerSocket(port);
+        result.start();
+        return result;
     }
 
     @Override

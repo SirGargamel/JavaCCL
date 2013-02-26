@@ -6,7 +6,6 @@ import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.socket.Communicator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
-import java.net.BindException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Set;
@@ -59,14 +58,7 @@ public final class Comm_Server implements IService {
             }
         }));
 
-        ServerSocket tmp = null;
-        try {
-            tmp = new ServerSocket(PORT);
-        } catch (BindException ex) {
-            UserLogging.showErrorToUser("Error creating server socket on port " + PORT);
-        }
-
-        serverSocket = tmp;
+        serverSocket = ServerSocket.createServerSocket(PORT);
         serverSocket.addMessageHandler(msgHandler);
     }
 

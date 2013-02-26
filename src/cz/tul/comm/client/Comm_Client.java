@@ -28,14 +28,7 @@ public class Comm_Client implements IService {
     private final Settings settings;
 
     private Comm_Client() {
-        ServerSocket tmp = null;
-        try {
-            tmp = new ServerSocket(PORT);
-        } catch (BindException ex) {
-            UserLogging.showErrorToUser("Error creating server socket on port" + PORT);
-            log.log(Level.WARNING, "Error binding socket.", ex);
-        }
-        serverSocket = tmp;
+        serverSocket = ServerSocket.createServerSocket(PORT);
 
         File s = new File(Settings.SERIALIZATION_NAME);
         if (s.exists()) {
