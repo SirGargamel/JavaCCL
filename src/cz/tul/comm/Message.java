@@ -38,6 +38,11 @@ public class Message implements Serializable {
 
     @Override
     public String toString() {
-        return header.concat(" - ").concat(data.toString());
+        StringBuilder result = new StringBuilder();
+        result.append(header);
+        result.append(" - ");
+        result.append(data.toString());
+        
+        return result.toString();
     }
 }
