@@ -1,4 +1,4 @@
-package cz.tul.comm;
+package cz.tul.comm.messaging;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -14,7 +14,7 @@ public class Message implements Serializable {
     private final String header;
     private final Object data;
 
-    public Message(UUID id, String header, Object data) {
+    public Message(final UUID id, final String header, final Object data) {
         if (!(data instanceof Serializable)) {
             throw new IllegalArgumentException("Data object needs to implement Serializable interface in order to be able to send it.");
         }
@@ -22,6 +22,10 @@ public class Message implements Serializable {
         this.id = id;
         this.header = header;
         this.data = data;
+    }
+    
+    public Message(final String header, final Object data) {
+        this(UUID.randomUUID(), header, data);
     }
 
     public UUID getId() {

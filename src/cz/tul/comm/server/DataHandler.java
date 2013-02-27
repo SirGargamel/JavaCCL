@@ -1,8 +1,9 @@
 package cz.tul.comm.server;
 
+import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.socket.IResponseHandler;
 import cz.tul.comm.socket.IDataHandler;
-import cz.tul.comm.Message;
+import cz.tul.comm.messaging.Message;
 import java.net.InetAddress;
 import java.util.Map;
 import java.util.Queue;
@@ -35,19 +36,27 @@ public class DataHandler extends Thread implements IDataHandler, IResponseHandle
     @Override
     public void handleData(final InetAddress address, final Object data) {
         if (data != null) {
+            boolean sys = false;
             if (data instanceof Message) {
                 final Message m = (Message) data;
+                
+                if (m.getHeader().equals(MessageHeaders.SYSTEM)) {
+                    sys = true;
+                    System.err.println("SYS msg");
+                    // TODO handle system message
+                }
 
-                // TODO check for system message
-
-                final UUID id = m.getId();
-                if (handlersId.containsKey(id)) {
-                    final Object owner = handlersId.get(id);
-                    storeAndNotify(data, owner);
+                if (!sys) {
+                    final UUID id = m.getId();
+                    if (handlersId.containsKey(id)) {
+                        final Object owner = handlersId.get(id);
+                        storeAndNotify(data, owner);
+                    }
                 }
             }
             // IP handlers
-            if (address != null && handlersAddress.containsKey(address)) {
+            if (!sys
+                    && address != null && handlersAddress.containsKey(address)) {
                 final Object owner = handlersAddress.get(address);
                 storeAndNotify(data, owner);
             }
