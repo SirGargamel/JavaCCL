@@ -27,7 +27,7 @@ public final class Communicator {
 
     public Communicator(final InetAddress address, final int port) {
         if (address == null) {            
-            throw new IllegalArgumentException("Invalid address" + address);
+            throw new IllegalArgumentException("Invalid address " + address);
         } else if (port < 0 || port > 65535) {            
             throw new IllegalArgumentException("Invalid port" + port);
         }
