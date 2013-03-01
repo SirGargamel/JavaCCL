@@ -4,6 +4,7 @@ import cz.tul.comm.IService;
 import cz.tul.comm.SerializationUtils;
 import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.socket.Communicator;
+import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
 import java.net.InetAddress;
@@ -25,11 +26,8 @@ public final class Comm_Server implements IService {
     private final Settings settings;
     private final ClientDB clients;
     private final ServerSocket serverSocket;
-    private final DataHandler msgHandler;
 
     private Comm_Server() {
-        msgHandler = new DataHandler();
-
         // client DB
         clients = new ClientDB();
         File s = new File(Settings.SERIALIZATION_NAME);
@@ -59,7 +57,6 @@ public final class Comm_Server implements IService {
         }));
 
         serverSocket = ServerSocket.createServerSocket(PORT);
-        serverSocket.addMessageHandler(msgHandler);
     }
 
     public Communicator registerClient(final InetAddress adress, final int port) {
@@ -92,6 +89,10 @@ public final class Comm_Server implements IService {
 
         SerializationUtils.saveItemToDiscAsXML(new File(Settings.SERIALIZATION_NAME), settings);
     }
+    
+    public IListenerRegistrator getListenerRegistrator() {
+        return serverSocket;
+    }
 
     public static Comm_Server initNewServer() {
         final Comm_Server result = new Comm_Server();
@@ -102,7 +103,6 @@ public final class Comm_Server implements IService {
     }
 
     void start() {
-        serverSocket.start();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package cz.tul.comm.messaging;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -48,5 +49,26 @@ public class Message implements Serializable {
         result.append(data.toString());
         
         return result.toString();
+    }      
+    
+    @Override
+    public boolean equals(Object o) {
+        boolean result = false;
+        
+        if (o instanceof Message) {
+            final Message m = (Message) o;            
+            result = m.hashCode() == hashCode() ? true : false;
+        }
+        
+        return result;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 29 * hash + Objects.hashCode(this.id);
+        hash = 29 * hash + Objects.hashCode(this.header);
+        hash = 29 * hash + Objects.hashCode(this.data);
+        return hash;
     }
 }

@@ -1,13 +1,12 @@
 package cz.tul.comm.client;
 
 import cz.tul.comm.socket.Communicator;
-import cz.tul.comm.socket.IDataHandler;
 import cz.tul.comm.IService;
 import cz.tul.comm.SerializationUtils;
 import cz.tul.comm.gui.UserLogging;
+import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
-import java.net.BindException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
@@ -83,9 +82,9 @@ public class Comm_Client implements IService {
     public void saveData() {
         SerializationUtils.saveItemToDiscAsXML(new File(Settings.SERIALIZATION_NAME), settings);
     }
-
-    public void addMessageHandler(final IDataHandler msgHandler) {
-        serverSocket.addMessageHandler(msgHandler);
+    
+    public IListenerRegistrator getListenerRegistrator() {
+        return serverSocket;
     }
 
     public static Comm_Client initNewClient() {
@@ -97,7 +96,6 @@ public class Comm_Client implements IService {
     }
 
     void start() {
-        serverSocket.start();
     }
 
     @Override
