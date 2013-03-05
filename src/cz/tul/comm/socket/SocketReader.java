@@ -1,15 +1,12 @@
 package cz.tul.comm.socket;
 
+import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.socket.queue.ObjectQueue;
-import cz.tul.comm.socket.queue.IListener;
-import cz.tul.comm.messaging.Message;
-import cz.tul.comm.messaging.MessageHeaders;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,25 +19,25 @@ public class SocketReader implements Runnable {
 
     private static final Logger log = Logger.getLogger(SocketReader.class.getName());
     private final Socket socket;
-    private final ObjectQueue<UUID, IListener<UUID, Message>, Message> msgStorage;
-    private final ObjectQueue<InetAddress, IListener<InetAddress, Object>, Object> dataStorage;
+    private final ObjectQueue<IPData> dataStorageIP;
+    private final ObjectQueue<IIdentifiable> dataStorageId;
 
     public SocketReader(
-            final Socket socket, 
-            final ObjectQueue<UUID, IListener<UUID, Message>, Message> messageStorage, 
-            final ObjectQueue<InetAddress, IListener<InetAddress, Object>, Object> dataStorage) {
+            final Socket socket,
+            final ObjectQueue<IPData> dataStorageIP,
+            final ObjectQueue<IIdentifiable> dataStorageId) {
         if (socket != null) {
             this.socket = socket;
         } else {
             throw new IllegalArgumentException("Socket cannot be null");
         }
-        if (messageStorage != null) {
-            this.msgStorage = messageStorage;
+        if (dataStorageIP != null) {
+            this.dataStorageIP = dataStorageIP;
         } else {
-            throw new IllegalArgumentException("Message storage cannot be null");
+            throw new IllegalArgumentException("Data storage cannot be null");
         }
-        if (dataStorage != null) {
-            this.dataStorage = dataStorage;
+        if (dataStorageId != null) {
+            this.dataStorageId = dataStorageId;
         } else {
             throw new IllegalArgumentException("Data storage cannot be null");
         }
@@ -55,18 +52,10 @@ public class SocketReader implements Runnable {
 
             final ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             final Object o = in.readObject();
-            if (o instanceof Message) {
-                final Message m = (Message) o;
-
-                if (m.getHeader().equals(MessageHeaders.SYSTEM)) {
-                    System.err.println("SYS msg");
-                    // TODO handle system message
-                } else {
-                    msgStorage.storeData(m.getId(), m);
-                }
-            } else {
-                dataStorage.storeData(ip, o);
+            if (o instanceof IIdentifiable) {
+                dataStorageId.storeData((IIdentifiable) o);
             }
+            dataStorageIP.storeData(new IPData(ip, o));
             dataReadAndHandled = true;
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error reading data from socket.", ex);

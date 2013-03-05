@@ -1,5 +1,6 @@
 package cz.tul.comm.messaging;
 
+import cz.tul.comm.socket.queue.IIdentifiable;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
@@ -8,7 +9,7 @@ import java.util.UUID;
  * Basic communication object between server and client.
  * @author Petr Ječmen
  */
-public class Message implements Serializable {
+public class Message implements Serializable, IIdentifiable {
     private static final long serialVersionUID = 1L;
 
     private final UUID id;
@@ -29,6 +30,7 @@ public class Message implements Serializable {
         this(UUID.randomUUID(), header, data);
     }
 
+    @Override
     public UUID getId() {
         return id;
     }

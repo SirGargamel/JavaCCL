@@ -9,18 +9,18 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  *
  * @author Petr Ječmen
  */
-public class ObjectQueue<I, O extends IListener<I, D>, D> {
+public class ObjectQueue<O extends IIdentifiable> {
 
-    private Map<I, Map<O, Queue<D>>> data;
+    private Map<Object, Map<IListener, Queue<O>>> data;
 
     public ObjectQueue() {
         data = new ConcurrentHashMap<>();
     }
 
-    public Queue<D> getDataQueue(final I id, final O owner) {
-        Queue<D> result = null;
+    public Queue<O> getDataQueue(final Object id, final IListener owner) {
+        Queue<O> result = null;
 
-        Map<O, Queue<D>> m = data.get(id);
+        Map<IListener, Queue<O>> m = data.get(id);
         if (m != null) {
             result = m.get(owner);
         }
@@ -28,10 +28,10 @@ public class ObjectQueue<I, O extends IListener<I, D>, D> {
         return result;
     }
 
-    public Queue<D> registerListener(final I id, final O owner) {
-        Queue<D> result = new ConcurrentLinkedQueue<>();
+    public Queue<O> registerListener(final Object id, final IListener owner) {
+        Queue<O> result = new ConcurrentLinkedQueue<>();
 
-        Map<O, Queue<D>> m = data.get(id);
+        Map<IListener, Queue<O>> m = data.get(id);
         if (m == null) {
             m = new ConcurrentHashMap<>();
             data.put(id, m);
@@ -42,23 +42,23 @@ public class ObjectQueue<I, O extends IListener<I, D>, D> {
         return result;
     }
 
-    public void deregisterListener(final I id, final O owner) {
-        Map<O, Queue<D>> m = data.get(id);
+    public void deregisterListener(final Object id, final IListener owner) {
+        Map<IListener, Queue<O>> m = data.get(id);
         if (m != null) {
-            m.remove(owner);
-        }
-    }
-    
-    public void deregisterListener(final O owner) {
-        for (Map<O, Queue<D>> m : data.values()) {
             m.remove(owner);
         }
     }
 
-    public void storeData(final I id, final D data) {
-        Map<O, Queue<D>> m = this.data.get(id);
+    public void deregisterListener(final IListener owner) {
+        for (Map<IListener, Queue<O>> m : data.values()) {
+            m.remove(owner);
+        }
+    }
+
+    public void storeData(final O data) {
+        final Map<IListener, Queue<O>> m = this.data.get(data.getId());
         if (m != null) {
-            for (Queue<D> q : m.values()) {
+            for (Queue<O> q : m.values()) {
                 q.add(data);
             }
         }

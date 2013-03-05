@@ -1,10 +1,9 @@
 package cz.tul.comm.socket;
 
-import cz.tul.comm.messaging.Message;
+import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.socket.queue.IListener;
 import java.net.InetAddress;
 import java.util.Queue;
-import java.util.UUID;
 
 /**
  *
@@ -12,15 +11,15 @@ import java.util.UUID;
  */
 public interface IListenerRegistrator {
 
-    Queue<Object> addDataListener(final InetAddress address, final IListener<InetAddress, Object> dataListener);
+    Queue<IPData> addIpListener(final InetAddress address, final IListener dataListener);
 
-    void removeDataListener(final InetAddress address, final IListener<InetAddress, Object> dataListener);
+    void removeIpListener(final InetAddress address, final IListener dataListener);
 
-    void removeDataListener(final IListener<InetAddress, Object> dataListener);
+    void removeIpListener(final IListener dataListener);
 
-    Queue<Message> addUUIDListener(final UUID id, final IListener<UUID, Message> idListener);
+    Queue<IIdentifiable> addIdListener(final Object id, final IListener idListener);
 
-    void removeUUIDListener(final UUID id, final IListener<UUID, Message> idListener);
+    void removeIdListener(final Object id, final IListener idListener);
 
-    void removeUUIDListener(final IListener<UUID, Message> idListener);
+    void removeIdListener(final IListener idListener);
 }

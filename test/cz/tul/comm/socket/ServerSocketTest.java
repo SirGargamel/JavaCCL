@@ -1,5 +1,6 @@
 package cz.tul.comm.socket;
 
+import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.socket.queue.IListener;
 import java.net.InetAddress;
@@ -26,25 +27,25 @@ public class ServerSocketTest {
     public void testServerSocket() {
         System.out.println("ServerSocket");        
 
-        final IListener<UUID, Message> owner1 = new IListener<UUID, Message>() {
+        final IListener owner1 = new IListener() {
 
             @Override
-            public void receiveData(UUID id, Message data) {                
+            public void receiveData(IIdentifiable data) {                
             }
         };
-        final IListener<InetAddress, Object> owner2 = new IListener<InetAddress, Object>() {
+        final IListener owner2 = new IListener() {
 
             @Override
-            public void receiveData(InetAddress id, Object data) {                
+            public void receiveData(IIdentifiable data) {                
             }
         };
 
         final ServerSocket instance = ServerSocket.createServerSocket(PORT);        
-        final Queue<Object> queueData = instance.addDataListener(InetAddress.getLoopbackAddress(), owner2);
+        final Queue<IPData> queueData = instance.addIpListener(InetAddress.getLoopbackAddress(), owner2);
         assertNotNull(queueData);
         
         UUID msgId = UUID.randomUUID();
-        final Queue<Message> queueMsg = instance.addUUIDListener(msgId, owner1);
+        final Queue<IIdentifiable> queueMsg = instance.addIdListener(msgId, owner1);
         assertNotNull(queueMsg);
 
         final Communicator c = new Communicator(InetAddress.getLoopbackAddress(), PORT);
@@ -57,10 +58,10 @@ public class ServerSocketTest {
         c.sendData(data2);
         c.sendData(m);
                 
-        assertEquals(2, queueData.size());        
+        assertEquals(3, queueData.size());        
 
-        final Object o1 = queueData.poll();
-        final Object o2 = queueData.poll();
+        final Object o1 = queueData.poll().getData();
+        final Object o2 = queueData.poll().getData();
         if (o1 instanceof String) {
             assertEquals(o1, data1);
             assertEquals(o2, data2);
@@ -70,7 +71,7 @@ public class ServerSocketTest {
         }
         
         assertEquals(1, queueMsg.size());
-        final Message m2 = queueMsg.poll();
+        final IIdentifiable m2 = queueMsg.poll();
         assertEquals(m, m2);
     }
 }

@@ -1,7 +1,7 @@
 package cz.tul.comm.socket;
 
+import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.IService;
-import cz.tul.comm.messaging.Message;
 import cz.tul.comm.socket.queue.IListener;
 import cz.tul.comm.socket.queue.ObjectQueue;
 import java.io.IOException;
@@ -9,7 +9,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Queue;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -24,11 +23,11 @@ import java.util.logging.Logger;
  */
 public class ServerSocket extends Thread implements IService, IListenerRegistrator {
 
-    private static final Logger log = Logger.getLogger(ServerSocket.class.getName());
+    private static final Logger log = Logger.getLogger(ServerSocket.class.getName());    
     private final java.net.ServerSocket socket;
-    private final ExecutorService exec;
-    private final ObjectQueue<UUID, IListener<UUID, Message>, Message> msgStorage;
-    private final ObjectQueue<InetAddress, IListener<InetAddress, Object>, Object> dataStorage;
+    private final ExecutorService exec;    
+    private final ObjectQueue<IPData> dataStorageIP;
+    private final ObjectQueue<IIdentifiable> dataStorageId;
     private boolean run;
 
     private ServerSocket(final int port) {
@@ -39,40 +38,40 @@ public class ServerSocket extends Thread implements IService, IListenerRegistrat
             log.log(Level.SEVERE, "Error creating socket on port " + port, ex);
         }
         socket = s;
-        exec = Executors.newCachedThreadPool();
-        msgStorage = new ObjectQueue<>();
-        dataStorage = new ObjectQueue<>();
+        exec = Executors.newCachedThreadPool();        
+        dataStorageIP = new ObjectQueue<>();
+        dataStorageId = new ObjectQueue<>();
         run = true;
     }
 
     @Override
-    public Queue<Object> addDataListener(final InetAddress address, final IListener<InetAddress, Object> dataListener) {
-        return dataStorage.registerListener(address, dataListener);
+    public Queue<IPData> addIpListener(final InetAddress address, final IListener dataListener) {        
+        return dataStorageIP.registerListener(address, dataListener);
     }
 
     @Override
-    public void removeDataListener(InetAddress address, IListener<InetAddress, Object> dataListener) {
-        dataStorage.deregisterListener(address, dataListener);
+    public void removeIpListener(InetAddress address, IListener dataListener) {
+        dataStorageIP.deregisterListener(address, dataListener);
     }
 
     @Override
-    public void removeDataListener(IListener<InetAddress, Object> dataListener) {
-        dataStorage.deregisterListener(dataListener);
+    public void removeIpListener(IListener dataListener) {
+        dataStorageIP.deregisterListener(dataListener);
     }
 
     @Override
-    public Queue<Message> addUUIDListener(final UUID id, final IListener<UUID, Message> idListener) {
-        return msgStorage.registerListener(id, idListener);
+    public Queue<IIdentifiable> addIdListener(final Object id, final IListener idListener) {
+        return dataStorageId.registerListener(id, idListener);
     }
 
     @Override
-    public void removeUUIDListener(UUID id, IListener<UUID, Message> idListener) {
-        msgStorage.deregisterListener(id, idListener);
+    public void removeIdListener(Object id, IListener idListener) {
+        dataStorageId.deregisterListener(id, idListener);
     }
 
     @Override
-    public void removeUUIDListener(IListener<UUID, Message> idListener) {
-        msgStorage.deregisterListener(idListener);
+    public void removeIdListener(IListener idListener) {
+        dataStorageId.deregisterListener(idListener);
     }
 
     @Override
@@ -81,7 +80,7 @@ public class ServerSocket extends Thread implements IService, IListenerRegistrat
         while (run) {
             try {
                 s = socket.accept();
-                exec.execute(new SocketReader(s, msgStorage, dataStorage));
+                exec.execute(new SocketReader(s, dataStorageIP, dataStorageId));
             } catch (SocketException ex) {
                 // nothing bad happened
                 // required for proper shutdown

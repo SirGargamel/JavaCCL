@@ -4,8 +4,8 @@ package cz.tul.comm.socket.queue;
  *
  * @author Petr Ječmen
  */
-public interface IListener<I, D> {
+public interface IListener {
     
-    void receiveData(final I id, final D data);
+    void receiveData(final IIdentifiable data);
     
 }
