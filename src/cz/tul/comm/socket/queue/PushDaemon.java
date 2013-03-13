@@ -55,7 +55,7 @@ public class PushDaemon<O extends IIdentifiable> extends Thread implements IServ
     @Override
     public void run() {
         Queue<O> q;
-        IIdentifiable o;
+        IIdentifiable object;
         while (run) {
             for (Map<IListener, Queue<O>> m : data) {
                 for (IListener l : m.keySet()) {
@@ -63,9 +63,9 @@ public class PushDaemon<O extends IIdentifiable> extends Thread implements IServ
                         q = m.get(l);
 
                         while (!q.isEmpty()) {
-                            o = q.poll();
-                            if (receivers.get(l).contains(o.getId())) {
-                                exec.execute(new Notifier(l, o));
+                            object = q.poll();
+                            if (receivers.get(l).contains(object.getId())) {
+                                exec.execute(new Notifier(l, object));
                             }
                         }
                     }
