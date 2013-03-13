@@ -1,5 +1,6 @@
 package cz.tul.comm.socket;
 
+import cz.tul.comm.history.History;
 import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.socket.queue.ObjectQueue;
 import java.io.IOException;
@@ -47,11 +48,11 @@ public class SocketReader implements Runnable {
     public void run() {
         boolean dataReadAndHandled = false;
 
-        try {
-            final InetAddress ip = socket.getInetAddress();
-
+        final InetAddress ip = socket.getInetAddress();
+        Object o = null;
+        try {          
             final ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-            final Object o = in.readObject();
+            o = in.readObject();
             if (o instanceof IIdentifiable) {
                 dataStorageId.storeData((IIdentifiable) o);
             }
@@ -69,5 +70,7 @@ public class SocketReader implements Runnable {
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error writing result data to socket.", ex);
         }
+        
+        History.logMessageReceived(ip, o, dataReadAndHandled);
     }
 }

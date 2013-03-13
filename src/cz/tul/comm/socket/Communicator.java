@@ -1,5 +1,6 @@
 package cz.tul.comm.socket;
 
+import cz.tul.comm.history.History;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -54,6 +55,8 @@ public final class Communicator {
         } catch (IOException ex) {
             log.log(Level.WARNING, "Cannot write to output socket", ex);            
         }
+        
+        History.logMessageSend(address, data, result);
 
         return result;
     }

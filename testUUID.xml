@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<History>
+  <Group UUID="2b359980-b81b-4e43-a721-a4c848b50cfe">
+    <Record>
+      <IPSource>169.254.207.120</IPSource>
+      <IPDestination>3.1.1.1</IPDestination>
+      <Time>2013-03-13 9:40:17:994 CET</Time>
+      <Accepted>true</Accepted>
+      <Message>
+        <UUID>2b359980-b81b-4e43-a721-a4c848b50cfe</UUID>
+        <Header>h1</Header>
+        <String>d1</String>
+      </Message>
+    </Record>
+    <Record>
+      <IPSource>169.254.207.120</IPSource>
+      <IPDestination>2.1.1.1</IPDestination>
+      <Time>2013-03-13 9:40:17:644 CET</Time>
+      <Accepted>true</Accepted>
+      <Message>
+        <UUID>2b359980-b81b-4e43-a721-a4c848b50cfe</UUID>
+        <Header>h1</Header>
+        <String>d1</String>
+      </Message>
+    </Record>
+  </Group>
+  <Group UUID="3a7e27b9-9e9f-46f3-b3ff-9c2de46872ee">
+    <Record>
+      <IPSource>3.1.1.1</IPSource>
+      <IPDestination>169.254.207.120</IPDestination>
+      <Time>2013-03-13 9:40:17:794 CET</Time>
+      <Accepted>true</Accepted>
+      <Message>
+        <UUID>3a7e27b9-9e9f-46f3-b3ff-9c2de46872ee</UUID>
+        <Header>h2</Header>
+        <String>d2</String>
+      </Message>
+    </Record>
+    <Record>
+      <IPSource>1.1.1.1</IPSource>
+      <IPDestination>169.254.207.120</IPDestination>
+      <Time>2013-03-13 9:40:17:644 CET</Time>
+      <Accepted>true</Accepted>
+      <Message>
+        <UUID>3a7e27b9-9e9f-46f3-b3ff-9c2de46872ee</UUID>
+        <Header>h2</Header>
+        <String>d2</String>
+      </Message>
+    </Record>
+    <Record>
+      <IPSource>2.1.1.1</IPSource>
+      <IPDestination>169.254.207.120</IPDestination>
+      <Time>2013-03-13 9:40:17:544 CET</Time>
+      <Accepted>true</Accepted>
+      <Message>
+        <UUID>3a7e27b9-9e9f-46f3-b3ff-9c2de46872ee</UUID>
+        <Header>h2</Header>
+        <String>d2</String>
+      </Message>
+    </Record>
+  </Group>
+</History>
