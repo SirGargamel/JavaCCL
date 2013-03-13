@@ -55,11 +55,11 @@ public class ObjectQueueTest {
         final UUID id2 = UUID.randomUUID();
         final UUID id3 = UUID.randomUUID();
 
-        final Queue<IIdentifiable> q1 = queue.registerListener(id1, l1);
-        final Queue<IIdentifiable> q2 = queue.registerListener(id2, l1);
-        final Queue<IIdentifiable> q3 = queue.registerListener(id2, l2);
+        final Queue<IIdentifiable> q1 = queue.registerListener(id1, l1, false);
+        final Queue<IIdentifiable> q2 = queue.registerListener(id2, l1, false);
+        final Queue<IIdentifiable> q3 = queue.registerListener(id2, l2, false);
         assertNotSame(q2, q3);
-        queue.registerListener(id3, l2);
+        queue.registerListener(id3, l2, false);
 
         final Message m1 = new Message(id1, "m1", "1");
         final Message m2 = new Message(id2, "m2", "2");

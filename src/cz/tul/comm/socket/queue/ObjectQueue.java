@@ -1,5 +1,7 @@
 package cz.tul.comm.socket.queue;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,10 +13,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class ObjectQueue<O extends IIdentifiable> {
 
-    private Map<Object, Map<IListener, Queue<O>>> data;
+    private final Map<Object, Map<IListener, Queue<O>>> data;    
+    private final PushDaemon<O> pushDaemon;
 
     public ObjectQueue() {
-        data = new ConcurrentHashMap<>();
+        data = new ConcurrentHashMap<>();        
+        pushDaemon = new PushDaemon<>(getDataQueues());        
     }
 
     public Queue<O> getDataQueue(final Object id, final IListener owner) {
@@ -28,7 +32,7 @@ public class ObjectQueue<O extends IIdentifiable> {
         return result;
     }
 
-    public Queue<O> registerListener(final Object id, final IListener owner) {
+    public Queue<O> registerListener(final Object id, final IListener owner, final boolean wantsPush) {
         Queue<O> result = new ConcurrentLinkedQueue<>();
 
         Map<IListener, Queue<O>> m = data.get(id);
@@ -38,6 +42,10 @@ public class ObjectQueue<O extends IIdentifiable> {
         }
 
         m.put(owner, result);
+        
+        if (wantsPush) {
+            pushDaemon.addPushReceiver(owner, id);            
+        }
 
         return result;
     }
@@ -47,12 +55,14 @@ public class ObjectQueue<O extends IIdentifiable> {
         if (m != null) {
             m.remove(owner);
         }
+        pushDaemon.removePushReceiver(owner, id);
     }
 
     public void deregisterListener(final IListener owner) {
         for (Map<IListener, Queue<O>> m : data.values()) {
             m.remove(owner);
         }
+        pushDaemon.removePushReceiver(owner, null);
     }
 
     public void storeData(final O data) {
@@ -62,5 +72,12 @@ public class ObjectQueue<O extends IIdentifiable> {
                 q.add(data);
             }
         }
+        if (!pushDaemon.isAlive()) {
+            pushDaemon.start();
+        }
+    }
+
+    private Collection<Map<IListener, Queue<O>>> getDataQueues() {
+        return Collections.unmodifiableCollection(data.values());
     }
 }

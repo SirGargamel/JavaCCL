@@ -50,8 +50,8 @@ public class ServerSocket extends Thread implements IService, IListenerRegistrat
     }
 
     @Override
-    public Queue<IPData> addIpListener(final InetAddress address, final IListener dataListener) {
-        return dataStorageIP.registerListener(address, dataListener);
+    public Queue<IPData> addIpListener(final InetAddress address, final IListener dataListener, final boolean wantsPushNotifications) {
+        return dataStorageIP.registerListener(address, dataListener, wantsPushNotifications);
     }
 
     @Override
@@ -64,8 +64,8 @@ public class ServerSocket extends Thread implements IService, IListenerRegistrat
     }
 
     @Override
-    public Queue<IIdentifiable> addIdListener(final Object id, final IListener idListener) {
-        return dataStorageId.registerListener(id, idListener);
+    public Queue<IIdentifiable> addIdListener(final Object id, final IListener idListener, final boolean wantsPushNotifications) {
+        return dataStorageId.registerListener(id, idListener, wantsPushNotifications);
     }
 
     @Override

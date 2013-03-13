@@ -12,11 +12,11 @@ import java.util.Queue;
  */
 public interface IListenerRegistrator {
 
-    Queue<IPData> addIpListener(final InetAddress address, final IListener dataListener);
+    Queue<IPData> addIpListener(final InetAddress address, final IListener dataListener, final boolean wantsPushNotifications);
 
     void removeIpListener(final InetAddress address, final IListener dataListener);    
 
-    Queue<IIdentifiable> addIdListener(final Object id, final IListener idListener);
+    Queue<IIdentifiable> addIdListener(final Object id, final IListener idListener, final boolean wantsPushNotifications);
 
     void removeIdListener(final Object id, final IListener idListener);   
     

@@ -41,11 +41,11 @@ public class ServerSocketTest {
         };
 
         final ServerSocket instance = ServerSocket.createServerSocket(PORT);        
-        final Queue<IPData> queueData = instance.addIpListener(InetAddress.getLoopbackAddress(), owner2);
+        final Queue<IPData> queueData = instance.addIpListener(InetAddress.getLoopbackAddress(), owner2, false);
         assertNotNull(queueData);
         
         UUID msgId = UUID.randomUUID();
-        final Queue<IIdentifiable> queueMsg = instance.addIdListener(msgId, owner1);
+        final Queue<IIdentifiable> queueMsg = instance.addIdListener(msgId, owner1, false);
         assertNotNull(queueMsg);
 
         final Communicator c = new Communicator(InetAddress.getLoopbackAddress(), PORT);
