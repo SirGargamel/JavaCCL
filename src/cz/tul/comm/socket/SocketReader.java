@@ -8,6 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Observable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,7 +17,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class SocketReader implements Runnable {
+public class SocketReader extends Observable implements Runnable {
 
     private static final Logger log = Logger.getLogger(SocketReader.class.getName());
     private final Socket socket;
@@ -52,7 +53,11 @@ public class SocketReader implements Runnable {
         Object o = null;
         try {          
             final ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-            o = in.readObject();
+            o = in.readObject();    
+            
+            setChanged();
+            this.notifyObservers(o);
+            
             if (o instanceof IIdentifiable) {
                 dataStorageId.storeData((IIdentifiable) o);
             }
