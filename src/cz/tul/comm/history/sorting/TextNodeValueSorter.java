@@ -10,6 +10,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
+ * Sorter for XML data according to given Node. Data will be sorted according to
+ * text value of given node.
  *
  * @author Petr Ječmen
  */
@@ -17,6 +19,9 @@ public class TextNodeValueSorter extends HistorySorter {
 
     private final String nodeName;
 
+    /**
+     * @param nodeName name of the node which will be used for sorting.
+     */
     public TextNodeValueSorter(final String nodeName) {
         this.nodeName = nodeName;
     }
@@ -48,7 +53,7 @@ public class TextNodeValueSorter extends HistorySorter {
         String result = "";
 
         if (element instanceof Element) {
-            final Element e = (Element) element;            
+            final Element e = (Element) element;
             NodeList nl = e.getElementsByTagName(nodeName);
             if (nl.getLength() > 0) {
                 Node n = nl.item(0);

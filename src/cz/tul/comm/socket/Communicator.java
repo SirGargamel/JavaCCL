@@ -26,10 +26,16 @@ public final class Communicator {
     private final InetAddress address;
     private final int port;
 
+    /**
+     * New instacnce of communicator sending data to given IP and port
+     *
+     * @param address target IP
+     * @param port target port
+     */
     public Communicator(final InetAddress address, final int port) {
-        if (address == null) {            
+        if (address == null) {
             throw new IllegalArgumentException("Invalid address \"" + address + "\"");
-        } else if (port < 0 || port > 65535) {            
+        } else if (port < 0 || port > 65535) {
             throw new IllegalArgumentException("Invalid port \"" + port + "\"");
         }
 
@@ -37,10 +43,20 @@ public final class Communicator {
         this.port = port;
     }
 
+    /**
+     *
+     * @return target IP address
+     */
     public InetAddress getAddress() {
         return address;
     }
 
+    /**
+     * Send data to given target.
+     *
+     * @param data data for sending (must implement Serializable interface)
+     * @return true for successfull send
+     */
     public boolean sendData(final Object data) {
         boolean result = false;
         try (final Socket s = new Socket(address, port)) {
@@ -50,12 +66,12 @@ public final class Communicator {
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                 result = in.readBoolean();
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Error receiving response from output socket", ex);                                
+                log.log(Level.WARNING, "Error receiving response from output socket", ex);
             }
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Cannot write to output socket", ex);            
+            log.log(Level.WARNING, "Cannot write to output socket", ex);
         }
-        
+
         History.logMessageSend(address, data, result);
 
         return result;

@@ -18,9 +18,12 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class Comm_Client implements IService {
+public final class Comm_Client implements IService {
 
     private static final Logger log = Logger.getLogger(Comm_Client.class.getName());
+    /**
+     * Default port on which will client listen.
+     */
     public static final int PORT = 5253;
     private final ServerSocket serverSocket;
     private Communicator comm;
@@ -63,30 +66,51 @@ public class Comm_Client implements IService {
         }
     }
 
+    /**
+     *
+     * @param address new IP of server
+     */
     public void setServerAdress(final InetAddress address) {
         settings.setServerAdress(address.getHostAddress());
         prepareServerCommunicator();
     }
 
+    /**
+     *
+     * @param port new server port
+     */
     public void setServerPort(final int port) {
         settings.setServerPort(port);
         prepareServerCommunicator();
     }
 
-    public void sendMessage(final Object data) {
+    /**
+     * Send data to server.
+     *
+     * @param data data for sending
+     */
+    public void sendData(final Object data) {
         if (comm != null) {
             comm.sendData(data);
         }
     }
 
-    public void saveData() {
+    void saveData() {
         SerializationUtils.saveItemToDiscAsXML(new File(Settings.SERIALIZATION_NAME), settings);
     }
-    
+
+    /**
+     * @return interface for listener registration
+     */
     public IListenerRegistrator getListenerRegistrator() {
         return serverSocket;
     }
 
+    /**
+     * Create and initialize new instance of client.
+     *
+     * @return new Client instance
+     */
     public static Comm_Client initNewClient() {
         final Comm_Client result = new Comm_Client();
 

@@ -7,21 +7,25 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
+ * Class for exporting history to XML file.
  *
  * @author Petr Ječmen
  */
-public class Exporter implements IXMLExporter {
-    
+public final class Exporter implements IXMLExporter {
+
     private final Map<Class<?>, IExportUnit> exporters;
-    
+
+    /**
+     * Prepare new Exporter.
+     */
     public Exporter() {
-        exporters = new HashMap<>();                
+        exporters = new HashMap<>();
     }
 
     @Override
     public Element exportObject(Object data, Document doc) {
         Element result;
-        
+
         Class<?> c = data.getClass();
         if (exporters.containsKey(c)) {
             result = exporters.get(c).exportData(doc, data, this);
@@ -29,11 +33,16 @@ public class Exporter implements IXMLExporter {
             result = doc.createElement(data.getClass().getSimpleName());
             result.appendChild(doc.createTextNode(data.toString()));
         }
-        
+
         return result;
     }
-    
-    public void registerExporter(final IExportUnit eu) {
+
+    /**
+     * Register new unit for data exporting.
+     *
+     * @param eu unit for registering
+     */
+    public void registerExporterUnit(final IExportUnit eu) {
         exporters.put(eu.getExportedClass(), eu);
     }
 }

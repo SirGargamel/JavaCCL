@@ -22,6 +22,9 @@ import java.util.logging.Logger;
 public final class Comm_Server implements IService {
 
     private static final Logger log = Logger.getLogger(Comm_Server.class.getName());
+    /**
+     * default port on which server will listen
+     */
     public static final int PORT = 5252;
     private final Settings settings;
     private final ClientDB clients;
@@ -59,28 +62,51 @@ public final class Comm_Server implements IService {
         serverSocket = ServerSocket.createServerSocket(PORT);
     }
 
+    /**
+     * Register new client communicationg on given port and IP.
+     *
+     * @param adress client IP
+     * @param port client port
+     * @return {@link Communicator} class for server/client communication
+     */
     public Communicator registerClient(final InetAddress adress, final int port) {
         Communicator result = clients.registerClient(adress, port);
         return result;
     }
 
+    /**
+     * Register new client communicationg on given IP and on default port.
+     *
+     * @param adress client IP
+     * @return
+     */
     public Communicator registerClient(final InetAddress adress) {
         return registerClient(adress, settings.getDefaultClientPort());
     }
 
+    /**
+     * @param adress client IP
+     */
     public void deregisterClient(final InetAddress adress) {
         clients.deregisterClient(adress);
     }
 
+    /**
+     * @param adress client IP
+     * @return {@link Communicator} for given IP (if is registered)
+     */
     public Communicator getClient(final InetAddress adress) {
         return clients.getClient(adress);
     }
 
+    /**
+     * @return Set of all registered clients
+     */
     public Set<Communicator> getClients() {
         return clients.getClients();
     }
 
-    public void saveData() {
+    void saveData() {
         final Set<String> addresses = settings.getClients();
         addresses.clear();
         for (Communicator c : clients.getClients()) {
@@ -89,11 +115,21 @@ public final class Comm_Server implements IService {
 
         SerializationUtils.saveItemToDiscAsXML(new File(Settings.SERIALIZATION_NAME), settings);
     }
-    
+
+    /**
+     * Interface for registering new data listeners.
+     *
+     * @return
+     */
     public IListenerRegistrator getListenerRegistrator() {
         return serverSocket;
     }
 
+    /**
+     * Create and initialize new instance of server.
+     *
+     * @return new instance of Comm_Server
+     */
     public static Comm_Server initNewServer() {
         final Comm_Server result = new Comm_Server();
 

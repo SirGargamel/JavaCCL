@@ -27,6 +27,13 @@ public abstract class SerializationUtils {
 
     private static final Logger log = Logger.getLogger(SerializationUtils.class.getName());
 
+    /**
+     *
+     * @param dest target file
+     * @param data object for saving
+     * @return true for successfull saving
+     * @throws IOException target file could not be accessed
+     */
     public static boolean saveItemToDisc(final File dest, final Object data) throws IOException {
         boolean result = false;
         if (data instanceof Serializable) {
@@ -49,6 +56,12 @@ public abstract class SerializationUtils {
         return result;
     }
 
+    /**
+     *
+     * @param dest target file
+     * @param data object for saving
+     * @return true for successfull saving
+     */
     public static boolean saveItemToDiscAsXML(final File dest, final Object data) {
         boolean result = false;
         if (data instanceof Serializable) {
@@ -79,6 +92,12 @@ public abstract class SerializationUtils {
         return result;
     }
 
+    /**
+     * Load object from file created by ObjectOutputStream
+     *
+     * @param src source file
+     * @return deserialized object
+     */
     public static Object loadItemFromDisc(final File src) {
         Object result = null;
 
@@ -93,6 +112,12 @@ public abstract class SerializationUtils {
         return result;
     }
 
+    /**
+     * Load object from file created by XMLEncoder
+     *
+     * @param src source file
+     * @return deserialized object
+     */
     public static Object loadXMLItemFromDisc(final File src) {
         Object result = null;
 

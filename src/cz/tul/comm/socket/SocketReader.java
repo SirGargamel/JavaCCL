@@ -17,13 +17,21 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class SocketReader extends Observable implements Runnable {
+class SocketReader extends Observable implements Runnable {
 
     private static final Logger log = Logger.getLogger(SocketReader.class.getName());
     private final Socket socket;
     private final ObjectQueue<IPData> dataStorageIP;
     private final ObjectQueue<IIdentifiable> dataStorageId;
 
+    /**
+     * Create reader, which can read data from socket, tell sender outcome of
+     * data reading and store data accoring to IP and ID.
+     *
+     * @param socket socket for reading
+     * @param dataStorageIP IP listeners storage
+     * @param dataStorageId ID listeners storage
+     */
     public SocketReader(
             final Socket socket,
             final ObjectQueue<IPData> dataStorageIP,
@@ -51,13 +59,13 @@ public class SocketReader extends Observable implements Runnable {
 
         final InetAddress ip = socket.getInetAddress();
         Object o = null;
-        try {          
+        try {
             final ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-            o = in.readObject();    
-            
+            o = in.readObject();
+
             setChanged();
             this.notifyObservers(o);
-            
+
             if (o instanceof IIdentifiable) {
                 dataStorageId.storeData((IIdentifiable) o);
             }
@@ -75,7 +83,7 @@ public class SocketReader extends Observable implements Runnable {
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error writing result data to socket.", ex);
         }
-        
+
         History.logMessageReceived(ip, o, dataReadAndHandled);
     }
 }

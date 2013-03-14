@@ -15,16 +15,16 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public final class ClientDB {
+final class ClientDB {
 
     private static final Logger log = Logger.getLogger(Communicator.class.getName());
     private final Set<Communicator> clients;
 
-    public ClientDB() {
+    ClientDB() {
         clients = Collections.synchronizedSet(new HashSet<Communicator>());
     }
 
-    public Communicator registerClient(final InetAddress adress, final int port) {
+    Communicator registerClient(final InetAddress adress, final int port) {
         Communicator cc = getClient(adress);
         if (cc == null) {
             try {
@@ -38,7 +38,7 @@ public final class ClientDB {
         return cc;
     }
 
-    public void deregisterClient(final InetAddress adress) {
+    void deregisterClient(final InetAddress adress) {
         final Iterator<Communicator> i = clients.iterator();
         while (i.hasNext()) {
             if (i.next().getAddress().equals(adress)) {
@@ -49,7 +49,7 @@ public final class ClientDB {
 
     }
 
-    public Communicator getClient(final InetAddress adress) {
+    Communicator getClient(final InetAddress adress) {
         for (Communicator cc : clients) {
             if (cc.getAddress().equals(adress)) {
                 return cc;
@@ -58,7 +58,7 @@ public final class ClientDB {
         return null;
     }
 
-    public Set<Communicator> getClients() {
+    Set<Communicator> getClients() {
         return Collections.unmodifiableSet(clients);
     }
 }

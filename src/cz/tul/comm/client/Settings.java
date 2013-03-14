@@ -9,32 +9,32 @@ import java.net.InetAddress;
  * loopback adress (eg. server and client are run on same machine).
  * @author Petr Ječmen
  */
-public class Settings implements Serializable {
+final class Settings implements Serializable {
 
-    public static final String SERIALIZATION_NAME = "clientSettings.xml";
+    static final String SERIALIZATION_NAME = "clientSettings.xml";
     private static final long serialVersionUID = 2L;
     private static final String DEFAULT_IP = InetAddress.getLoopbackAddress().getHostAddress();
     private String serverAdress;
     private int serverPort;
 
-    public Settings() {
+    Settings() {
         serverAdress = DEFAULT_IP;
         serverPort = Comm_Server.PORT;
     }
 
-    public String getServerAdress() {
+    String getServerAdress() {
         return serverAdress;
     }
 
-    public void setServerAdress(String serverAdress) {
+    void setServerAdress(String serverAdress) {
         this.serverAdress = serverAdress;
     }
 
-    public int getServerPort() {
+    int getServerPort() {
         return serverPort;
     }
 
-    public void setServerPort(int serverPort) {
+    void setServerPort(int serverPort) {
         this.serverPort = serverPort;
     }
 }

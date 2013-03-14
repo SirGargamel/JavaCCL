@@ -29,10 +29,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
+ * Class for storing information about sent and received messages.
  *
  * @author Gargamel
  */
-public class History {
+public abstract class History {
 
     private static final Logger log = Logger.getLogger(History.class.getName());
     private static final String TIME_PATTERN = "yyyy-MM-dd H:m:s:S z";
@@ -54,22 +55,43 @@ public class History {
         localHost = local;
 
         exporter = new Exporter();
-        exporter.registerExporter(new ExportMessage());
+        exporter.registerExporterUnit(new ExportMessage());
     }
 
+    /**
+     * Log that message has been sent.
+     *
+     * @param ipDestination target IP
+     * @param data transmitted data
+     * @param accepted true if data has been sent successfully
+     */
     public static void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted) {
         records.add(new Record(localHost, ipDestination, data, accepted));
     }
 
+    /**
+     * Log that message has been received.
+     *
+     * @param ipSource source IP
+     * @param data transmitted data
+     * @param accepted true if data has been received successfully
+     */
     public static void logMessageReceived(final InetAddress ipSource, final Object data, final boolean accepted) {
         records.add(new Record(ipSource, localHost, data, accepted));
     }
 
+    /**
+     * Export sorted history to XML file.
+     *
+     * @param target target file
+     * @param sorter sorter, which will sort data according to some parameter.
+     * @return true for successfull export
+     */
     public static boolean export(final File target, final HistorySorter sorter) {
         boolean result = false;
 
         try {
-            final Document doc = prepareDocument();          
+            final Document doc = prepareDocument();
             final Element rootElement = createRootElement(doc);
 
             if (sorter != null) {
@@ -119,6 +141,12 @@ public class History {
         transformer.transform(source, output);
     }
 
+    /**
+     * Export history as is to XML file.
+     *
+     * @param target target file
+     * @return true for successfull export.
+     */
     public static boolean export(final File target) {
         return export(target, null);
     }
@@ -143,7 +171,12 @@ public class History {
         n.appendChild(e);
     }
 
+    /**
+     * Register new {@link IExportUnit}.
+     *
+     * @param eu new export unit
+     */
     public static void registerExporter(final IExportUnit eu) {
-        exporter.registerExporter(eu);
+        exporter.registerExporterUnit(eu);
     }
 }

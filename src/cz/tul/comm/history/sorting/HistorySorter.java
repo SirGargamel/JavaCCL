@@ -8,13 +8,30 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
+ * Abstract class defining interface for history sorters, which will sort XML
+ * nodes according to given parameter.
  *
  * @author Petr Ječmen
  */
 public abstract class HistorySorter {
 
+    /**
+     * Sort child {@link Element}s and sort them according to given parameter.
+     *
+     * @param rootElement element containing data for sorting
+     * @param doc target XML document
+     * @return New History element, in which all children are sorted.
+     */
     public abstract Element sortHistory(final Element rootElement, final Document doc);
 
+    /**
+     * Take {@link SortedMap} filled with data and export it to XML document.
+     *
+     * @param doc target XML document
+     * @param data {@link SortedMap} filled with data
+     * @param idName name of the ID used for sorting.
+     * @return Element caled "History" filled with sorted data.
+     */
     protected Element storeMapToNode(final Document doc, SortedMap<Object, List<Node>> data, final String idName) {
         final Element result = doc.createElement("History");
 

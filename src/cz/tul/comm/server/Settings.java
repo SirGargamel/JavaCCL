@@ -9,31 +9,31 @@ import java.util.Set;
  * Settings for server part.
  * @author Petr Ječmen
  */
-public class Settings implements Serializable {
+final class Settings implements Serializable {
 
-    public static final String SERIALIZATION_NAME = "serverSettings.xml";
+    static final String SERIALIZATION_NAME = "serverSettings.xml";
     private static final long serialVersionUID = 2L;
     private Set<String> clients;
     private int defaultClientPort;
 
-    public Settings() {
+    Settings() {
         clients = new HashSet<>();
         defaultClientPort = Comm_Client.PORT;
     }
 
-    public Set<String> getClients() {
+    Set<String> getClients() {
         return clients;
     }
 
-    public void setClients(Set<String> clients) {
+    void setClients(Set<String> clients) {
         this.clients = clients;
     }
 
-    public int getDefaultClientPort() {
+    int getDefaultClientPort() {
         return defaultClientPort;
     }
 
-    public void setDefaultClientPort(int defaultClientPort) {
+    void setDefaultClientPort(int defaultClientPort) {
         this.defaultClientPort = defaultClientPort;
     }
 

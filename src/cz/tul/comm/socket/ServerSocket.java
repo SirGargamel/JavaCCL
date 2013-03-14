@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class ServerSocket extends Thread implements IService, IListenerRegistrator {
+public final class ServerSocket extends Thread implements IService, IListenerRegistrator {
 
     private static final Logger log = Logger.getLogger(ServerSocket.class.getName());
     private final java.net.ServerSocket socket;
@@ -76,7 +76,7 @@ public class ServerSocket extends Thread implements IService, IListenerRegistrat
             dataStorageId.deregisterListener(idListener);
         }
     }
-    
+
     @Override
     public void registerMessageObserver(Observer msgObserver) {
         dataListeners.add(msgObserver);
@@ -109,6 +109,12 @@ public class ServerSocket extends Thread implements IService, IListenerRegistrat
         exec.shutdownNow();
     }
 
+    /**
+     * Prepare new ServerSocket.
+     *
+     * @param port listening port
+     * @return new instance of ServerSocket
+     */
     public static ServerSocket createServerSocket(final int port) {
         ServerSocket result = new ServerSocket(port);
         result.start();
@@ -123,5 +129,5 @@ public class ServerSocket extends Thread implements IService, IListenerRegistrat
             log.log(Level.WARNING, "Server socket IO error occured during socket closing.", ex);
         }
         run = false;
-    }    
+    }
 }

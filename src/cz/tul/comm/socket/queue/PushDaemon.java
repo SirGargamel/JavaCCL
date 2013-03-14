@@ -13,26 +13,27 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Daemon alerting listeners that they have unhandled data in queues.
  *
  * @author Petr Ječmen
  */
-public class PushDaemon<O extends IIdentifiable> extends Thread implements IService {
+final class PushDaemon<O extends IIdentifiable> extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(PushDaemon.class.getName());
-    private static final int TIME_WAIT = 250;
+    private static final int TIME_WAIT = 1000;
     private final Collection<Map<IListener, Queue<O>>> data;
     private final Map<IListener, List<Object>> receivers;
     private final ExecutorService exec;
     private boolean run;
 
-    public PushDaemon(final Collection<Map<IListener, Queue<O>>> data) {
+    PushDaemon(final Collection<Map<IListener, Queue<O>>> data) {
         this.data = data;
         receivers = new HashMap<>();
         exec = Executors.newCachedThreadPool();
         run = true;
     }
 
-    public void addPushReceiver(final IListener receiver, final Object id) {
+    void addPushReceiver(final IListener receiver, final Object id) {
         List<Object> l = receivers.get(receiver);
         if (l == null) {
             l = new ArrayList<>();
@@ -41,7 +42,7 @@ public class PushDaemon<O extends IIdentifiable> extends Thread implements IServ
         l.add(id);
     }
 
-    public void removePushReceiver(final IListener receiver, final Object id) {
+    void removePushReceiver(final IListener receiver, final Object id) {
         if (id == null) {
             receivers.remove(receiver);
         } else {

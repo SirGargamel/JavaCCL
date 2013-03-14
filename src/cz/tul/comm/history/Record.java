@@ -5,7 +5,6 @@
 package cz.tul.comm.history;
 
 import java.net.InetAddress;
-import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -20,7 +19,7 @@ public class Record {
     private final Date time;
     private final boolean accepted;
 
-    public Record(InetAddress ipSource, InetAddress ipDestination, Object data, final boolean accepted) {
+    Record(InetAddress ipSource, InetAddress ipDestination, Object data, final boolean accepted) {
         this.ipSource = ipSource;
         this.ipDestination = ipDestination;
         this.data = data;
@@ -29,23 +28,23 @@ public class Record {
         time = new Date();
     }    
 
-    public InetAddress getIpSource() {
+    InetAddress getIpSource() {
         return ipSource;
     }
 
-    public InetAddress getIpDestination() {
+    InetAddress getIpDestination() {
         return ipDestination;
     }
 
-    public Object getData() {
+    Object getData() {
         return data;
     }
 
-    public Date getTime() {
+    Date getTime() {
         return time;
     }
 
-    public boolean wasAccepted() {
+    boolean wasAccepted() {
         return accepted;
     }
 }

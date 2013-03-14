@@ -10,6 +10,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
+ * Sorter for XML data according to IP address of source or receiver.
  *
  * @author Petr Ječmen
  */
@@ -24,6 +25,9 @@ public class IPSorter extends HistorySorter {
     private static final int IP_PART_SIZE = 3;
     private final String nodeName;
 
+    /**
+     * @param byDestination true for sorting by IP of receiver
+     */
     public IPSorter(final boolean byDestination) {
         if (byDestination) {
             nodeName = NAME_DEST;
@@ -59,7 +63,7 @@ public class IPSorter extends HistorySorter {
         String result = "";
 
         if (element instanceof Element) {
-            final Element e = (Element) element;            
+            final Element e = (Element) element;
             NodeList nl = e.getElementsByTagName(nodeName);
             if (nl.getLength() > 0) {
                 Node n = nl.item(0);
@@ -73,10 +77,10 @@ public class IPSorter extends HistorySorter {
 
         return result;
     }
-    
+
     private static String normalizeIP(final String ip) {
         StringBuilder sb = new StringBuilder();
-        
+
         String[] parts = ip.split(IP_DELIMITER_REGEX);
         if (parts.length == IP_PART_COUNT) {
             for (int i = 0; i < IP_PART_COUNT; i++) {
@@ -90,8 +94,8 @@ public class IPSorter extends HistorySorter {
         } else {
             sb.append(ip);
         }
-        
-        
+
+
         return sb.toString();
     }
 }

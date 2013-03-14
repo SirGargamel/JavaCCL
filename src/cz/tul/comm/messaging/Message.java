@@ -7,15 +7,22 @@ import java.util.UUID;
 
 /**
  * Basic communication object between server and client.
+ *
  * @author Petr Ječmen
  */
 public class Message implements Serializable, IIdentifiable {
-    private static final long serialVersionUID = 1L;
 
+    private static final long serialVersionUID = 1L;
     private final UUID id;
     private final String header;
     private final Object data;
 
+    /**
+     *
+     * @param id UUID of message
+     * @param header message description
+     * @param data message data
+     */
     public Message(final UUID id, final String header, final Object data) {
         if (!(data instanceof Serializable)) {
             throw new IllegalArgumentException("Data object needs to implement Serializable interface in order to be able to send it.");
@@ -25,7 +32,12 @@ public class Message implements Serializable, IIdentifiable {
         this.header = header;
         this.data = data;
     }
-    
+
+    /**
+     *
+     * @param header message description
+     * @param data message data
+     */
     public Message(final String header, final Object data) {
         this(UUID.randomUUID(), header, data);
     }
@@ -35,10 +47,18 @@ public class Message implements Serializable, IIdentifiable {
         return id;
     }
 
+    /**
+     *
+     * @return message description
+     */
     public String getHeader() {
         return header;
     }
 
+    /**
+     *
+     * @return message data
+     */
     public Object getData() {
         return data;
     }
@@ -49,19 +69,19 @@ public class Message implements Serializable, IIdentifiable {
         result.append(header);
         result.append(" - ");
         result.append(data.toString());
-        
+
         return result.toString();
-    }      
-    
+    }
+
     @Override
     public boolean equals(Object o) {
         boolean result = false;
-        
+
         if (o instanceof Message) {
-            final Message m = (Message) o;            
+            final Message m = (Message) o;
             result = m.hashCode() == hashCode() ? true : false;
         }
-        
+
         return result;
     }
 
