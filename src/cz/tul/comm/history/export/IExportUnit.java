@@ -1,6 +1,5 @@
 package cz.tul.comm.history.export;
 
-import cz.tul.comm.history.IXMLExporter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -18,10 +17,9 @@ public interface IExportUnit {
      *
      * @param doc target XML document.
      * @param data data for exporting
-     * @param exp XML exporter (for export of unknown data)
      * @return XML element representing given object.
      */
-    Element exportData(final Document doc, final Object data, final IXMLExporter exp);
+    Element exportData(final Document doc, final Object data);
 
     /**
      * @return Class which can be exported using this class.

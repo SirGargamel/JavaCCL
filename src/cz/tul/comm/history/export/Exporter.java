@@ -1,6 +1,5 @@
 package cz.tul.comm.history.export;
 
-import cz.tul.comm.history.IXMLExporter;
 import java.util.HashMap;
 import java.util.Map;
 import org.w3c.dom.Document;
@@ -11,24 +10,29 @@ import org.w3c.dom.Element;
  *
  * @author Petr Ječmen
  */
-public final class Exporter implements IXMLExporter {
+public abstract class Exporter {
 
-    private final Map<Class<?>, IExportUnit> exporters;
+    private static final Map<Class<?>, IExportUnit> exporters;
 
-    /**
-     * Prepare new Exporter.
-     */
-    public Exporter() {
+    static {
         exporters = new HashMap<>();
+
+        registerExporterUnit(new ExportMessage());
     }
 
-    @Override
-    public Element exportObject(Object data, Document doc) {
+    /**
+     * Create XML representation of given object
+     *
+     * @param data object for export
+     * @param doc target XML document
+     * @return XML node containing given objects data
+     */
+    public static Element exportObject(Object data, Document doc) {
         Element result;
 
         Class<?> c = data.getClass();
         if (exporters.containsKey(c)) {
-            result = exporters.get(c).exportData(doc, data, this);
+            result = exporters.get(c).exportData(doc, data);
         } else {
             result = doc.createElement(data.getClass().getSimpleName());
             result.appendChild(doc.createTextNode(data.toString()));
@@ -38,11 +42,11 @@ public final class Exporter implements IXMLExporter {
     }
 
     /**
-     * Register new unit for data exporting.
+     * Register new exporting unit.
      *
-     * @param eu unit for registering
+     * @param eu new exporter class
      */
-    public void registerExporterUnit(final IExportUnit eu) {
+    public static void registerExporterUnit(final IExportUnit eu) {
         exporters.put(eu.getExportedClass(), eu);
     }
 }

@@ -1,6 +1,6 @@
 package cz.tul.comm.history;
 
-import cz.tul.comm.history.export.ExportMessage;
+
 import cz.tul.comm.history.export.Exporter;
 import cz.tul.comm.history.export.IExportUnit;
 import cz.tul.comm.history.sorting.HistorySorter;
@@ -39,8 +39,7 @@ public abstract class History {
     private static final String TIME_PATTERN = "yyyy-MM-dd H:m:s:S z";
     private static final DateFormat df = new SimpleDateFormat(TIME_PATTERN);
     private static final Set<Record> records;
-    private static final InetAddress localHost;
-    private static final Exporter exporter;
+    private static final InetAddress localHost;    
 
     static {
         records = Collections.synchronizedSet(new HashSet<Record>());
@@ -53,9 +52,6 @@ public abstract class History {
             local = InetAddress.getLoopbackAddress();
         }
         localHost = local;
-
-        exporter = new Exporter();
-        exporter.registerExporterUnit(new ExportMessage());
     }
 
     /**
@@ -109,6 +105,16 @@ public abstract class History {
 
         return result;
     }
+    
+    /**
+     * Export history as is to XML file.
+     *
+     * @param target target file
+     * @return true for successfull export.
+     */
+    public static boolean export(final File target) {
+        return export(target, null);
+    }
 
     private static Document prepareDocument() throws ParserConfigurationException {
         final DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -139,17 +145,7 @@ public abstract class History {
         StreamResult output = new StreamResult(target);
 
         transformer.transform(source, output);
-    }
-
-    /**
-     * Export history as is to XML file.
-     *
-     * @param target target file
-     * @return true for successfull export.
-     */
-    public static boolean export(final File target) {
-        return export(target, null);
-    }
+    }    
 
     private static Node convertRecordToXML(final Record r, final Document doc) {
         final Node result = doc.createElement("Record");
@@ -160,7 +156,7 @@ public abstract class History {
         appendStringDataToNode(result, doc, "Time", df.format(r.getTime()));
         appendStringDataToNode(result, doc, "Accepted", String.valueOf(r.wasAccepted()));
 
-        result.appendChild(exporter.exportObject(r.getData(), doc));
+        result.appendChild(Exporter.exportObject(r.getData(), doc));
 
         return result;
     }
@@ -177,6 +173,6 @@ public abstract class History {
      * @param eu new export unit
      */
     public static void registerExporter(final IExportUnit eu) {
-        exporter.registerExporterUnit(eu);
+        Exporter.registerExporterUnit(eu);
     }
 }

@@ -1,7 +1,5 @@
 package cz.tul.comm.history.export;
 
-import cz.tul.comm.history.History;
-import cz.tul.comm.history.IXMLExporter;
 import cz.tul.comm.messaging.Message;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -14,7 +12,7 @@ import org.w3c.dom.Node;
 public class ExportMessage implements IExportUnit {
 
     @Override
-    public Element exportData(Document doc, Object data, final IXMLExporter exp) {
+    public Element exportData(Document doc, Object data) {
         Element result = null;
         if (data instanceof Message) {
             final Message m = (Message) data;
@@ -22,7 +20,7 @@ public class ExportMessage implements IExportUnit {
 
             appendStringDataToNode(result, doc, "UUID", m.getId().toString());
             appendStringDataToNode(result, doc, "Header", m.getHeader());
-            result.appendChild(exp.exportObject(m.getData(), doc));
+            result.appendChild(Exporter.exportObject(m.getData(), doc));
         }
 
         return result;
