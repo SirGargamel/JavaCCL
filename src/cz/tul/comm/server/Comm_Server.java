@@ -3,6 +3,9 @@ package cz.tul.comm.server;
 import cz.tul.comm.IService;
 import cz.tul.comm.SerializationUtils;
 import cz.tul.comm.gui.UserLogging;
+import cz.tul.comm.history.History;
+import cz.tul.comm.history.IHistoryManager;
+import cz.tul.comm.history.sorting.HistorySorter;
 import cz.tul.comm.socket.Communicator;
 import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
@@ -29,6 +32,7 @@ public final class Comm_Server implements IService {
     private final Settings settings;
     private final ClientDB clients;
     private final ServerSocket serverSocket;
+    private final IHistoryManager history;
 
     private Comm_Server() {
         // client DB
@@ -60,6 +64,8 @@ public final class Comm_Server implements IService {
         }));
 
         serverSocket = ServerSocket.createServerSocket(PORT);
+        
+        history = new History();
     }
 
     /**
@@ -69,9 +75,8 @@ public final class Comm_Server implements IService {
      * @param port client port
      * @return {@link Communicator} class for server/client communication
      */
-    public Communicator registerClient(final InetAddress adress, final int port) {
-        Communicator result = clients.registerClient(adress, port);
-        return result;
+    public Communicator registerClient(final InetAddress adress, final int port) {        
+        return clients.registerClient(adress, port);
     }
 
     /**
@@ -105,8 +110,15 @@ public final class Comm_Server implements IService {
     public Set<Communicator> getClients() {
         return clients.getClients();
     }
+    
+    /**     
+     * @return history manager for this client
+     */
+    public IHistoryManager getHistory() {
+        return history;
+    }
 
-    void saveData() {
+    private void saveData() {
         final Set<String> addresses = settings.getClients();
         addresses.clear();
         for (Communicator c : clients.getClients()) {

@@ -1,6 +1,5 @@
 package cz.tul.comm.history;
 
-
 import cz.tul.comm.history.export.Exporter;
 import cz.tul.comm.history.export.IExportUnit;
 import cz.tul.comm.history.sorting.HistorySorter;
@@ -33,15 +32,18 @@ import org.w3c.dom.Node;
  *
  * @author Gargamel
  */
-public abstract class History {
+public final class History implements IHistoryManager {
 
     private static final Logger log = Logger.getLogger(History.class.getName());
     private static final String TIME_PATTERN = "yyyy-MM-dd H:m:s:S z";
     private static final DateFormat df = new SimpleDateFormat(TIME_PATTERN);
-    private static final Set<Record> records;
-    private static final InetAddress localHost;    
+    private final Set<Record> records;
+    private final InetAddress localHost;
 
-    static {
+    /**
+     * New instance of History conainer.
+     */
+    public History() {
         records = Collections.synchronizedSet(new HashSet<Record>());
 
         InetAddress local;
@@ -54,36 +56,18 @@ public abstract class History {
         localHost = local;
     }
 
-    /**
-     * Log that message has been sent.
-     *
-     * @param ipDestination target IP
-     * @param data transmitted data
-     * @param accepted true if data has been sent successfully
-     */
-    public static void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted) {
+    @Override
+    public void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted) {
         records.add(new Record(localHost, ipDestination, data, accepted));
     }
 
-    /**
-     * Log that message has been received.
-     *
-     * @param ipSource source IP
-     * @param data transmitted data
-     * @param accepted true if data has been received successfully
-     */
-    public static void logMessageReceived(final InetAddress ipSource, final Object data, final boolean accepted) {
+    @Override
+    public void logMessageReceived(final InetAddress ipSource, final Object data, final boolean accepted) {
         records.add(new Record(ipSource, localHost, data, accepted));
     }
 
-    /**
-     * Export sorted history to XML file.
-     *
-     * @param target target file
-     * @param sorter sorter, which will sort data according to some parameter.
-     * @return true for successfull export
-     */
-    public static boolean export(final File target, final HistorySorter sorter) {
+    @Override
+    public boolean export(final File target, final HistorySorter sorter) {
         boolean result = false;
 
         try {
@@ -105,14 +89,9 @@ public abstract class History {
 
         return result;
     }
-    
-    /**
-     * Export history as is to XML file.
-     *
-     * @param target target file
-     * @return true for successfull export.
-     */
-    public static boolean export(final File target) {
+
+    @Override
+    public boolean export(final File target) {
         return export(target, null);
     }
 
@@ -124,7 +103,7 @@ public abstract class History {
         return doc;
     }
 
-    private static Element createRootElement(final Document doc) {
+    private Element createRootElement(final Document doc) {
         final Element rootElement = doc.createElement("History");
         doc.appendChild(rootElement);
 
@@ -145,7 +124,7 @@ public abstract class History {
         StreamResult output = new StreamResult(target);
 
         transformer.transform(source, output);
-    }    
+    }
 
     private static Node convertRecordToXML(final Record r, final Document doc) {
         final Node result = doc.createElement("Record");
@@ -167,12 +146,8 @@ public abstract class History {
         n.appendChild(e);
     }
 
-    /**
-     * Register new {@link IExportUnit}.
-     *
-     * @param eu new export unit
-     */
-    public static void registerExporter(final IExportUnit eu) {
+    @Override
+    public void registerExporter(final IExportUnit eu) {
         Exporter.registerExporterUnit(eu);
     }
 }

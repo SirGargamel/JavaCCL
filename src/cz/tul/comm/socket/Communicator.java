@@ -1,6 +1,6 @@
 package cz.tul.comm.socket;
 
-import cz.tul.comm.history.History;
+import cz.tul.comm.history.IHistoryManager;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -25,6 +25,7 @@ public final class Communicator {
     private static final Logger log = Logger.getLogger(Communicator.class.getName());
     private final InetAddress address;
     private final int port;
+    private IHistoryManager hm;
 
     /**
      * New instacnce of communicator sending data to given IP and port
@@ -41,6 +42,15 @@ public final class Communicator {
 
         this.address = address;
         this.port = port;
+    }
+
+    /**
+     * Register history manager that will store info about sent messages.
+     *
+     * @param hm instance of history manager
+     */
+    public void registerHistory(final IHistoryManager hm) {
+        this.hm = hm;
     }
 
     /**
@@ -72,7 +82,9 @@ public final class Communicator {
             log.log(Level.WARNING, "Cannot write to output socket", ex);
         }
 
-        History.logMessageSend(address, data, result);
+        if (hm != null) {
+            hm.logMessageSend(address, data, result);
+        }
 
         return result;
     }

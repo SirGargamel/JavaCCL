@@ -1,6 +1,6 @@
 package cz.tul.comm.socket;
 
-import cz.tul.comm.history.History;
+import cz.tul.comm.history.IHistoryManager;
 import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.socket.queue.ObjectQueue;
 import java.io.IOException;
@@ -23,6 +23,7 @@ class SocketReader extends Observable implements Runnable {
     private final Socket socket;
     private final ObjectQueue<IPData> dataStorageIP;
     private final ObjectQueue<IIdentifiable> dataStorageId;
+    private IHistoryManager hm;
 
     /**
      * Create reader, which can read data from socket, tell sender outcome of
@@ -51,6 +52,15 @@ class SocketReader extends Observable implements Runnable {
         } else {
             throw new IllegalArgumentException("Data storage cannot be null");
         }
+    }
+
+    /**
+     * Register history manager that will store info about received messages.
+     *
+     * @param hm instance of history manager
+     */
+    public void registerHistory(final IHistoryManager hm) {
+        this.hm = hm;
     }
 
     @Override
@@ -84,6 +94,8 @@ class SocketReader extends Observable implements Runnable {
             log.log(Level.WARNING, "Error writing result data to socket.", ex);
         }
 
-        History.logMessageReceived(ip, o, dataReadAndHandled);
+        if (hm != null) {
+            hm.logMessageReceived(ip, o, dataReadAndHandled);
+        }
     }
 }

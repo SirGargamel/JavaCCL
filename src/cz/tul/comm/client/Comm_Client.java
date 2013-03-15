@@ -4,6 +4,9 @@ import cz.tul.comm.socket.Communicator;
 import cz.tul.comm.IService;
 import cz.tul.comm.SerializationUtils;
 import cz.tul.comm.gui.UserLogging;
+import cz.tul.comm.history.History;
+import cz.tul.comm.history.IHistoryManager;
+import cz.tul.comm.history.sorting.HistorySorter;
 import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
@@ -28,6 +31,7 @@ public final class Comm_Client implements IService {
     private final ServerSocket serverSocket;
     private Communicator comm;
     private final Settings settings;
+    private final IHistoryManager history;
 
     private Comm_Client() {
         serverSocket = ServerSocket.createServerSocket(PORT);
@@ -51,6 +55,8 @@ public final class Comm_Client implements IService {
         }));
 
         prepareServerCommunicator();
+        
+        history = new History();
     }
 
     private void prepareServerCommunicator() {
@@ -94,6 +100,13 @@ public final class Comm_Client implements IService {
             comm.sendData(data);
         }
     }
+    
+    /**
+     * @return history manager for this client
+     */
+    public IHistoryManager getHistory() {
+        return history;
+    }
 
     void saveData() {
         SerializationUtils.saveItemToDiscAsXML(new File(Settings.SERIALIZATION_NAME), settings);
@@ -119,7 +132,7 @@ public final class Comm_Client implements IService {
         return result;
     }
 
-    void start() {
+    private void start() {
     }
 
     @Override
