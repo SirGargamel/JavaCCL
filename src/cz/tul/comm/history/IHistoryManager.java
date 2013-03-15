@@ -18,15 +18,7 @@ public interface IHistoryManager {
      * @param sorter sorter, which will sort data according to some parameter.
      * @return true for successfull export
      */
-    boolean export(final File target, final HistorySorter sorter);
-
-    /**
-     * Export history as is to XML file.
-     *
-     * @param target target file
-     * @return true for successfull export.
-     */
-    boolean export(final File target);
+    boolean export(final File target, final HistorySorter sorter);    
 
     /**
      * Log that message has been received.

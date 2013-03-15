@@ -6,7 +6,6 @@ import cz.tul.comm.SerializationUtils;
 import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.IHistoryManager;
-import cz.tul.comm.history.sorting.HistorySorter;
 import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
@@ -58,6 +57,10 @@ public final class Comm_Client implements IService {
         
         history = new History();
     }
+    
+    void saveData() {
+        SerializationUtils.saveItemToDiscAsXML(new File(Settings.SERIALIZATION_NAME), settings);
+    }
 
     private void prepareServerCommunicator() {
         try {
@@ -102,15 +105,21 @@ public final class Comm_Client implements IService {
     }
     
     /**
+     * Export history as is to XML file.
+     *
+     * @param target target file
+     * @return true for successfull export.
+     */
+    public boolean exportHistory(final File target) {
+        return history.export(target, null);
+    }
+    
+    /**
      * @return history manager for this client
      */
     public IHistoryManager getHistory() {
         return history;
-    }
-
-    void saveData() {
-        SerializationUtils.saveItemToDiscAsXML(new File(Settings.SERIALIZATION_NAME), settings);
-    }
+    }    
 
     /**
      * @return interface for listener registration

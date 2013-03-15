@@ -5,7 +5,6 @@ import cz.tul.comm.SerializationUtils;
 import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.IHistoryManager;
-import cz.tul.comm.history.sorting.HistorySorter;
 import cz.tul.comm.socket.Communicator;
 import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
@@ -64,58 +63,8 @@ public final class Comm_Server implements IService {
         }));
 
         serverSocket = ServerSocket.createServerSocket(PORT);
-        
+
         history = new History();
-    }
-
-    /**
-     * Register new client communicationg on given port and IP.
-     *
-     * @param adress client IP
-     * @param port client port
-     * @return {@link Communicator} class for server/client communication
-     */
-    public Communicator registerClient(final InetAddress adress, final int port) {        
-        return clients.registerClient(adress, port);
-    }
-
-    /**
-     * Register new client communicationg on given IP and on default port.
-     *
-     * @param adress client IP
-     * @return
-     */
-    public Communicator registerClient(final InetAddress adress) {
-        return registerClient(adress, settings.getDefaultClientPort());
-    }
-
-    /**
-     * @param adress client IP
-     */
-    public void deregisterClient(final InetAddress adress) {
-        clients.deregisterClient(adress);
-    }
-
-    /**
-     * @param adress client IP
-     * @return {@link Communicator} for given IP (if is registered)
-     */
-    public Communicator getClient(final InetAddress adress) {
-        return clients.getClient(adress);
-    }
-
-    /**
-     * @return Set of all registered clients
-     */
-    public Set<Communicator> getClients() {
-        return clients.getClients();
-    }
-    
-    /**     
-     * @return history manager for this client
-     */
-    public IHistoryManager getHistory() {
-        return history;
     }
 
     private void saveData() {
@@ -126,6 +75,37 @@ public final class Comm_Server implements IService {
         }
 
         SerializationUtils.saveItemToDiscAsXML(new File(Settings.SERIALIZATION_NAME), settings);
+    }
+
+    /**
+     * Register new client communicationg on given IP and on default port.
+     *
+     * @param adress client IP
+     * @return
+     */
+    public Communicator registerClient(final InetAddress adress) {
+        return clients.registerClient(adress, settings.getDefaultClientPort());
+    }
+    
+    /**
+     * Export history as is to XML file.
+     *
+     * @param target target file
+     * @return true for successfull export.
+     */
+    public boolean exportHistory(final File target) {
+        return history.export(target, null);
+    }
+
+    /**
+     * @return history manager for this client
+     */
+    public IHistoryManager getHistory() {
+        return history;
+    }
+
+    public IClientManager getClientManager() {
+        return clients;
     }
 
     /**

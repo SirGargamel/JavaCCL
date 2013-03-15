@@ -88,12 +88,7 @@ public final class History implements IHistoryManager {
         }
 
         return result;
-    }
-
-    @Override
-    public boolean export(final File target) {
-        return export(target, null);
-    }
+    }    
 
     private static Document prepareDocument() throws ParserConfigurationException {
         final DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();

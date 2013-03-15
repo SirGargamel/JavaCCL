@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-final class ClientDB {
+final class ClientDB implements IClientManager {
 
     private static final Logger log = Logger.getLogger(Communicator.class.getName());
     private final Set<Communicator> clients;
@@ -24,7 +24,8 @@ final class ClientDB {
         clients = Collections.synchronizedSet(new HashSet<Communicator>());
     }
 
-    Communicator registerClient(final InetAddress adress, final int port) {
+    @Override
+    public Communicator registerClient(final InetAddress adress, final int port) {
         Communicator cc = getClient(adress);
         if (cc == null) {
             try {
@@ -38,7 +39,8 @@ final class ClientDB {
         return cc;
     }
 
-    void deregisterClient(final InetAddress adress) {
+    @Override
+    public void deregisterClient(final InetAddress adress) {
         final Iterator<Communicator> i = clients.iterator();
         while (i.hasNext()) {
             if (i.next().getAddress().equals(adress)) {
@@ -49,7 +51,8 @@ final class ClientDB {
 
     }
 
-    Communicator getClient(final InetAddress adress) {
+    @Override
+    public Communicator getClient(final InetAddress adress) {
         for (Communicator cc : clients) {
             if (cc.getAddress().equals(adress)) {
                 return cc;
@@ -58,7 +61,8 @@ final class ClientDB {
         return null;
     }
 
-    Set<Communicator> getClients() {
+    @Override
+    public Set<Communicator> getClients() {
         return Collections.unmodifiableSet(clients);
     }
 }
