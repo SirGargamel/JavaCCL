@@ -9,7 +9,7 @@ import java.net.InetAddress;
  * loopback adress (eg. server and client are run on same machine).
  * @author Petr Ječmen
  */
-final class Settings implements Serializable {
+public final class Settings implements Serializable {
 
     static final String SERIALIZATION_NAME = "clientSettings.xml";
     private static final long serialVersionUID = 2L;
@@ -17,24 +17,24 @@ final class Settings implements Serializable {
     private String serverAdress;
     private int serverPort;
 
-    Settings() {
+    public Settings() {
         serverAdress = DEFAULT_IP;
         serverPort = Comm_Server.PORT;
     }
 
-    String getServerAdress() {
+    public String getServerAdress() {
         return serverAdress;
     }
 
-    void setServerAdress(String serverAdress) {
+    public void setServerAdress(String serverAdress) {
         this.serverAdress = serverAdress;
     }
 
-    int getServerPort() {
+    public int getServerPort() {
         return serverPort;
     }
 
-    void setServerPort(int serverPort) {
+    public void setServerPort(int serverPort) {
         this.serverPort = serverPort;
     }
 }
