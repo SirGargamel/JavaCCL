@@ -32,6 +32,7 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
     private final ObjectQueue<IPData> dataStorageIP;
     private final ObjectQueue<IIdentifiable> dataStorageId;
     private final Set<Observer> dataListeners;
+    private int port;
     private boolean run;
 
     private ServerSocket(final int port) {
@@ -46,6 +47,7 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
         dataStorageIP = new ObjectQueue<>();
         dataStorageId = new ObjectQueue<>();
         dataListeners = new HashSet<>();
+        this.port = port;
         run = true;
     }
 
@@ -106,6 +108,10 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
                 log.log(Level.WARNING, "Server socket IO error occured during waiting for connection.", ex);
             }
         }        
+    }
+
+    public int getPort() {
+        return port;
     }
 
     /**

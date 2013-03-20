@@ -7,6 +7,8 @@ import cz.tul.comm.communicator.Status;
 import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.IHistoryManager;
+import cz.tul.comm.messaging.Message;
+import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
@@ -22,22 +24,22 @@ import java.util.logging.Logger;
  * @author Petr Ječmen
  */
 public final class Comm_Client implements IService {
-
+    
     private static final Logger log = Logger.getLogger(Comm_Client.class.getName());
     /**
      * Default port on which will client listen.
      */
     public static final int PORT = 5253;
-    private final ServerSocket serverSocket;    
+    private final ServerSocket serverSocket;
     private final Settings settings;
     private final IHistoryManager history;
     private Communicator comm;
     private Status status;
     private ClientSystemMessaging csm;
-
+    
     private Comm_Client() {
         serverSocket = ServerSocket.createServerSocket(PORT);
-
+        
         File s = new File(Settings.SERIALIZATION_NAME);
         if (s.exists()) {
             Object in = SerializationUtils.loadXMLItemFromDisc(s);
@@ -55,20 +57,20 @@ public final class Comm_Client implements IService {
                 saveData();
             }
         }));
-
+        
         prepareServerCommunicator();
-
+        
         history = new History();
-
+        
         status = Status.ONLINE;
         csm = new ClientSystemMessaging(this);
         getListenerRegistrator().addIpListener(comm.getAddress(), csm, true);
     }
-
+    
     void saveData() {
         SerializationUtils.saveItemToDiscAsXML(new File(Settings.SERIALIZATION_NAME), settings);
     }
-
+    
     private void prepareServerCommunicator() {
         try {
             InetAddress serverIp = InetAddress.getByName(settings.getServerAdress());
@@ -136,7 +138,7 @@ public final class Comm_Client implements IService {
     public IListenerRegistrator getListenerRegistrator() {
         return serverSocket;
     }
-
+    
     public Status getStatus() {
         return status;
     }
@@ -148,15 +150,20 @@ public final class Comm_Client implements IService {
      */
     public static Comm_Client initNewClient() {
         final Comm_Client result = new Comm_Client();
-
-        result.start();
-
+        
+        result.start();                
+        
         return result;
     }
-
-    private void start() {
+    
+    private void start() {        
+        // registration
+        final Message m = new Message(MessageHeaders.LOGIN, serverSocket.getPort());
+        if (!comm.sendData(m)) {
+            log.warning("Registeriing client to server failed.");
+        }        
     }
-
+    
     @Override
     public void stopService() {
         serverSocket.stopService();
