@@ -87,6 +87,7 @@ final class PushDaemon<O extends IIdentifiable> extends Thread implements IServi
     @Override
     public void stopService() {
         run = false;
+        exec.shutdownNow();
     }
 
     private static class Notifier implements Runnable {

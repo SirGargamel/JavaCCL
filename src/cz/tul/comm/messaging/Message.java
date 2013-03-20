@@ -24,7 +24,7 @@ public class Message implements Serializable, IIdentifiable {
      * @param data message data
      */
     public Message(final UUID id, final String header, final Object data) {
-        if (!(data instanceof Serializable)) {
+        if (data != null && !(data instanceof Serializable)) {
             throw new IllegalArgumentException("Data object needs to implement Serializable interface in order to be able to send it.");
         }
 

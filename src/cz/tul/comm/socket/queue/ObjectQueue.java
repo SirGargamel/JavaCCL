@@ -1,5 +1,6 @@
 package cz.tul.comm.socket.queue;
 
+import cz.tul.comm.IService;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -14,7 +15,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * IIdentifiable} interface.
  * @author Petr Ječmen
  */
-public class ObjectQueue<O extends IIdentifiable> {
+public class ObjectQueue<O extends IIdentifiable> implements IService {
 
     private final Map<Object, Map<IListener, Queue<O>>> data;
     private final PushDaemon<O> pushDaemon;
@@ -117,5 +118,10 @@ public class ObjectQueue<O extends IIdentifiable> {
 
     private Collection<Map<IListener, Queue<O>>> getDataQueues() {
         return Collections.unmodifiableCollection(data.values());
+    }
+
+    @Override
+    public void stopService() {
+        pushDaemon.stopService();
     }
 }

@@ -4,6 +4,7 @@
  */
 package cz.tul.comm.socket;
 
+import cz.tul.comm.communicator.Communicator;
 import java.net.InetAddress;
 import org.junit.After;
 import org.junit.AfterClass;

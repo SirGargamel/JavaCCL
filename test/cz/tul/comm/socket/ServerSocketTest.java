@@ -1,5 +1,6 @@
 package cz.tul.comm.socket;
 
+import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.socket.queue.IListener;

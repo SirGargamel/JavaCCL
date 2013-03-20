@@ -1,6 +1,6 @@
 package cz.tul.comm.server;
 
-import cz.tul.comm.socket.Communicator;
+import cz.tul.comm.communicator.Communicator;
 import java.net.InetAddress;
 import java.util.Set;
 

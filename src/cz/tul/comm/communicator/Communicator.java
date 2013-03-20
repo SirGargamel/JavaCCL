@@ -1,4 +1,4 @@
-package cz.tul.comm.socket;
+package cz.tul.comm.communicator;
 
 import cz.tul.comm.history.IHistoryManager;
 import java.io.IOException;
@@ -7,6 +7,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.Date;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,6 +27,8 @@ public final class Communicator {
     private static final Logger log = Logger.getLogger(Communicator.class.getName());
     private final InetAddress address;
     private final int port;
+    private Date lastStatusUpdateTime;
+    private Status status;
     private IHistoryManager hm;
 
     /**
@@ -42,6 +46,9 @@ public final class Communicator {
 
         this.address = address;
         this.port = port;
+
+        lastStatusUpdateTime = new Date();
+        status = Status.NA;
     }
 
     /**
@@ -68,8 +75,14 @@ public final class Communicator {
      * @return true for successfull send
      */
     public boolean sendData(final Object data) {
+        return sendData(data, 0);
+    }
+
+    public boolean sendData(final Object data, final int timeout) {
         boolean result = false;
         try (final Socket s = new Socket(address, port)) {
+            s.setSoTimeout(timeout);
+
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
             out.writeObject(data);
             out.flush();
@@ -77,9 +90,14 @@ public final class Communicator {
                 result = in.readBoolean();
             } catch (IOException ex) {
                 log.log(Level.WARNING, "Error receiving response from output socket", ex);
+                setStatus(Status.NOT_RESPONDING);
             }
+        } catch (SocketTimeoutException ex) {
+            log.log(Level.CONFIG, "Client on IP {0} is not responding to request", address.getHostAddress());
+            setStatus(Status.NOT_RESPONDING);
         } catch (IOException ex) {
             log.log(Level.WARNING, "Cannot write to output socket", ex);
+            setStatus(Status.OFFLINE);
         }
 
         if (hm != null) {
@@ -87,6 +105,19 @@ public final class Communicator {
         }
 
         return result;
+    }
+
+    public void setStatus(final Status newStatus) {
+        status = newStatus;
+        lastStatusUpdateTime = new Date();
+    }
+
+    public Date getLastStatusUpdate() {
+        return lastStatusUpdateTime;
+    }
+
+    public Status getStatus() {
+        return status;
     }
 
     @Override

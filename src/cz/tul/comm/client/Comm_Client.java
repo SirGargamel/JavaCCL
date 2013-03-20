@@ -1,8 +1,9 @@
 package cz.tul.comm.client;
 
-import cz.tul.comm.socket.Communicator;
+import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.IService;
 import cz.tul.comm.SerializationUtils;
+import cz.tul.comm.communicator.Status;
 import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.IHistoryManager;
@@ -27,10 +28,12 @@ public final class Comm_Client implements IService {
      * Default port on which will client listen.
      */
     public static final int PORT = 5253;
-    private final ServerSocket serverSocket;
-    private Communicator comm;
+    private final ServerSocket serverSocket;    
     private final Settings settings;
     private final IHistoryManager history;
+    private Communicator comm;
+    private Status status;
+    private ClientSystemMessaging csm;
 
     private Comm_Client() {
         serverSocket = ServerSocket.createServerSocket(PORT);
@@ -54,10 +57,14 @@ public final class Comm_Client implements IService {
         }));
 
         prepareServerCommunicator();
-        
+
         history = new History();
+
+        status = Status.ONLINE;
+        csm = new ClientSystemMessaging(this);
+        getListenerRegistrator().addIpListener(comm.getAddress(), csm, true);
     }
-    
+
     void saveData() {
         SerializationUtils.saveItemToDiscAsXML(new File(Settings.SERIALIZATION_NAME), settings);
     }
@@ -81,6 +88,8 @@ public final class Comm_Client implements IService {
      */
     public void setServerAdress(final InetAddress address) {
         settings.setServerAdress(address.getHostAddress());
+        getListenerRegistrator().removeIpListener(null, csm);
+        getListenerRegistrator().addIpListener(address, csm, true);
         prepareServerCommunicator();
     }
 
@@ -103,7 +112,7 @@ public final class Comm_Client implements IService {
             comm.sendData(data);
         }
     }
-    
+
     /**
      * Export history as is to XML file.
      *
@@ -113,19 +122,23 @@ public final class Comm_Client implements IService {
     public boolean exportHistory(final File target) {
         return history.export(target, null);
     }
-    
+
     /**
      * @return history manager for this client
      */
     public IHistoryManager getHistory() {
         return history;
-    }    
+    }
 
     /**
      * @return interface for listener registration
      */
     public IListenerRegistrator getListenerRegistrator() {
         return serverSocket;
+    }
+
+    public Status getStatus() {
+        return status;
     }
 
     /**

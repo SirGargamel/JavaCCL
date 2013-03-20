@@ -5,7 +5,8 @@ import cz.tul.comm.SerializationUtils;
 import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.IHistoryManager;
-import cz.tul.comm.socket.Communicator;
+import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.server.daemons.ClientStatusDaemon;
 import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
@@ -32,9 +33,9 @@ public final class Comm_Server implements IService {
     private final ClientDB clients;
     private final ServerSocket serverSocket;
     private final IHistoryManager history;
+    private final ClientStatusDaemon clientStatusDaemon;
 
-    private Comm_Server() {
-        // client DB
+    private Comm_Server() {        
         clients = new ClientDB();
         File s = new File(Settings.SERIALIZATION_NAME);
         if (s.exists()) {
@@ -62,9 +63,9 @@ public final class Comm_Server implements IService {
             }
         }));
 
-        serverSocket = ServerSocket.createServerSocket(PORT);
-
         history = new History();
+        serverSocket = ServerSocket.createServerSocket(PORT);        
+        clientStatusDaemon = new ClientStatusDaemon(clients, serverSocket);
     }
 
     private void saveData() {
@@ -86,7 +87,7 @@ public final class Comm_Server implements IService {
     public Communicator registerClient(final InetAddress adress) {
         return clients.registerClient(adress, settings.getDefaultClientPort());
     }
-    
+
     /**
      * Export history as is to XML file.
      *
@@ -131,10 +132,12 @@ public final class Comm_Server implements IService {
     }
 
     void start() {
+        clientStatusDaemon.start();
     }
 
     @Override
     public void stopService() {
+        clientStatusDaemon.stopService();
         serverSocket.stopService();
     }
 }

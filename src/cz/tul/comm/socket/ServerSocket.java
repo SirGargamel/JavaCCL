@@ -42,7 +42,7 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
             log.log(Level.SEVERE, "Error creating socket on port " + port, ex);
         }
         socket = s;
-        exec = Executors.newCachedThreadPool();
+        exec = Executors.newCachedThreadPool();        
         dataStorageIP = new ObjectQueue<>();
         dataStorageId = new ObjectQueue<>();
         dataListeners = new HashSet<>();
@@ -105,8 +105,7 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
             } catch (IOException ex) {
                 log.log(Level.WARNING, "Server socket IO error occured during waiting for connection.", ex);
             }
-        }
-        exec.shutdownNow();
+        }        
     }
 
     /**
@@ -124,10 +123,13 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
     @Override
     public void stopService() {
         try {
+            run = false;
             socket.close();
+            exec.shutdownNow();
+            dataStorageIP.stopService();
+            dataStorageId.stopService();
         } catch (IOException ex) {
             log.log(Level.WARNING, "Server socket IO error occured during socket closing.", ex);
-        }
-        run = false;
+        }        
     }
 }
