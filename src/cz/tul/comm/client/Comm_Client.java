@@ -39,6 +39,7 @@ public final class Comm_Client implements IService {
         history = new History();
 
         serverSocket = ServerSocket.createServerSocket(port);
+        serverSocket.registerHistory(history);
         prepareServerCommunicator(InetAddress.getLoopbackAddress(), Comm_Server.PORT);        
 
         status = Status.ONLINE;

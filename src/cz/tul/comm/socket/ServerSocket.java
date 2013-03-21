@@ -2,6 +2,7 @@ package cz.tul.comm.socket;
 
 import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.IService;
+import cz.tul.comm.history.IHistoryManager;
 import cz.tul.comm.socket.queue.IListener;
 import cz.tul.comm.socket.queue.ObjectQueue;
 import java.io.IOException;
@@ -32,6 +33,7 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
     private final ObjectQueue<IPData> dataStorageIP;
     private final ObjectQueue<IIdentifiable> dataStorageId;
     private final Set<Observer> dataListeners;
+    private IHistoryManager hm;
     private int port;
     private boolean run;
 
@@ -96,6 +98,7 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
             try {
                 s = socket.accept();
                 final SocketReader sr = new SocketReader(s, dataStorageIP, dataStorageId);
+                sr.registerHistory(hm);
                 for (Observer o : dataListeners) {
                     sr.addObserver(o);
                 }
@@ -112,6 +115,15 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
 
     public int getPort() {
         return port;
+    }
+    
+    /**
+     * Register history manager that will store info about received messages.
+     *
+     * @param hm instance of history manager
+     */
+    public void registerHistory(final IHistoryManager hm) {
+        this.hm = hm;
     }
 
     /**

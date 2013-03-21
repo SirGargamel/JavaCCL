@@ -31,13 +31,15 @@ public final class Comm_Server implements IService {
     private final ClientStatusDaemon clientStatusDaemon;
 
     private Comm_Server(final int port) {
-        clients = new ClientDB();
         history = new History();
         serverSocket = ServerSocket.createServerSocket(port);
+        serverSocket.registerHistory(history);
+
+        clients = new ClientDB();
         clientStatusDaemon = new ClientStatusDaemon(clients, serverSocket);
-        
+
         getListenerRegistrator().registerMessageObserver(new SystemMessagesDaemon(clients));
-        
+
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
@@ -55,7 +57,7 @@ public final class Comm_Server implements IService {
     public Communicator registerClient(final InetAddress adress) {
         return clients.registerClient(adress, Comm_Client.PORT);
     }
-    
+
     public Communicator getClient(final InetAddress address) {
         return clients.getClient(address, Comm_Client.PORT);
     }
@@ -102,7 +104,7 @@ public final class Comm_Server implements IService {
 
         return result;
     }
-    
+
     public static Comm_Server initNewServer() {
         return initNewServer(PORT);
     }

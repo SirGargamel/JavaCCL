@@ -1,6 +1,7 @@
 package cz.tul.comm.server;
 
 import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.history.IHistoryManager;
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashSet;
@@ -19,6 +20,7 @@ final class ClientDB implements IClientManager {
 
     private static final Logger log = Logger.getLogger(Communicator.class.getName());
     private final Set<Communicator> clients;
+    private IHistoryManager hm;
 
     ClientDB() {
         clients = Collections.synchronizedSet(new HashSet<Communicator>());
@@ -30,6 +32,7 @@ final class ClientDB implements IClientManager {
         if (cc == null) {
             try {
                 cc = new Communicator(adress, port);
+                cc.registerHistory(hm);
                 clients.add(cc);
             } catch (IllegalArgumentException ex) {
                 log.log(Level.WARNING, "Invalid Communicator parameters.", ex);
@@ -66,5 +69,14 @@ final class ClientDB implements IClientManager {
     @Override
     public Set<Communicator> getClients() {
         return Collections.unmodifiableSet(clients);
+    }
+    
+    /**
+     * Register history manager that will store info about received messages.
+     *
+     * @param hm instance of history manager
+     */
+    public void registerHistory(final IHistoryManager hm) {
+        this.hm = hm;
     }
 }
