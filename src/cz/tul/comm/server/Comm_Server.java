@@ -1,8 +1,8 @@
 package cz.tul.comm.server;
 
+import cz.tul.comm.persistence.ServerSettings;
 import cz.tul.comm.IService;
-import cz.tul.comm.SerializationUtils;
-import cz.tul.comm.gui.UserLogging;
+import cz.tul.comm.client.Comm_Client;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.IHistoryManager;
 import cz.tul.comm.communicator.Communicator;
@@ -12,10 +12,6 @@ import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Class enclosing server-client communication. Handles custom data sending to
@@ -25,59 +21,29 @@ import java.util.logging.Logger;
  */
 public final class Comm_Server implements IService {
 
-    private static final Logger log = Logger.getLogger(Comm_Server.class.getName());
     /**
      * default port on which server will listen
      */
     public static final int PORT = 5252;
-    private final Settings settings;
     private final ClientDB clients;
     private final ServerSocket serverSocket;
     private final IHistoryManager history;
     private final ClientStatusDaemon clientStatusDaemon;
 
-    private Comm_Server() {        
+    private Comm_Server(final int port) {
         clients = new ClientDB();
-        File s = new File(Settings.SERIALIZATION_NAME);
-        if (s.exists()) {
-            Object in = SerializationUtils.loadXMLItemFromDisc(s);
-            if (in instanceof Settings) {
-                settings = (Settings) in;
-                for (String a : settings.getClients()) {
-                    try {
-                        registerClient(InetAddress.getByName(a));
-                    } catch (UnknownHostException ex) {
-                        UserLogging.showWarningToUser("Unknown host found in settings - " + ex.getLocalizedMessage());
-                        log.log(Level.WARNING, "Unkonwn host found in settings", ex);
-                    }
-                }
-            } else {
-                settings = new Settings();
-            }
-        } else {
-            settings = new Settings();
-        }
+        history = new History();
+        serverSocket = ServerSocket.createServerSocket(port);
+        clientStatusDaemon = new ClientStatusDaemon(clients, serverSocket);
+        
+        getListenerRegistrator().registerMessageObserver(new SystemMessagesDaemon(clients));
+        
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                saveData();
+                ServerSettings.serialize(clients);
             }
         }));
-
-        history = new History();
-        serverSocket = ServerSocket.createServerSocket(PORT);        
-        clientStatusDaemon = new ClientStatusDaemon(clients, serverSocket);
-        getListenerRegistrator().registerMessageObserver(new SystemMessagesDaemon(clients));
-    }
-
-    private void saveData() {
-        final Set<String> addresses = settings.getClients();
-        addresses.clear();
-        for (Communicator c : clients.getClients()) {
-            addresses.add(c.getAddress().getHostAddress());
-        }
-
-        SerializationUtils.saveItemToDiscAsXML(new File(Settings.SERIALIZATION_NAME), settings);
     }
 
     /**
@@ -87,7 +53,11 @@ public final class Comm_Server implements IService {
      * @return
      */
     public Communicator registerClient(final InetAddress adress) {
-        return clients.registerClient(adress, settings.getDefaultClientPort());
+        return clients.registerClient(adress, Comm_Client.PORT);
+    }
+    
+    public Communicator getClient(final InetAddress address) {
+        return clients.getClient(address, Comm_Client.PORT);
     }
 
     /**
@@ -125,15 +95,22 @@ public final class Comm_Server implements IService {
      *
      * @return new instance of Comm_Server
      */
-    public static Comm_Server initNewServer() {
-        final Comm_Server result = new Comm_Server();
+    public static Comm_Server initNewServer(final int port) {
+        final Comm_Server result = new Comm_Server(port);
 
         result.start();
 
         return result;
     }
+    
+    public static Comm_Server initNewServer() {
+        return initNewServer(PORT);
+    }
 
     void start() {
+        if (!ServerSettings.deserialize(clients)) {
+            // TODO tell user loading settings has failed
+        }
         clientStatusDaemon.start();
     }
 

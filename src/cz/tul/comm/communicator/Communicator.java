@@ -120,13 +120,15 @@ public final class Communicator {
         return status;
     }
 
+    public int getPort() {
+        return port;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o instanceof Communicator) {
-            Communicator cc = (Communicator) o;
-            if (cc.getAddress().equals(address)) {
-                return true;
-            }
+            Communicator cc = (Communicator) o;            
+            return (cc.getAddress().equals(address) && cc.getPort() == port);            
         }
         return false;
     }

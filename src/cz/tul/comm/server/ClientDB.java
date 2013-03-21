@@ -26,7 +26,7 @@ final class ClientDB implements IClientManager {
 
     @Override
     public Communicator registerClient(final InetAddress adress, final int port) {
-        Communicator cc = getClient(adress);
+        Communicator cc = getClient(adress, port);
         if (cc == null) {
             try {
                 cc = new Communicator(adress, port);
@@ -40,10 +40,12 @@ final class ClientDB implements IClientManager {
     }
 
     @Override
-    public void deregisterClient(final InetAddress adress) {
+    public void deregisterClient(final InetAddress adress, final int port) {
         final Iterator<Communicator> i = clients.iterator();
+        Communicator cc;
         while (i.hasNext()) {
-            if (i.next().getAddress().equals(adress)) {
+            cc = i.next();
+            if (cc.getAddress().equals(adress) && cc.getPort() == port) {
                 i.remove();
                 break;
             }
@@ -52,9 +54,9 @@ final class ClientDB implements IClientManager {
     }
 
     @Override
-    public Communicator getClient(final InetAddress adress) {
+    public Communicator getClient(final InetAddress adress, final int port) {
         for (Communicator cc : clients) {
-            if (cc.getAddress().equals(adress)) {
+            if (cc.getAddress().equals(adress) && cc.getPort() == port) {
                 return cc;
             }
         }

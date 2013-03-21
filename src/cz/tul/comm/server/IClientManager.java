@@ -16,14 +16,14 @@ public interface IClientManager {
      *
      * @param adress client IP
      */
-    void deregisterClient(final InetAddress adress);
+    void deregisterClient(final InetAddress adress, final int port);
 
     /**
      * @param adress client IP
      * @return {@link Communicator} for communication with given IP (if
      * registered)
      */
-    Communicator getClient(final InetAddress adress);
+    Communicator getClient(final InetAddress adress, final int port);
 
     /**
      * @return list of all clients

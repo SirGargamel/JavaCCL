@@ -1,4 +1,4 @@
-package cz.tul.comm;
+package cz.tul.comm.persistence;
 
 import java.beans.DefaultPersistenceDelegate;
 import java.beans.Encoder;
@@ -73,14 +73,14 @@ public abstract class SerializationUtils {
                 }
             }
             try (XMLEncoder out = new XMLEncoder(new FileOutputStream(dest))) {
-                out.setPersistenceDelegate(Inet4Address.class, new DefaultPersistenceDelegate() {
-                    @Override
-                    protected Expression instantiate(Object oldInstance, Encoder out) {
-                        InetAddress old = (InetAddress) oldInstance;
-                        return new Expression(oldInstance, InetAddress.class, "getByAddress",
-                                new Object[]{old.getAddress()});
-                    }
-                });
+//                out.setPersistenceDelegate(Inet4Address.class, new DefaultPersistenceDelegate() {
+//                    @Override
+//                    protected Expression instantiate(Object oldInstance, Encoder out) {
+//                        InetAddress old = (InetAddress) oldInstance;
+//                        return new Expression(oldInstance, InetAddress.class, "getByAddress",
+//                                new Object[]{old.getAddress()});
+//                    }
+//                });
                 out.writeObject(data);
                 result = true;
             } catch (FileNotFoundException ex) {
