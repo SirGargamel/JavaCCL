@@ -1,4 +1,4 @@
-package cz.tul.comm.server.daemons;
+package cz.tul.comm.server;
 
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
@@ -13,12 +13,12 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class SystemMessagesDaemon implements Observer {
+public class SystemMessagesHandler implements Observer {
 
-    private static final Logger log = Logger.getLogger(SystemMessagesDaemon.class.getName());
+    private static final Logger log = Logger.getLogger(SystemMessagesHandler.class.getName());
     private final IClientManager clientManager;
 
-    public SystemMessagesDaemon(IClientManager clientManager) {
+    public SystemMessagesHandler(IClientManager clientManager) {
         this.clientManager = clientManager;
     }
 

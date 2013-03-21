@@ -7,7 +7,6 @@ import cz.tul.comm.history.History;
 import cz.tul.comm.history.IHistoryManager;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.server.daemons.ClientStatusDaemon;
-import cz.tul.comm.server.daemons.SystemMessagesDaemon;
 import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
@@ -38,7 +37,7 @@ public final class Comm_Server implements IService {
         clients = new ClientDB();
         clientStatusDaemon = new ClientStatusDaemon(clients, serverSocket);
 
-        getListenerRegistrator().registerMessageObserver(new SystemMessagesDaemon(clients));
+        getListenerRegistrator().registerMessageObserver(new SystemMessagesHandler(clients));
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
