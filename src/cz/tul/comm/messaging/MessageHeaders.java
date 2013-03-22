@@ -9,5 +9,6 @@ public interface MessageHeaders {
     String DISCOVERY = "discovery";
     String LOGIN = "login";
     String STATUS = "status";
+    String KEEP_ALIVE = "keepAlive";
     
 }

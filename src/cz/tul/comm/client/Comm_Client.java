@@ -24,13 +24,14 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public final class Comm_Client implements IService {
+public final class Comm_Client implements IService, IServerRegistrator {
 
     private static final Logger log = Logger.getLogger(Comm_Client.class.getName());
     /**
      * Default port on which will client listen.
      */
     public static final int PORT = 5253;
+    private static final int TIMEOUT = 1000;
     private final ServerSocket serverSocket;
     private final IHistoryManager history;
     private Communicator comm;
@@ -43,13 +44,13 @@ public final class Comm_Client implements IService {
 
         serverSocket = ServerSocket.createServerSocket(port);
         serverSocket.registerHistory(history);
-        prepareServerCommunicator(InetAddress.getLoopbackAddress(), Comm_Server.PORT);
+        registerServer(InetAddress.getLoopbackAddress(), Comm_Server.PORT);
 
         status = Status.ONLINE;
         csm = new ClientSystemMessaging(this);
         getListenerRegistrator().addIpListener(comm.getAddress(), csm, true);
         try {
-            sdd = new ServerDiscoveryDaemon();
+            sdd = new ServerDiscoveryDaemon(this);
         } catch (SocketException ex) {
             log.log(Level.WARNING, "Failed to initiate server discovery daemon.", ex);
         }
@@ -62,13 +63,22 @@ public final class Comm_Client implements IService {
         }));
     }
 
-    private void prepareServerCommunicator(final InetAddress address, final int port) {
+    @Override
+    public void registerServer(final InetAddress address, final int port) {
         try {
             comm = new Communicator(address, port);
+            if (!isServerUp()) {
+                sdd.setServerUp(false);
+            }
         } catch (IllegalArgumentException ex) {
             UserLogging.showErrorToUser(ex.getLocalizedMessage());
             log.log(Level.WARNING, "Illegal parameters for Communicator.", ex);
         }
+    }
+    
+    @Override
+    public boolean isServerUp() {
+        return comm.sendData(new Message(MessageHeaders.KEEP_ALIVE, null), TIMEOUT);
     }
 
     /**
@@ -78,7 +88,7 @@ public final class Comm_Client implements IService {
     public void setServerAdress(final InetAddress address, final int port) {
         getListenerRegistrator().removeIpListener(null, csm);
         getListenerRegistrator().addIpListener(address, csm, true);
-        prepareServerCommunicator(address, port);
+        registerServer(address, port);
     }
 
     /**
@@ -88,6 +98,11 @@ public final class Comm_Client implements IService {
      */
     public void sendData(final Object data) {
         if (comm != null) {
+            if (!isServerUp()) {
+                UserLogging.showWarningToUser("Server could not be contacted, please recheck the settings");
+                sdd.setServerUp(false);
+            }
+            
             comm.sendData(data);
         }
     }
