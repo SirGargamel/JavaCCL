@@ -88,7 +88,7 @@ public final class History implements IHistoryManager {
         }
 
         return result;
-    }    
+    }
 
     private static Document prepareDocument() throws ParserConfigurationException {
         final DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();

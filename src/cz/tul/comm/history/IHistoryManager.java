@@ -7,6 +7,7 @@ import java.net.InetAddress;
 
 /**
  * Interface for history manager.
+ *
  * @author Petr Ječmen
  */
 public interface IHistoryManager {
@@ -18,7 +19,7 @@ public interface IHistoryManager {
      * @param sorter sorter, which will sort data according to some parameter.
      * @return true for successfull export
      */
-    boolean export(final File target, final HistorySorter sorter);    
+    boolean export(final File target, final HistorySorter sorter);
 
     /**
      * Log that message has been received.
@@ -44,5 +45,4 @@ public interface IHistoryManager {
      * @param eu new export unit
      */
     void registerExporter(final IExportUnit eu);
-    
 }

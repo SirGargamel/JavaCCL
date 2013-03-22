@@ -111,8 +111,8 @@ public final class Comm_Client implements IService, IServerRegistrator {
      * @param target target file
      * @return true for successfull export.
      */
-    public boolean exportHistory(final File target) {
-        return history.export(target, null);
+    public boolean exportHistory() {
+        return history.export(new File(""), null);
     }
 
     /**
