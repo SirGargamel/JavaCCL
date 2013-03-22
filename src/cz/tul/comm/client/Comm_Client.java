@@ -1,5 +1,6 @@
 package cz.tul.comm.client;
 
+import cz.tul.comm.persistence.ClientSettings;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Status;

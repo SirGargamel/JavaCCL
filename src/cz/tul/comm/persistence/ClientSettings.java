@@ -1,5 +1,6 @@
-package cz.tul.comm.client;
+package cz.tul.comm.persistence;
 
+import cz.tul.comm.client.Comm_Client;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.persistence.SerializationUtils;
