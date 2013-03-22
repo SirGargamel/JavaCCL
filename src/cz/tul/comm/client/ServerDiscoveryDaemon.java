@@ -24,7 +24,7 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
 
     public ServerDiscoveryDaemon(final IServerRegistrator sr) throws SocketException {
         this.sr = sr;
-        s = new DatagramSocket(Constants.DEFAULT_PORT_DISCOVERY_C);
+        s = new DatagramSocket(Constants.DEFAULT_PORT_DISCOVERY);
         s.setBroadcast(true);
 
         run = true;
@@ -44,7 +44,7 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
                     //Packet received
                     log.log(Level.FINEST, ">>>Discovery packet received from: {0}", packet.getAddress().getHostAddress());
 
-                    //See if the packet holds the right command (message)
+                    //See if the packet holds the right message
                     String message = new String(packet.getData()).trim();
                     if (message.equals(Constants.DISCOVERY_QUESTION)) {
                         byte[] sendData = Constants.DISCOVERY_RESPONSE.getBytes();

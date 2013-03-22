@@ -30,7 +30,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
     public ClientDiscoveryDaemon(final IClientManager clientManager) throws SocketException {
         run = true;
         cm = clientManager;
-        s = new DatagramSocket(Constants.DEFAULT_PORT_DISCOVERY_S);
+        s = new DatagramSocket(Constants.DEFAULT_PORT_DISCOVERY);
         s.setBroadcast(true);
     }
 
@@ -59,7 +59,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
         byte[] sendData = Constants.DISCOVERY_QUESTION.getBytes();
 
         // Try the 255.255.255.255 first
-        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), Constants.DEFAULT_PORT_DISCOVERY_S);
+        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), Constants.DEFAULT_PORT_DISCOVERY);
         s.send(sendPacket);
         log.log(Level.FINEST, "Discovery packet sent to: 255.255.255.255 (DEFAULT)");
 

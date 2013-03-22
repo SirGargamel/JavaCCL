@@ -12,6 +12,7 @@ import java.net.InetAddress;
 public class IPData implements IIdentifiable {
 
     private final InetAddress ip;
+    private final int port;
     private final Object data;
 
     /**
@@ -20,14 +21,15 @@ public class IPData implements IIdentifiable {
      * @param ip source IP
      * @param data received data
      */
-    public IPData(final InetAddress ip, final Object data) {
+    public IPData(final InetAddress ip, final int port, final Object data) {
         this.ip = ip;
+        this.port = port;
         this.data = data;
     }
 
     @Override
     public Object getId() {
-        return ip;
+        return getIp();
     }
 
     /**
@@ -36,6 +38,10 @@ public class IPData implements IIdentifiable {
      */
     public InetAddress getIp() {
         return ip;
+    }
+
+    public int getPort() {
+        return port;
     }
 
     /**

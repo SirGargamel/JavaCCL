@@ -1,8 +1,9 @@
 package cz.tul.comm.server;
 
+import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.communicator.Status;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
-import cz.tul.comm.server.IClientManager;
 import cz.tul.comm.socket.IPData;
 import java.util.Observable;
 import java.util.Observer;
@@ -28,18 +29,23 @@ public class SystemMessagesHandler implements Observer {
             final IPData data = (IPData) arg;
             if (data.getData() instanceof Message) {
                 final Message m = (Message) data.getData();
-                final String header = m.getHeader();
-
+                final String header = m.getHeader();                
                 switch (header) {
                     case MessageHeaders.LOGIN:
                         int port;
                         try {
                             port = Integer.parseInt(m.getData().toString());
-                            clientManager.registerClient(data.getIp(), port);                            
+                            clientManager.registerClient(data.getIp(), port);
                             log.log(Level.CONFIG, "LOGIN received - {0}", m.toString());
                         } catch (NumberFormatException | NullPointerException ex) {
                             log.log(Level.WARNING, "Illegal login data received from {0} - ",
                                     new Object[]{data.getIp().getHostAddress(), m.getData().toString()});
+                        }
+                        break;
+                    case MessageHeaders.STATUS:
+                        if (m.getData() instanceof Status) {
+                            Communicator c = clientManager.getClient(data.getIp(), data.getPort());
+                            c.setStatus((Status) m.getData());
                         }
                         break;
                 }
