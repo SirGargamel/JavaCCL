@@ -13,6 +13,7 @@ import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,26 +34,32 @@ public final class Comm_Client implements IService {
     private final IHistoryManager history;
     private Communicator comm;
     private Status status;
-    private ClientSystemMessaging csm;
+    private final ClientSystemMessaging csm;
+    private ServerDiscoveryDaemon sdd;
 
     private Comm_Client(final int port) {
         history = new History();
 
         serverSocket = ServerSocket.createServerSocket(port);
         serverSocket.registerHistory(history);
-        prepareServerCommunicator(InetAddress.getLoopbackAddress(), Comm_Server.PORT);        
+        prepareServerCommunicator(InetAddress.getLoopbackAddress(), Comm_Server.PORT);
 
         status = Status.ONLINE;
         csm = new ClientSystemMessaging(this);
         getListenerRegistrator().addIpListener(comm.getAddress(), csm, true);
-        
+        try {
+            sdd = new ServerDiscoveryDaemon();
+        } catch (SocketException ex) {
+            log.log(Level.WARNING, "Failed to initiate server discovery daemon.", ex);
+        }
+
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
                 ClientSettings.serialize(comm);
             }
         }));
-    }        
+    }
 
     private void prepareServerCommunicator(final InetAddress address, final int port) {
         try {
@@ -124,7 +131,7 @@ public final class Comm_Client implements IService {
 
         return result;
     }
-    
+
     public static Comm_Client initNewClient() {
         return initNewClient(PORT);
     }
@@ -137,12 +144,16 @@ public final class Comm_Client implements IService {
         // registration
         final Message m = new Message(MessageHeaders.LOGIN, serverSocket.getPort());
         if (!comm.sendData(m)) {
-            log.warning("Registeriing client to server failed.");
+            log.warning("Registering client to server failed.");
+        }
+        if (sdd != null) {
+            sdd.start();
         }
     }
 
     @Override
     public void stopService() {
         serverSocket.stopService();
+        sdd.stopService();
     }
 }

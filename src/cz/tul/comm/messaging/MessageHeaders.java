@@ -6,7 +6,8 @@ package cz.tul.comm.messaging;
  */
 public interface MessageHeaders {
 
-    String STATUS = "status";
+    String DISCOVERY = "discovery";
     String LOGIN = "login";
+    String STATUS = "status";
     
 }

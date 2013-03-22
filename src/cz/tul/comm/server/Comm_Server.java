@@ -6,11 +6,15 @@ import cz.tul.comm.client.Comm_Client;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.IHistoryManager;
 import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.server.daemons.ClientDiscoveryDaemon;
 import cz.tul.comm.server.daemons.ClientStatusDaemon;
 import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
 import java.net.InetAddress;
+import java.net.SocketException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class enclosing server-client communication. Handles custom data sending to
@@ -20,6 +24,7 @@ import java.net.InetAddress;
  */
 public final class Comm_Server implements IService {
 
+    private static final Logger log = Logger.getLogger(Comm_Server.class.getName());
     /**
      * default port on which server will listen
      */
@@ -28,6 +33,7 @@ public final class Comm_Server implements IService {
     private final ServerSocket serverSocket;
     private final IHistoryManager history;
     private final ClientStatusDaemon clientStatusDaemon;
+    private ClientDiscoveryDaemon cdd;
 
     private Comm_Server(final int port) {
         history = new History();
@@ -38,6 +44,11 @@ public final class Comm_Server implements IService {
         clientStatusDaemon = new ClientStatusDaemon(clients, serverSocket);
 
         getListenerRegistrator().registerMessageObserver(new SystemMessagesHandler(clients));
+        try {
+            cdd = new ClientDiscoveryDaemon(clients);
+        } catch (SocketException ex) {
+            log.log(Level.WARNING, "Failed to create ClientDiscoveryDaemon", ex);
+        }
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -113,11 +124,15 @@ public final class Comm_Server implements IService {
             // TODO tell user loading settings has failed
         }
         clientStatusDaemon.start();
+        if (cdd != null) {
+            cdd.start();
+        }
     }
 
     @Override
     public void stopService() {
         clientStatusDaemon.stopService();
         serverSocket.stopService();
+        cdd.stopService();
     }
 }
