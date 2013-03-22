@@ -75,7 +75,7 @@ public final class Comm_Client implements IService, IServerRegistrator {
             log.log(Level.WARNING, "Illegal parameters for Communicator.", ex);
         }
     }
-    
+
     @Override
     public boolean isServerUp() {
         return comm.sendData(new Message(MessageHeaders.KEEP_ALIVE, null), TIMEOUT);
@@ -97,12 +97,10 @@ public final class Comm_Client implements IService, IServerRegistrator {
      * @param data data for sending
      */
     public void sendData(final Object data) {
-        if (comm != null) {
-            if (!isServerUp()) {
-                UserLogging.showWarningToUser("Server could not be contacted, please recheck the settings");
-                sdd.setServerUp(false);
-            }
-            
+        if (comm == null || !isServerUp()) {
+            UserLogging.showWarningToUser("Server could not be contacted, please recheck the settings");
+            sdd.setServerUp(false);
+        } else {
             comm.sendData(data);
         }
     }
