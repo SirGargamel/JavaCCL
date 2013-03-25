@@ -11,26 +11,33 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Client side of DicoveryDaemon. Listens for server broadcast and responds to
+ * them. Listens only when no server is aviable.
  *
  * @author Petr Ječmen
  */
 public class ServerDiscoveryDaemon extends Thread implements IService {
-
+    
     private static final Logger log = Logger.getLogger(ServerDiscoveryDaemon.class.getName());
     private final DatagramSocket s;
     private final IServerRegistrator sr;
     private boolean run;
     private boolean isServerUp;
 
+    /**
+     *
+     * @param sr interface for settings new server settings
+     * @throws SocketException thrown when client could not be created
+     */
     public ServerDiscoveryDaemon(final IServerRegistrator sr) throws SocketException {
         this.sr = sr;
         s = new DatagramSocket(Constants.DEFAULT_PORT_DISCOVERY);
         s.setBroadcast(true);
-
+        
         run = true;
         isServerUp = false;
     }
-
+    
     @Override
     public void run() {
         while (run) {
@@ -42,7 +49,7 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
                     s.receive(packet);
 
                     //Packet received
-                    log.log(Level.FINEST, ">>>Discovery packet received from: {0}", packet.getAddress().getHostAddress());
+                    log.log(Level.FINER, "Discovery packet received from {0}", packet.getAddress().getHostAddress());
 
                     //See if the packet holds the right message
                     String message = new String(packet.getData()).trim();
@@ -54,15 +61,18 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
                         s.send(sendPacket);
                         
                         sr.registerServer(packet.getAddress(), Comm_Server.PORT);
-
-                        log.log(Level.FINEST, "Sent packet to: {0}", sendPacket.getAddress().getHostAddress());
+                        
+                        log.log(Level.FINER, "Sent response meesage to {0}", sendPacket.getAddress().getHostAddress());
                     }
-
+                    
+                } catch (SocketException ex) {
+                    // everything is fine, wa wanted to interrupt socket receive method
                 } catch (IOException ex) {
                     log.log(Level.WARNING, "Error answering client discovery packet", ex);
                 }
             } else {
                 try {
+                    log.config("ServerDiscoveryDaemon is falling asleep.");
                     synchronized (this) {
                         this.wait();
                     }
@@ -74,20 +84,21 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
         s.close();
     }
 
+    /**
+     * @param isServerUp true if the server is reachable and responding
+     */
     public void setServerUp(final boolean isServerUp) {
         this.isServerUp = isServerUp;
         synchronized (this) {
             this.notify();
         }
+        log.config("ServerDiscoveryDaemon has been woken up.");
     }
-
+    
     @Override
     public void stopService() {
         run = false;
-        try {
-            s.close();
-        } catch (Exception ex) {
-            // everything is fine, wa wanted to interrupt socket receive method
-        }
+        s.close();
+        log.config("ServerDiscoveryDaemon has been stopped.");
     }
 }

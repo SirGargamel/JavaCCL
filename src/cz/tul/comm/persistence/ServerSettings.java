@@ -13,7 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * ServerSettings for server part.
+ * Settings for server part.
  *
  * @author Petr Ječmen
  */
@@ -25,19 +25,37 @@ public final class ServerSettings implements Serializable {
     private static final long serialVersionUID = 3L;
     private Set<String> clients;
 
+    /**
+     * Initialize storage
+     */
     public ServerSettings() {
         clients = new HashSet<>();
     }
 
+    /**
+     * @return all registered clients
+     */
     public Set<String> getClients() {
         return clients;
     }
 
+    /**
+     *
+     * @param clients
+     */
     public void setClients(Set<String> clients) {
         this.clients = clients;
     }
 
+    /**
+     * Read and use server settings.
+     *
+     * @param clientManager interface for managing clients
+     * @return true for successfull load
+     */
     public static boolean deserialize(final IClientManager clientManager) {
+        log.log(Level.FINER, "Deserializing server settings.");
+        
         boolean result = true;
         File s = new File(SERIALIZATION_NAME);
         if (s.exists()) {
@@ -63,7 +81,15 @@ public final class ServerSettings implements Serializable {
         return result;
     }
 
+    /**
+     * Store server settings to disk.
+     *
+     * @param clientManager interface for managing clients
+     * @return true for successfull save
+     */
     public static boolean serialize(final IClientManager clientManager) {
+        log.log(Level.FINER, "Serializing server settings.");
+        
         final ServerSettings s = new ServerSettings();
         final Set<String> clients = s.clients;
         clients.clear();

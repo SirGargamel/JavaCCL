@@ -4,21 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
+ * Sort XML data according to registration time in ascending order.
  *
  * @author Petr Ječmen
  */
 public class TimeSorter extends HistorySorter {
 
+    private static final Logger log = Logger.getLogger(TimeSorter.class.getName());
     private static final String NODE_NAME = "Time";
 
     @Override
     public Element sortHistory(final Element rootElement, final Document doc) {
+        log.finer("Sortiing nodes by time.");
         SortedMap<Object, List<Node>> sortedNodes = new TreeMap<>();
 
         final NodeList nl = rootElement.getChildNodes();

@@ -65,9 +65,15 @@ public final class Comm_Server implements IService {
      * @return
      */
     public Communicator registerClient(final InetAddress adress) {
+        log.log(Level.FINE, "Registering new client on IP{0} on default port", adress);
         return clients.registerClient(adress, Comm_Client.PORT);
     }
 
+    /**
+     *
+     * @param address
+     * @return
+     */
     public Communicator getClient(final InetAddress address) {
         return clients.getClient(address, Comm_Client.PORT);
     }
@@ -75,10 +81,10 @@ public final class Comm_Server implements IService {
     /**
      * Export history as is to XML file.
      *
-     * @param target target file
      * @return true for successfull export.
      */
     public boolean exportHistory() {
+        log.fine("Exporting history.");
         return history.export(new File(""), null);
     }
 
@@ -89,6 +95,10 @@ public final class Comm_Server implements IService {
         return history;
     }
 
+    /**
+     *
+     * @return
+     */
     public IClientManager getClientManager() {
         return clients;
     }
@@ -105,6 +115,7 @@ public final class Comm_Server implements IService {
     /**
      * Create and initialize new instance of server.
      *
+     * @param port
      * @return new instance of Comm_Server
      */
     public static Comm_Server initNewServer(final int port) {
@@ -112,9 +123,15 @@ public final class Comm_Server implements IService {
 
         result.start();
 
+        log.log(Level.FINE, "New server created on port {0}", port);
+
         return result;
     }
 
+    /**
+     *
+     * @return
+     */
     public static Comm_Server initNewServer() {
         return initNewServer(PORT);
     }
@@ -134,5 +151,6 @@ public final class Comm_Server implements IService {
         clientStatusDaemon.stopService();
         serverSocket.stopService();
         cdd.stopService();
+        log.config("Server has been stopped.");
     }
 }

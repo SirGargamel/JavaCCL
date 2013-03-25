@@ -18,6 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Daemon asking clients what is their status.
  *
  * @author Petr Ječmen
  */
@@ -30,7 +31,13 @@ public class ClientStatusDaemon extends Thread implements IService, IListener {
     private final IClientManager clientManager;
     private final IListenerRegistrator listenerRegistrator;
     private final Map<UUID, Communicator> responses;
-    
+
+    /**
+     *
+     * @param clientManager client manager
+     * @param listenerRegistrator listener registrator for easy response
+     * obtaining
+     */
     public ClientStatusDaemon(final IClientManager clientManager, final IListenerRegistrator listenerRegistrator) {
         if (clientManager == null || listenerRegistrator == null) {
             throw new IllegalArgumentException("NULL arguments not allowed");
@@ -60,14 +67,16 @@ public class ClientStatusDaemon extends Thread implements IService, IListener {
                 if (!c.sendData(m, TIMEOUT)) {
                     c.setStatus(Status.OFFLINE);
                     UserLogging.showWarningToUser("Client " + c.getAddress().getHostAddress() + ":" + c.getPort() + " could not be contacted.");
+                    log.log(Level.FINER, "Client {0}:{1} could not be contacted.", new Object[]{c.getAddress().getHostAddress(), c.getPort()});
                 } else {
                     c.setStatus(Status.NOT_RESPONDING);
+                    log.log(Level.FINER, "Status request to {0}:{1} sent successfully.", new Object[]{c.getAddress().getHostAddress(), c.getPort()});
                 }
             }
             
             synchronized (this) {
-                try {                    
-                    this.wait(DELAY);                    
+                try {
+                    this.wait(DELAY);
                 } catch (InterruptedException ex) {
                     log.log(Level.WARNING, "Waiting of ClientStatus thread interrupted.", ex);
                 }
@@ -78,10 +87,11 @@ public class ClientStatusDaemon extends Thread implements IService, IListener {
     @Override
     public void stopService() {
         run = false;
+        log.config("ClientStatusDaemon has been stopped.");
     }
     
     @Override
-    public void receiveData(final IIdentifiable data) {        
+    public void receiveData(final IIdentifiable data) {
         if (data instanceof Message) {
             final Message m = (Message) data;
             
@@ -93,6 +103,7 @@ public class ClientStatusDaemon extends Thread implements IService, IListener {
                 
                 try {
                     c.setStatus(status);
+                    log.log(Level.FINER, "{0}:{1} status report - {2}.", new Object[]{c.getAddress().getHostAddress(), c.getPort(), status});
                 } catch (IllegalArgumentException ex) {
                     log.log(Level.WARNING, "Illegal data received as status.", ex);
                 }

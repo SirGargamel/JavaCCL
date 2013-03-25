@@ -1,8 +1,5 @@
 package cz.tul.comm.persistence;
 
-import java.beans.DefaultPersistenceDelegate;
-import java.beans.Encoder;
-import java.beans.Expression;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.File;
@@ -13,8 +10,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +30,8 @@ public abstract class SerializationUtils {
      * @throws IOException target file could not be accessed
      */
     public static boolean saveItemToDisc(final File dest, final Object data) throws IOException {
+        log.log(Level.FINER, "Saving item to disk as binary - {0}, {1}", new Object[]{dest.getName(), data.toString()});
+
         boolean result = false;
         if (data instanceof Serializable) {
             if (!dest.exists()) {
@@ -63,6 +60,8 @@ public abstract class SerializationUtils {
      * @return true for successfull saving
      */
     public static boolean saveItemToDiscAsXML(final File dest, final Object data) {
+        log.log(Level.FINER, "Saving item to disk as XML - {0}, {1}", new Object[]{dest.getName(), data.toString()});
+
         boolean result = false;
         if (data instanceof Serializable) {
             if (!dest.exists()) {
@@ -73,14 +72,6 @@ public abstract class SerializationUtils {
                 }
             }
             try (XMLEncoder out = new XMLEncoder(new FileOutputStream(dest))) {
-//                out.setPersistenceDelegate(Inet4Address.class, new DefaultPersistenceDelegate() {
-//                    @Override
-//                    protected Expression instantiate(Object oldInstance, Encoder out) {
-//                        InetAddress old = (InetAddress) oldInstance;
-//                        return new Expression(oldInstance, InetAddress.class, "getByAddress",
-//                                new Object[]{old.getAddress()});
-//                    }
-//                });
                 out.writeObject(data);
                 result = true;
             } catch (FileNotFoundException ex) {
@@ -99,6 +90,7 @@ public abstract class SerializationUtils {
      * @return deserialized object
      */
     public static Object loadItemFromDisc(final File src) {
+        log.log(Level.FINER, "Loading binary item from disk - {0}", new Object[]{src.getName()});
         Object result = null;
 
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(src))) {
@@ -119,6 +111,7 @@ public abstract class SerializationUtils {
      * @return deserialized object
      */
     public static Object loadXMLItemFromDisc(final File src) {
+        log.log(Level.FINER, "Loading XML item from disk - {0}", new Object[]{src.getName()});
         Object result = null;
 
         try (XMLDecoder in = new XMLDecoder(new FileInputStream(src))) {

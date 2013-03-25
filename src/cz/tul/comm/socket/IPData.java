@@ -2,6 +2,7 @@ package cz.tul.comm.socket;
 
 import cz.tul.comm.socket.queue.IIdentifiable;
 import java.net.InetAddress;
+import java.util.logging.Logger;
 
 /**
  * Simple data container for received data with IP address from which the data
@@ -11,6 +12,7 @@ import java.net.InetAddress;
  */
 public class IPData implements IIdentifiable {
 
+    private static final Logger log = Logger.getLogger(IPData.class.getName());
     private final InetAddress ip;
     private final int port;
     private final Object data;
@@ -19,12 +21,13 @@ public class IPData implements IIdentifiable {
      * Store data to container.
      *
      * @param ip source IP
+     * @param port source port
      * @param data received data
      */
     public IPData(final InetAddress ip, final int port, final Object data) {
         this.ip = ip;
         this.port = port;
-        this.data = data;
+        this.data = data;        
     }
 
     @Override
@@ -40,6 +43,9 @@ public class IPData implements IIdentifiable {
         return ip;
     }
 
+    /**
+     * @return port number, from which the data hse been received
+     */
     public int getPort() {
         return port;
     }

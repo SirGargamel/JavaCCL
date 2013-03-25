@@ -27,33 +27,36 @@ final class ClientDB implements IClientManager {
     }
 
     @Override
-    public Communicator registerClient(final InetAddress adress, final int port) {
-        Communicator cc = getClient(adress, port);
+    public Communicator registerClient(final InetAddress address, final int port) {
+        Communicator cc = getClient(address, port);
         if (cc == null) {
             try {
-                cc = new Communicator(adress, port);
+                cc = new Communicator(address, port);
                 cc.registerHistory(hm);
                 clients.add(cc);
+                log.log(Level.FINER, "New client with IP {0} on port {1} registered", new Object[] {address.getHostAddress(), port});
             } catch (IllegalArgumentException ex) {
                 log.log(Level.WARNING, "Invalid Communicator parameters.", ex);
             }
+        } else {
+            log.log(Level.FINER, "Client with IP {0} on port {1} is already registered, no changes made", new Object[] {address.getHostAddress(), port});
         }
 
         return cc;
     }
 
     @Override
-    public void deregisterClient(final InetAddress adress, final int port) {
+    public void deregisterClient(final InetAddress address, final int port) {
         final Iterator<Communicator> i = clients.iterator();
         Communicator cc;
         while (i.hasNext()) {
             cc = i.next();
-            if (cc.getAddress().equals(adress) && cc.getPort() == port) {
+            if (cc.getAddress().equals(address) && cc.getPort() == port) {
                 i.remove();
                 break;
             }
         }
-
+        log.log(Level.FINER, "Client with IP {0} on port {1} deregistered", new Object[] {address.getHostAddress(), port});
     }
 
     @Override
@@ -70,7 +73,7 @@ final class ClientDB implements IClientManager {
     public Set<Communicator> getClients() {
         return Collections.unmodifiableSet(clients);
     }
-    
+
     /**
      * Register history manager that will store info about received messages.
      *
@@ -78,5 +81,6 @@ final class ClientDB implements IClientManager {
      */
     public void registerHistory(final IHistoryManager hm) {
         this.hm = hm;
+        log.config("History registered.");
     }
 }

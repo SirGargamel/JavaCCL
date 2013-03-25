@@ -4,18 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * Sorter for XML data according to IP address of source or receiver.
+ * Sorter for XML data according to IP address of sender or receiver.
  *
  * @author Petr Ječmen
  */
 public class IPSorter extends HistorySorter {
 
+    private static final Logger log = Logger.getLogger(IPSorter.class.getName());
     private static final String NAME_SOURCE = "IPSource";
     private static final String NAME_DEST = "IPDestination";
     private static final String IP_DELIMITER = ".";
@@ -37,7 +39,8 @@ public class IPSorter extends HistorySorter {
     }
 
     @Override
-    public Element sortHistory(final Element rootElement, final Document doc) {
+    public Element sortHistory(final Element rootElement, final Document doc) {        
+        log.finer("Sortiing nodes by IP.");
         SortedMap<Object, List<Node>> sortedNodes = new TreeMap<>();
 
         final NodeList nl = rootElement.getChildNodes();

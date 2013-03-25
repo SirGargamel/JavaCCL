@@ -1,9 +1,8 @@
 package cz.tul.comm.persistence;
 
-import cz.tul.comm.client.Comm_Client;
+import cz.tul.comm.client.IServerRegistrator;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.gui.UserLogging;
-import cz.tul.comm.persistence.SerializationUtils;
 import cz.tul.comm.server.Comm_Server;
 import java.io.File;
 import java.io.Serializable;
@@ -13,8 +12,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * ClientSettings for client part. Default settings for server address is
- * loopback adress (eg. server and client are run on same machine).
+ * Settings for client part. Default settings for server address is loopback
+ * adress (eg. server and client are run on same machine) on default server
+ * port.
  *
  * @author Petr Ječmen
  */
@@ -27,19 +27,38 @@ public final class ClientSettings implements Serializable {
     private static final InetAddress DEFAULT_SERVER_IP = InetAddress.getLoopbackAddress();
     private String serverAdress;
 
+    /**
+     * Initialize storge.
+     */
     public ClientSettings() {
         serverAdress = composeServerAddress(DEFAULT_SERVER_IP, Comm_Server.PORT);
     }
 
+    /**
+     *
+     * @return
+     */
     public String getServerAdress() {
         return serverAdress;
     }
 
+    /**
+     *
+     * @param serverAdress
+     */
     public void setServerAdress(String serverAdress) {
         this.serverAdress = serverAdress;
     }
 
-    public static boolean deserialize(final Comm_Client client) {
+    /**
+     * Save client settings to disk.
+     *
+     * @param reg server parameters registrator
+     * @return true for successfull deserialization
+     */
+    public static boolean deserialize(final IServerRegistrator reg) {
+        log.log(Level.FINER, "Deserializing client settings.");
+
         boolean result = true;
         File s = new File(SERIALIZATION_NAME);
 
@@ -74,12 +93,20 @@ public final class ClientSettings implements Serializable {
             result = false;
         }
 
-        client.setServerAdress(ip, port);
+        reg.registerServer(ip, port);
 
         return result;
     }
 
+    /**
+     * Load client settings from disk.
+     *
+     * @param serverCommunicator server communicator
+     * @return true for successfull save
+     */
     public static boolean serialize(final Communicator serverCommunicator) {
+        log.log(Level.FINER, "Serializing client settings.");
+
         final ClientSettings s = new ClientSettings();
 
         s.serverAdress = composeServerAddress(serverCommunicator.getAddress(), serverCommunicator.getPort());

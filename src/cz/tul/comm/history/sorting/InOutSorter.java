@@ -7,17 +7,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
+ * Sorts messages in two grops - one group is filled with inbound messages, the
+ * rest is in the other group.
  *
  * @author Petr Ječmen
  */
 public class InOutSorter extends HistorySorter {
 
+    private static final Logger log = Logger.getLogger(InOutSorter.class.getName());
     private static final String NODE_NAME = "IPSource";
     private static final String IP_DELIMITER = ".";
     private static final String IP_DELIMITER_REGEX = "[" + IP_DELIMITER + "]";
@@ -27,6 +32,7 @@ public class InOutSorter extends HistorySorter {
 
     @Override
     public Element sortHistory(final Element rootElement, final Document doc) {
+        log.finer("Sortiing nodes by direction (In | Out).");
         SortedMap<Object, List<Node>> sortedNodes = new TreeMap<>();
 
         final NodeList nl = rootElement.getChildNodes();
@@ -53,9 +59,10 @@ public class InOutSorter extends HistorySorter {
         try {
             normalizedLocalHost = normalizeIP(InetAddress.getLocalHost().getHostAddress());
         } catch (UnknownHostException ex) {
+            log.log(Level.CONFIG, "Could not obtain local IP address, using loopback.", ex);
             normalizedLocalHost = normalizeIP(InetAddress.getLoopbackAddress().getHostAddress());
         }
-        
+
         Element group;
         for (Map.Entry<Object, List<Node>> e : sortedNodes.entrySet()) {
             boolean out = e.getKey().equals(normalizedLocalHost);

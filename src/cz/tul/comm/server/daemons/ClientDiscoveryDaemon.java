@@ -2,6 +2,7 @@ package cz.tul.comm.server.daemons;
 
 import cz.tul.comm.Constants;
 import cz.tul.comm.IService;
+import cz.tul.comm.client.Comm_Client;
 import cz.tul.comm.server.IClientManager;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -16,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Daemon tryning to discover new clients on local network.
  *
  * @author Petr Ječmen
  */
@@ -27,6 +29,10 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
     private final DatagramSocket s;
     private boolean run;
 
+    /**
+     * @param clientManager client manager for new client registration
+     * @throws SocketException thrown when daemon could not be created
+     */
     public ClientDiscoveryDaemon(final IClientManager clientManager) throws SocketException {
         run = true;
         cm = clientManager;
@@ -53,15 +59,19 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
         }
     }
 
+    /**
+     *
+     * @throws SocketException
+     * @throws IOException
+     */
     public void discoverClients() throws SocketException, IOException {
-        // Find the server using UDP broadcast                                
-        // TODO send valid msg
+        // Find the clients using UDP broadcast                                        
         byte[] sendData = Constants.DISCOVERY_QUESTION.getBytes();
 
         // Try the 255.255.255.255 first
         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), Constants.DEFAULT_PORT_DISCOVERY);
         s.send(sendPacket);
-        log.log(Level.FINEST, "Discovery packet sent to: 255.255.255.255 (DEFAULT)");
+        log.log(Level.FINER, "Discovery packet sent to: 255.255.255.255 (DEFAULT)");
 
         // Broadcast the message over all the network interfaces
         Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -83,12 +93,15 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
                 s.send(sendPacket);
 
 
-                log.log(Level.FINEST, "Discovery packet sent to: {0}; Interface: {1}", new Object[]{broadcast.getHostAddress(), networkInterface.getDisplayName()});
+                log.log(Level.FINER, "Discovery packet sent to: {0}; Interface: {1}", new Object[]{broadcast.getHostAddress(), networkInterface.getDisplayName()});
             }
         }
-        log.log(Level.FINER, "Done looping over all network interfaces.");
     }
 
+    /**
+     *
+     * @throws IOException
+     */
     public void listenForResponse() throws IOException {
         final long endTime = System.currentTimeMillis() + DELAY;
         //Wait for a response
@@ -107,7 +120,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
                 //Check if the message is correct
                 String message = new String(receivePacket.getData()).trim();
                 if (message.equals(Constants.DISCOVERY_RESPONSE)) {
-                    // TODO register new client
+                    cm.registerClient(s.getInetAddress(), Comm_Client.PORT);
                 }
             } catch (SocketTimeoutException ex) {
                 // nothing bad happened
@@ -119,5 +132,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
     @Override
     public void stopService() {
         run = false;
+        s.close();
+        log.config("ClientDiscoveryDaemon has been stopped.");
     }
 }

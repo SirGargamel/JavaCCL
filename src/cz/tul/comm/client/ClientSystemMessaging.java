@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Class handling system messages for client side.
  *
  * @author Petr Ječmen
  */
@@ -31,6 +32,7 @@ class ClientSystemMessaging implements IListener {
                     case MessageHeaders.STATUS:
                         final Message response = new Message(m.getId(), m.getHeader(), parent.getStatus());
                         parent.sendData(response);
+                        log.log(Level.FINER, "STATUS question received and response {0} has been sent.", response.toString());
                         break;
                     default:
                         // nonsystem msg, nothing to do

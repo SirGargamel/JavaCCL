@@ -12,14 +12,25 @@ import java.util.Set;
 public interface IClientManager {
 
     /**
+     * Register a new client.
+     *
+     * @param adress client IP
+     * @param port client port
+     * @return {@link Communicator} for client communication
+     */
+    Communicator registerClient(final InetAddress adress, final int port);
+
+    /**
      * Deregister client with given IP.
      *
      * @param adress client IP
+     * @param port client port
      */
     void deregisterClient(final InetAddress adress, final int port);
 
     /**
      * @param adress client IP
+     * @param port client port
      * @return {@link Communicator} for communication with given IP (if
      * registered)
      */
@@ -29,13 +40,4 @@ public interface IClientManager {
      * @return list of all clients
      */
     Set<Communicator> getClients();
-
-    /**
-     * Register a new client.
-     *
-     * @param adress client IP
-     * @param port client port
-     * @return {@link Communicator} for client communication
-     */
-    Communicator registerClient(final InetAddress adress, final int port);
 }

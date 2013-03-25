@@ -1,7 +1,7 @@
 package cz.tul.comm;
 
 /**
- * Interface for running services, that should be stopped in orderly fashion
+ * Interface for running services, which should be stopped in orderly fashion
  * before shutdown.
  *
  * @author Petr Ječmen

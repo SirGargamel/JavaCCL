@@ -1,18 +1,27 @@
 package cz.tul.comm.history.export;
 
 import cz.tul.comm.messaging.Message;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
+ * Export unit for class {@link Message}. Stores 3 nodes - UUID, header and
+ * data. Data are exported using {@link Exporter} and its methods, so if you
+ * want to have nice export for sent data, create and register export unit for
+ * given data.
  *
  * @author Petr Ječmen
  */
 public class ExportMessage implements IExportUnit {
 
+    private static final Logger log = Logger.getLogger(ExportMessage.class.getName());
+
     @Override
     public Element exportData(Document doc, Object data) {
+        log.log(Level.FINEST, "Exporting message class to XML - {0}", data.toString());
         Element result = null;
         if (data instanceof Message) {
             final Message m = (Message) data;

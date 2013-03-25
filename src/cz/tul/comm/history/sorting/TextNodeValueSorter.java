@@ -4,19 +4,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * Sorter for XML data according to given Node. Data will be sorted according to
- * text value of given node.
+ * Sorter for XML data according to given Node identified by name. Data will be
+ * sorted according to text value of given node.
  *
  * @author Petr Ječmen
  */
 public class TextNodeValueSorter extends HistorySorter {
 
+    private static final Logger log = Logger.getLogger(TextNodeValueSorter.class.getName());
     private final String nodeName;
 
     /**
@@ -28,6 +31,7 @@ public class TextNodeValueSorter extends HistorySorter {
 
     @Override
     public Element sortHistory(final Element rootElement, final Document doc) {
+        log.log(Level.FINER, "Sorting nodes by node {0}.", nodeName);
         SortedMap<Object, List<Node>> sortedNodes = new TreeMap<>();
 
         final NodeList nl = rootElement.getChildNodes();

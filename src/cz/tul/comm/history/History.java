@@ -2,6 +2,7 @@ package cz.tul.comm.history;
 
 import cz.tul.comm.history.export.Exporter;
 import cz.tul.comm.history.export.IExportUnit;
+import cz.tul.comm.history.sorting.DefaultSorter;
 import cz.tul.comm.history.sorting.HistorySorter;
 import java.io.File;
 import java.net.InetAddress;
@@ -58,29 +59,38 @@ public final class History implements IHistoryManager {
 
     @Override
     public void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted) {
-        records.add(new Record(localHost, ipDestination, data, accepted));
+        final Record r = new Record(localHost, ipDestination, data, accepted);
+        records.add(r);
+        log.log(Level.FINER, "Sent message stored to history - {0}", r);
+
     }
 
     @Override
     public void logMessageReceived(final InetAddress ipSource, final Object data, final boolean accepted) {
-        records.add(new Record(ipSource, localHost, data, accepted));
+        final Record r = new Record(ipSource, localHost, data, accepted);
+        records.add(r);
+        log.log(Level.FINER, "Received message stored to history - {0}", r);
     }
 
     @Override
-    public boolean export(final File target, final HistorySorter sorter) {
+    public boolean export(final File target, HistorySorter sorter) {
         boolean result = false;
+
+        if (sorter == null) {
+            sorter = new DefaultSorter();
+        }
 
         try {
             final Document doc = prepareDocument();
             final Element rootElement = createRootElement(doc);
 
-            if (sorter != null) {
-                final Element newRootElement = sorter.sortHistory(rootElement, doc);
-                doc.replaceChild(newRootElement, rootElement);
-            }
+            final Element newRootElement = sorter.sortHistory(rootElement, doc);
+            doc.replaceChild(newRootElement, rootElement);
 
             exportDocumentToXML(target, doc);
             result = true;
+
+            log.log(Level.FINER, "History successfully exported to {0}, sorted using {1}", new Object[]{target.getAbsolutePath(), sorter.getClass().getCanonicalName()});
         } catch (ParserConfigurationException ex) {
             log.log(Level.WARNING, "Failed to create DocumentBuilder", ex);
         } catch (TransformerException ex) {
@@ -144,5 +154,6 @@ public final class History implements IHistoryManager {
     @Override
     public void registerExporter(final IExportUnit eu) {
         Exporter.registerExporterUnit(eu);
+        log.log(Level.CONFIG, "New export unit registered - {0}", eu.getClass().getCanonicalName());
     }
 }

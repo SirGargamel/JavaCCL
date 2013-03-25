@@ -32,7 +32,7 @@ public final class Communicator {
     private IHistoryManager hm;
 
     /**
-     * New instacnce of communicator sending data to given IP and port
+     * New instance of communicator for sending data to given IP and port
      *
      * @param address target IP
      * @param port target port
@@ -58,6 +58,7 @@ public final class Communicator {
      */
     public void registerHistory(final IHistoryManager hm) {
         this.hm = hm;
+        log.config("History registered.");
     }
 
     /**
@@ -78,6 +79,13 @@ public final class Communicator {
         return sendData(data, 0);
     }
 
+    /**
+     * Send data to given target.
+     *
+     * @param data data for sending (must implement Serializable interface)
+     * @param timeout time, after which sending is considered unsuccessfull
+     * @return true for successfull send
+     */
     public boolean sendData(final Object data, final int timeout) {
         boolean result = false;
         try (final Socket s = new Socket(address, port)) {
@@ -86,17 +94,19 @@ public final class Communicator {
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
             out.writeObject(data);
             out.flush();
+            log.log(Level.FINER, "Data sent to client {0}:{1}", new Object[]{getAddress().getHostAddress(), getPort()});
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                 result = in.readBoolean();
+                log.log(Level.FINER, "Received reply from client - {0}", result);
             } catch (IOException ex) {
                 log.log(Level.WARNING, "Error receiving response from output socket", ex);
                 setStatus(Status.NOT_RESPONDING);
             }
         } catch (SocketTimeoutException ex) {
-            log.log(Level.CONFIG, "Client on IP {0} is not responding to request", address.getHostAddress());
+            log.log(Level.FINER, "Client on IP {0} is not responding to request.", address.getHostAddress());
             setStatus(Status.NOT_RESPONDING);
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Cannot write to output socket", ex);
+            log.log(Level.WARNING, "Cannot write to output socket.", ex);
             setStatus(Status.OFFLINE);
         }
 
@@ -107,19 +117,32 @@ public final class Communicator {
         return result;
     }
 
+    /**
+     * @param newStatus new client status
+     */
     public void setStatus(final Status newStatus) {
         status = newStatus;
         lastStatusUpdateTime = new Date();
     }
 
+    /**
+     *
+     * @return time of last status update
+     */
     public Date getLastStatusUpdate() {
         return lastStatusUpdateTime;
     }
 
+    /**
+     * @return last known client status
+     */
     public Status getStatus() {
         return status;
     }
 
+    /**
+     * @return target client port
+     */
     public int getPort() {
         return port;
     }
@@ -127,8 +150,8 @@ public final class Communicator {
     @Override
     public boolean equals(Object o) {
         if (o instanceof Communicator) {
-            Communicator cc = (Communicator) o;            
-            return (cc.getAddress().equals(address) && cc.getPort() == port);            
+            Communicator cc = (Communicator) o;
+            return (cc.getAddress().equals(address) && cc.getPort() == port);
         }
         return false;
     }
