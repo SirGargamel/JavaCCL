@@ -12,6 +12,7 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,7 +90,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
                 }
 
                 // Send the broadcast
-                sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, 8888);
+                sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, Constants.DEFAULT_PORT_DISCOVERY);
                 s.send(sendPacket);
 
 
@@ -113,14 +114,31 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
             DatagramPacket receivePacket = new DatagramPacket(recvBuf, recvBuf.length);
             try {
                 s.receive(receivePacket);
+                String message = new String(receivePacket.getData()).trim();
 
                 //We have a response
-                log.log(Level.FINER, "Broadcast response from client: {0}", receivePacket.getAddress().getHostAddress());
+                log.log(Level.FINER, "Broadcast response from client {0} : {1}", new Object[]{receivePacket.getAddress().getHostAddress(), message});
 
                 //Check if the message is correct
-                String message = new String(receivePacket.getData()).trim();
                 if (message.equals(Constants.DISCOVERY_RESPONSE)) {
                     cm.registerClient(s.getInetAddress(), Comm_Client.PORT);
+                } else if (message.startsWith(Constants.DISCOVERY_RESPONSE)) {
+                    // TODO parse IP and port
+                    final String address = message.replaceFirst(Constants.DISCOVERY_RESPONSE, "").replaceFirst(Constants.DISCOVERY_RESPONSE_DELIMITER_A, "");
+                    final String[] split = address.split(Constants.DISCOVERY_RESPONSE_DELIMITER_P);
+                    if (split.length == 2) {
+                        try {
+                            final String ips = split[0].trim();
+                            final InetAddress ip = InetAddress.getByName(ips);
+                            final String ports = split[1].trim();
+                            final int port = Integer.valueOf(ports);
+                            
+                            cm.registerClient(ip, port);
+                        } catch (NumberFormatException | UnknownHostException ex) {
+                            log.log(Level.WARNING, "Response with address in wrong format - {0}", message);
+                        }
+                    }
+
                 }
             } catch (SocketTimeoutException ex) {
                 // nothing bad happened

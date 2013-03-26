@@ -62,7 +62,7 @@ public final class ClientSettings implements Serializable {
         boolean result = true;
         File s = new File(SERIALIZATION_NAME);
 
-        InetAddress ip = DEFAULT_SERVER_IP;
+        InetAddress ip = null;
         int port = Comm_Server.PORT;
         if (s.exists()) {
             Object in = SerializationUtils.loadXMLItemFromDisc(s);
@@ -75,16 +75,12 @@ public final class ClientSettings implements Serializable {
                 } catch (UnknownHostException ex) {
                     UserLogging.showWarningToUser("Unknown server ip found in settings - " + ex.getLocalizedMessage());
                     log.log(Level.WARNING, "Unkonwn server ip found in settings", ex);
-                    ip = DEFAULT_SERVER_IP;
                 } catch (NumberFormatException ex) {
                     UserLogging.showWarningToUser("Unknown server port found in settings - " + ex.getLocalizedMessage());
                     log.log(Level.WARNING, "Unkonwn server port found in settings", ex);
-                    port = Comm_Server.PORT;
                 } catch (ArrayIndexOutOfBoundsException ex) {
                     UserLogging.showWarningToUser("Illegal parameters for server IP and port found in settings - " + settings.serverAdress);
                     log.log(Level.WARNING, "Unkonwn server IP and port found in settings.", ex);
-                    ip = DEFAULT_SERVER_IP;
-                    port = Comm_Server.PORT;
                 }
             } else {
                 result = false;
@@ -93,7 +89,9 @@ public final class ClientSettings implements Serializable {
             result = false;
         }
 
-        reg.registerServer(ip, port);
+        if (ip != null) {
+            reg.registerServer(ip, port);
+        }
 
         return result;
     }

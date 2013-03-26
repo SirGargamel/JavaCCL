@@ -27,4 +27,6 @@ public interface Constants {
      * response for client discovery if client has been found.
      */
     String DISCOVERY_RESPONSE = "DISCOVER_REGISTRATION";
+    String DISCOVERY_RESPONSE_DELIMITER_A = "_";
+    String DISCOVERY_RESPONSE_DELIMITER_P = ":";
 }

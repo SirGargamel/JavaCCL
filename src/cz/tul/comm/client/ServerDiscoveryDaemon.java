@@ -6,6 +6,7 @@ import cz.tul.comm.server.Comm_Server;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,8 +22,7 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
     private static final Logger log = Logger.getLogger(ServerDiscoveryDaemon.class.getName());
     private final DatagramSocket s;
     private final IServerRegistrator sr;
-    private boolean run;
-    private boolean isServerUp;
+    private boolean run;    
 
     /**
      *
@@ -34,18 +34,18 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
         s = new DatagramSocket(Constants.DEFAULT_PORT_DISCOVERY);
         s.setBroadcast(true);
         
-        run = true;
-        isServerUp = false;
+        run = true;        
     }
     
     @Override
     public void run() {
         while (run) {
-            if (!isServerUp) {
+            if (!sr.isServerUp()) {
                 try {
                     //Receive a packet
                     byte[] recvBuf = new byte[15000];
                     DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
+                    log.log(Level.FINER, "Starting listening for discovery packets");
                     s.receive(packet);
 
                     //Packet received
@@ -54,7 +54,14 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
                     //See if the packet holds the right message
                     String message = new String(packet.getData()).trim();
                     if (message.equals(Constants.DISCOVERY_QUESTION)) {
-                        byte[] sendData = Constants.DISCOVERY_RESPONSE.getBytes();
+                        final StringBuilder response = new StringBuilder();
+                        response.append(Constants.DISCOVERY_RESPONSE);
+                        response.append(Constants.DISCOVERY_RESPONSE_DELIMITER_A);
+                        response.append(InetAddress.getLocalHost().getHostAddress());
+                        response.append(Constants.DISCOVERY_RESPONSE_DELIMITER_P);
+                        response.append(Comm_Client.PORT);
+                        
+                        byte[] sendData = response.toString().getBytes();
 
                         //Send a response
                         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, packet.getAddress(), packet.getPort());
@@ -82,18 +89,7 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
             }
         }
         s.close();
-    }
-
-    /**
-     * @param isServerUp true if the server is reachable and responding
-     */
-    public void setServerUp(final boolean isServerUp) {
-        this.isServerUp = isServerUp;
-        synchronized (this) {
-            this.notify();
-        }
-        log.config("ServerDiscoveryDaemon has been woken up.");
-    }
+    }    
     
     @Override
     public void stopService() {
