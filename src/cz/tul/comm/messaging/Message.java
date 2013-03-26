@@ -68,7 +68,9 @@ public class Message implements Serializable, IIdentifiable {
         StringBuilder result = new StringBuilder();
         result.append(header);
         result.append(" - ");
-        result.append(data.toString());
+        if (data != null) {
+            result.append(data.toString());
+        }
 
         return result.toString();
     }
