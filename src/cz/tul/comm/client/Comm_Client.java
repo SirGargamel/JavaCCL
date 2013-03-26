@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public final class Comm_Client implements IService, IServerRegistrator {
+public final class Comm_Client implements IService, IServerInterface {
 
     private static final Logger log = Logger.getLogger(Comm_Client.class.getName());
     /**
@@ -174,5 +174,10 @@ public final class Comm_Client implements IService, IServerRegistrator {
         serverSocket.stopService();
         sdd.stopService();
         log.config("Client has been stopped.");
+    }
+
+    @Override
+    public int getServerPort() {
+        return serverSocket.getPort();
     }
 }

@@ -1,6 +1,6 @@
 package cz.tul.comm.persistence;
 
-import cz.tul.comm.client.IServerRegistrator;
+import cz.tul.comm.client.IServerInterface;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.server.Comm_Server;
@@ -56,7 +56,7 @@ public final class ClientSettings implements Serializable {
      * @param reg server parameters registrator
      * @return true for successfull deserialization
      */
-    public static boolean deserialize(final IServerRegistrator reg) {
+    public static boolean deserialize(final IServerInterface reg) {
         log.log(Level.FINER, "Deserializing client settings.");
 
         boolean result = true;

@@ -8,7 +8,7 @@ import java.net.InetAddress;
  *
  * @author Petr Ječmen
  */
-public interface IServerRegistrator {
+public interface IServerInterface {
 
     /**
      * @param address server IP
@@ -21,5 +21,7 @@ public interface IServerRegistrator {
      *
      * @return true if the server is aviable and responding
      */
-    boolean isServerUp();
+    boolean isServerUp();        
+    
+    int getServerPort();
 }

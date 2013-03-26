@@ -33,8 +33,7 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
     private final ObjectQueue<IPData> dataStorageIP;
     private final ObjectQueue<IIdentifiable> dataStorageId;
     private final Set<Observer> dataListeners;
-    private IHistoryManager hm;
-    private int port;
+    private IHistoryManager hm;    
     private boolean run;
 
     private ServerSocket(final int port) {
@@ -48,8 +47,7 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
         exec = Executors.newCachedThreadPool();
         dataStorageIP = new ObjectQueue<>();
         dataStorageId = new ObjectQueue<>();
-        dataListeners = new HashSet<>();
-        this.port = port;
+        dataListeners = new HashSet<>();        
         run = true;
     }
 
@@ -122,11 +120,15 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
         }
     }
 
+    public InetAddress getAddress() {
+        return socket.getInetAddress();
+    }
+    
     /**
      * @return listening port
      */
     public int getPort() {
-        return port;
+        return socket.getLocalPort();
     }
 
     /**

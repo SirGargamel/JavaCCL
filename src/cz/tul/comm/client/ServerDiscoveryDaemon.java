@@ -6,7 +6,6 @@ import cz.tul.comm.server.Comm_Server;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,7 +20,7 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
     
     private static final Logger log = Logger.getLogger(ServerDiscoveryDaemon.class.getName());
     private final DatagramSocket s;
-    private final IServerRegistrator sr;
+    private final IServerInterface sr;
     private boolean run;    
 
     /**
@@ -29,7 +28,7 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
      * @param sr interface for settings new server settings
      * @throws SocketException thrown when client could not be created
      */
-    public ServerDiscoveryDaemon(final IServerRegistrator sr) throws SocketException {
+    public ServerDiscoveryDaemon(final IServerInterface sr) throws SocketException {
         this.sr = sr;
         s = new DatagramSocket(Constants.DEFAULT_PORT_DISCOVERY);
         s.setBroadcast(true);
@@ -56,10 +55,8 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
                     if (message.equals(Constants.DISCOVERY_QUESTION)) {
                         final StringBuilder response = new StringBuilder();
                         response.append(Constants.DISCOVERY_RESPONSE);
-                        response.append(Constants.DISCOVERY_RESPONSE_DELIMITER_A);
-                        response.append(InetAddress.getLocalHost().getHostAddress());
-                        response.append(Constants.DISCOVERY_RESPONSE_DELIMITER_P);
-                        response.append(Comm_Client.PORT);
+                        response.append(Constants.DISCOVERY_RESPONSE_DELIMITER);
+                        response.append(sr.getServerPort());
                         
                         byte[] sendData = response.toString().getBytes();
 

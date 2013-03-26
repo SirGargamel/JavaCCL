@@ -12,7 +12,6 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -121,23 +120,17 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
 
                 //Check if the message is correct
                 if (message.equals(Constants.DISCOVERY_RESPONSE)) {
-                    cm.registerClient(s.getInetAddress(), Comm_Client.PORT);
+                    cm.registerClient(receivePacket.getAddress(), Comm_Client.PORT);
                 } else if (message.startsWith(Constants.DISCOVERY_RESPONSE)) {
                     // TODO parse IP and port
-                    final String address = message.replaceFirst(Constants.DISCOVERY_RESPONSE, "").replaceFirst(Constants.DISCOVERY_RESPONSE_DELIMITER_A, "");
-                    final String[] split = address.split(Constants.DISCOVERY_RESPONSE_DELIMITER_P);
-                    if (split.length == 2) {
-                        try {
-                            final String ips = split[0].trim();
-                            final InetAddress ip = InetAddress.getByName(ips);
-                            final String ports = split[1].trim();
-                            final int port = Integer.valueOf(ports);
-                            
-                            cm.registerClient(ip, port);
-                        } catch (NumberFormatException | UnknownHostException ex) {
-                            log.log(Level.WARNING, "Response with address in wrong format - {0}", message);
-                        }
+                    final String ports = message.replaceFirst(Constants.DISCOVERY_RESPONSE, "").replaceFirst(Constants.DISCOVERY_RESPONSE_DELIMITER, "");
+                    try {                        
+                        final int port = Integer.valueOf(ports);
+                        cm.registerClient(receivePacket.getAddress(), port);
+                    } catch (NumberFormatException  ex) {
+                        log.log(Level.WARNING, "Response with port in wrong format - {0}", message);
                     }
+
 
                 }
             } catch (SocketTimeoutException ex) {
