@@ -1,6 +1,8 @@
 package cz.tul.comm.communicator;
 
 import cz.tul.comm.history.IHistoryManager;
+import cz.tul.comm.messaging.Message;
+import cz.tul.comm.messaging.MessageHeaders;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -8,7 +10,7 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,10 +26,10 @@ import java.util.logging.Logger;
  */
 public final class Communicator {
 
-    private static final Logger log = Logger.getLogger(Communicator.class.getName());
+    private static final Logger log = Logger.getLogger(Communicator.class.getName());    
     private final InetAddress address;
     private final int port;
-    private Date lastStatusUpdateTime;
+    private Calendar lastStatusUpdateTime;
     private Status status;
     private IHistoryManager hm;
 
@@ -37,7 +39,7 @@ public final class Communicator {
      * @param address target IP
      * @param port target port
      */
-    public Communicator(final InetAddress address, final int port) {
+    private Communicator(final InetAddress address, final int port) {
         if (address == null) {
             throw new IllegalArgumentException("Invalid address \"" + address + "\"");
         } else if (port < 0 || port > 65535) {
@@ -47,7 +49,7 @@ public final class Communicator {
         this.address = address;
         this.port = port;
 
-        lastStatusUpdateTime = new Date();
+        lastStatusUpdateTime = Calendar.getInstance();
         status = Status.NA;
     }
 
@@ -122,14 +124,14 @@ public final class Communicator {
      */
     public void setStatus(final Status newStatus) {
         status = newStatus;
-        lastStatusUpdateTime = new Date();
+        lastStatusUpdateTime = Calendar.getInstance();
     }
 
     /**
      *
      * @return time of last status update
      */
-    public Date getLastStatusUpdate() {
+    public Calendar getLastStatusUpdate() {
         return lastStatusUpdateTime;
     }
 
@@ -162,5 +164,17 @@ public final class Communicator {
         hash = 23 * hash + Objects.hashCode(this.address);
         hash = 23 * hash + this.port;
         return hash;
+    }
+
+    public static Communicator initNewCommunicator(final InetAddress address, final int port) {
+        Communicator c;
+        try {
+            c = new Communicator(address, port);
+        } catch (IllegalArgumentException ex) {
+            log.log(Level.WARNING, "Illegal arguments used for Communicator creation.", ex);
+            return null;
+        }
+
+        return c;
     }
 }

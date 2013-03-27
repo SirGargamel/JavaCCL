@@ -31,15 +31,17 @@ final class ClientDB implements IClientManager {
         Communicator cc = getClient(address, port);
         if (cc == null) {
             try {
-                cc = new Communicator(address, port);
-                cc.registerHistory(hm);
-                clients.add(cc);
-                log.log(Level.FINER, "New client with IP {0} on port {1} registered", new Object[] {address.getHostAddress(), port});
+                cc = Communicator.initNewCommunicator(address, port);
+                if (cc != null) {
+                    cc.registerHistory(hm);
+                    clients.add(cc);
+                    log.log(Level.FINER, "New client with IP {0} on port {1} registered", new Object[]{address.getHostAddress(), port});
+                }
             } catch (IllegalArgumentException ex) {
                 log.log(Level.WARNING, "Invalid Communicator parameters.", ex);
             }
         } else {
-            log.log(Level.FINER, "Client with IP {0} on port {1} is already registered, no changes made", new Object[] {address.getHostAddress(), port});
+            log.log(Level.FINER, "Client with IP {0} on port {1} is already registered, no changes made", new Object[]{address.getHostAddress(), port});
         }
 
         return cc;
@@ -56,7 +58,7 @@ final class ClientDB implements IClientManager {
                 break;
             }
         }
-        log.log(Level.FINER, "Client with IP {0} on port {1} deregistered", new Object[] {address.getHostAddress(), port});
+        log.log(Level.FINER, "Client with IP {0} on port {1} deregistered", new Object[]{address.getHostAddress(), port});
     }
 
     @Override

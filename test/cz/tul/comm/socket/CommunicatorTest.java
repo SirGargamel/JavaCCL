@@ -6,9 +6,7 @@ package cz.tul.comm.socket;
 
 import cz.tul.comm.communicator.Communicator;
 import java.net.InetAddress;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -35,14 +33,6 @@ public class CommunicatorTest {
         ss.stopService();
     }
 
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test of getAddress method, of class Communicator.
      */
@@ -51,9 +41,12 @@ public class CommunicatorTest {
         System.out.println("Communicator");
 
         final InetAddress ip = InetAddress.getLoopbackAddress();
-        final Communicator instance = new Communicator(ip, PORT_SERVER);
-
-        assertEquals(ip, instance.getAddress());
+        
+        Communicator instance = Communicator.initNewCommunicator(ip, -PORT_SERVER);
+        assertNull(instance);
+        
+        instance = Communicator.initNewCommunicator(ip, PORT_SERVER);
+        assertEquals(ip, instance.getAddress());               
 
         final boolean result = instance.sendData("test");
         assertTrue("Target could not receive data", result);

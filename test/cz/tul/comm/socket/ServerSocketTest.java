@@ -49,7 +49,7 @@ public class ServerSocketTest {
         final Queue<IIdentifiable> queueMsg = instance.addIdListener(msgId, owner1, false);
         assertNotNull(queueMsg);
 
-        final Communicator c = new Communicator(InetAddress.getLoopbackAddress(), PORT);
+        final Communicator c = Communicator.initNewCommunicator(InetAddress.getLoopbackAddress(), PORT);
 
         final Object data1 = "testData";
         final Object data2 = new Integer(50);

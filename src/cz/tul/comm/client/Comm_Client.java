@@ -66,7 +66,7 @@ public final class Comm_Client implements IService, IServerInterface {
     public void registerServer(final InetAddress address, final int port) {
         log.log(Level.FINE, "Registering new server IP and port - {0}:{1}", new Object[]{address.getHostAddress(), port});
         try {
-            comm = new Communicator(address, port);
+            comm = Communicator.initNewCommunicator(address, port);
             if (isServerUp()) {                
                 getListenerRegistrator().removeIpListener(null, csm);
                 getListenerRegistrator().addIpListener(address, csm, true);
