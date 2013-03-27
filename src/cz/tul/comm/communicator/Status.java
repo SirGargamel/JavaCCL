@@ -26,5 +26,6 @@ public enum Status {
     /**
      * Client is aviable and able to perform computation.
      */
-    ONLINE,;
+    ONLINE,
+    REACHABLE;
 }

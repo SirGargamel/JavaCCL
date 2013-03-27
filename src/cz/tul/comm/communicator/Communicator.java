@@ -26,7 +26,9 @@ import java.util.logging.Logger;
  */
 public final class Communicator {
 
-    private static final Logger log = Logger.getLogger(Communicator.class.getName());    
+    private static final Logger log = Logger.getLogger(Communicator.class.getName());
+    private final int TIMEOUT = 500;
+    private final int STATUS_CHECK_INTERVAL = 5000;
     private final InetAddress address;
     private final int port;
     private Calendar lastStatusUpdateTime;
@@ -90,16 +92,22 @@ public final class Communicator {
      */
     public boolean sendData(final Object data, final int timeout) {
         boolean result = false;
+        setStatus(Status.OFFLINE);
+
         try (final Socket s = new Socket(address, port)) {
             s.setSoTimeout(timeout);
 
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
+            setStatus(Status.REACHABLE);
+
             out.writeObject(data);
             out.flush();
             log.log(Level.FINER, "Data sent to client {0}:{1}", new Object[]{getAddress().getHostAddress(), getPort()});
+
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                 result = in.readBoolean();
                 log.log(Level.FINER, "Received reply from client - {0}", result);
+                setStatus(Status.ONLINE);
             } catch (IOException ex) {
                 log.log(Level.WARNING, "Error receiving response from output socket", ex);
                 setStatus(Status.NOT_RESPONDING);
@@ -109,7 +117,6 @@ public final class Communicator {
             setStatus(Status.NOT_RESPONDING);
         } catch (IOException ex) {
             log.log(Level.WARNING, "Cannot write to output socket.", ex);
-            setStatus(Status.OFFLINE);
         }
 
         if (hm != null) {
@@ -117,6 +124,11 @@ public final class Communicator {
         }
 
         return result;
+    }
+
+    public Status checkStatus() {
+        sendData(new Message(MessageHeaders.KEEP_ALIVE, null), TIMEOUT);
+        return getStatus();
     }
 
     /**
@@ -139,6 +151,10 @@ public final class Communicator {
      * @return last known client status
      */
     public Status getStatus() {
+        if (Calendar.getInstance().getTimeInMillis() - getLastStatusUpdate().getTimeInMillis() > STATUS_CHECK_INTERVAL) {
+            checkStatus();
+        }
+        
         return status;
     }
 
@@ -170,6 +186,7 @@ public final class Communicator {
         Communicator c;
         try {
             c = new Communicator(address, port);
+            c.checkStatus();
         } catch (IllegalArgumentException ex) {
             log.log(Level.WARNING, "Illegal arguments used for Communicator creation.", ex);
             return null;
