@@ -35,13 +35,13 @@ final class ClientDB implements IClientManager {
                 if (cc != null) {
                     cc.registerHistory(hm);
                     clients.add(cc);
-                    log.log(Level.INFO, "New client with IP {0} on port {1} registered", new Object[]{address.getHostAddress(), port});
+                    log.log(Level.CONFIG, "New client with IP {0} on port {1} registered", new Object[]{address.getHostAddress(), port});
                 }
             } catch (IllegalArgumentException ex) {
                 log.log(Level.WARNING, "Invalid Communicator parameters.", ex);
             }
         } else {
-            log.log(Level.INFO, "Client with IP {0} on port {1} is already registered, no changes made", new Object[]{address.getHostAddress(), port});
+            log.log(Level.CONFIG, "Client with IP {0} on port {1} is already registered, no changes made", new Object[]{address.getHostAddress(), port});
         }
 
         return cc;
@@ -58,7 +58,7 @@ final class ClientDB implements IClientManager {
                 break;
             }
         }
-        log.log(Level.INFO, "Client with IP {0} on port {1} deregistered", new Object[]{address.getHostAddress(), port});
+        log.log(Level.CONFIG, "Client with IP {0} on port {1} deregistered", new Object[]{address.getHostAddress(), port});
     }
 
     @Override
@@ -83,6 +83,6 @@ final class ClientDB implements IClientManager {
      */
     public void registerHistory(final IHistoryManager hm) {
         this.hm = hm;
-        log.config("History registered.");
+        log.fine("History registered.");
     }
 }

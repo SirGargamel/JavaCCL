@@ -71,10 +71,10 @@ public class ClientStatusDaemon extends Thread implements IService, IListener {
 
                 if (!c.sendData(m, TIMEOUT)) {
                     c.setStatus(Status.OFFLINE);                    
-                    log.log(Level.INFO, "Client {0}:{1} could not be contacted.", new Object[]{c.getAddress().getHostAddress(), c.getPort()});
+                    log.log(Level.CONFIG, "Client {0}:{1} could not be contacted.", new Object[]{c.getAddress().getHostAddress(), c.getPort()});
                 } else {
                     c.setStatus(Status.NOT_RESPONDING);
-                    log.log(Level.INFO, "Status request to {0}:{1} sent successfully.", new Object[]{c.getAddress().getHostAddress(), c.getPort()});
+                    log.log(Level.CONFIG, "Status request to {0}:{1} sent successfully.", new Object[]{c.getAddress().getHostAddress(), c.getPort()});
                 }
             }
 
@@ -91,7 +91,7 @@ public class ClientStatusDaemon extends Thread implements IService, IListener {
     @Override
     public void stopService() {
         run = false;
-        log.config("ClientStatusDaemon has been stopped.");
+        log.fine("ClientStatusDaemon has been stopped.");
     }
 
     @Override
@@ -107,7 +107,7 @@ public class ClientStatusDaemon extends Thread implements IService, IListener {
 
                 try {
                     c.setStatus(status);
-                    log.log(Level.INFO, "{0}:{1} status report - {2}.", new Object[]{c.getAddress().getHostAddress(), c.getPort(), status});
+                    log.log(Level.CONFIG, "{0}:{1} status report - {2}.", new Object[]{c.getAddress().getHostAddress(), c.getPort(), status});
                 } catch (IllegalArgumentException ex) {
                     log.log(Level.WARNING, "Illegal data received as status.", ex);
                 }

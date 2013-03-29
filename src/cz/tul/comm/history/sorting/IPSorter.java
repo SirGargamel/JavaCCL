@@ -40,7 +40,7 @@ public class IPSorter extends HistorySorter {
 
     @Override
     public Element sortHistory(final Element rootElement, final Document doc) {        
-        log.finer("Sortiing nodes by IP.");
+        log.fine("Sorting nodes by IP.");
         SortedMap<Object, List<Node>> sortedNodes = new TreeMap<>();
 
         final NodeList nl = rootElement.getChildNodes();

@@ -30,7 +30,7 @@ public abstract class SerializationUtils {
      * @throws IOException target file could not be accessed
      */
     public static boolean saveItemToDisc(final File dest, final Object data) throws IOException {
-        log.log(Level.INFO, "Saving item to disk as binary - {0}, {1}", new Object[]{dest.getName(), data.toString()});
+        log.log(Level.CONFIG, "Saving item to disk as binary - {0}, {1}", new Object[]{dest.getName(), data.toString()});
 
         boolean result = false;
         if (data instanceof Serializable) {
@@ -60,7 +60,7 @@ public abstract class SerializationUtils {
      * @return true for successfull saving
      */
     public static boolean saveItemToDiscAsXML(final File dest, final Object data) {
-        log.log(Level.INFO, "Saving item to disk as XML - {0}, {1}", new Object[]{dest.getName(), data.toString()});
+        log.log(Level.CONFIG, "Saving item to disk as XML - {0}, {1}", new Object[]{dest.getName(), data.toString()});
 
         boolean result = false;
         if (data instanceof Serializable) {
@@ -90,7 +90,7 @@ public abstract class SerializationUtils {
      * @return deserialized object
      */
     public static Object loadItemFromDisc(final File src) {
-        log.log(Level.INFO, "Loading binary item from disk - {0}", new Object[]{src.getName()});
+        log.log(Level.CONFIG, "Loading binary item from disk - {0}", new Object[]{src.getName()});
         Object result = null;
 
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(src))) {
@@ -111,7 +111,7 @@ public abstract class SerializationUtils {
      * @return deserialized object
      */
     public static Object loadXMLItemFromDisc(final File src) {
-        log.log(Level.INFO, "Loading XML item from disk - {0}", new Object[]{src.getName()});
+        log.log(Level.CONFIG, "Loading XML item from disk - {0}", new Object[]{src.getName()});
         Object result = null;
 
         try (XMLDecoder in = new XMLDecoder(new FileInputStream(src))) {

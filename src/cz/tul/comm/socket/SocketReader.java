@@ -61,7 +61,7 @@ class SocketReader extends Observable implements Runnable {
      */
     public void registerHistory(final IHistoryManager hm) {
         this.hm = hm;
-        log.config("History registered.");
+        log.fine("History registered.");
     }
 
     @Override
@@ -85,7 +85,7 @@ class SocketReader extends Observable implements Runnable {
             }
             dataStorageIP.storeData(data);
             dataReadAndHandled = true;
-            log.log(Level.INFO, "Identifiable data {0} received and stored to queues.", o.toString());
+            log.log(Level.CONFIG, "Identifiable data {0} received and stored to queues.", o.toString());
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error reading data from socket.", ex);
         } catch (ClassNotFoundException ex) {
@@ -95,7 +95,7 @@ class SocketReader extends Observable implements Runnable {
         try (final ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
             out.writeBoolean(dataReadAndHandled);
             out.flush();
-            log.log(Level.INFO, "Reply sent.");
+            log.log(Level.FINE, "Reply sent.");
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error writing result data to socket.", ex);
         }

@@ -57,7 +57,7 @@ public final class ClientSettings implements Serializable {
      * @return true for successfull deserialization
      */
     public static boolean deserialize(final IServerInterface reg) {
-        log.log(Level.INFO, "Deserializing client settings.");
+        log.log(Level.CONFIG, "Deserializing client settings.");
 
         boolean result = true;
         File s = new File(SERIALIZATION_NAME);
@@ -103,7 +103,7 @@ public final class ClientSettings implements Serializable {
      * @return true for successfull save
      */
     public static boolean serialize(final Communicator serverCommunicator) {
-        log.log(Level.INFO, "Serializing client settings.");
+        log.log(Level.CONFIG, "Serializing client settings.");
 
         final ClientSettings s = new ClientSettings();
 

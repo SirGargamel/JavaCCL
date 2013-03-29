@@ -53,7 +53,7 @@ public final class Comm_Client implements IService, IServerInterface {
         try {
             sdd = new ServerDiscoveryDaemon(this);
         } catch (SocketException ex) {
-            log.log(Level.WARNING, "Failed to initiate server discovery daemon.", ex);
+            log.log(Level.FINE, "Failed to initiate server discovery daemon.", ex);
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -66,13 +66,15 @@ public final class Comm_Client implements IService, IServerInterface {
 
     @Override
     public void registerServer(final InetAddress address, final int port) {
-        log.log(Level.INFO, "Registering new server IP and port - {0}:{1}", new Object[]{address.getHostAddress(), port});
+        log.log(Level.CONFIG, "Registering new server IP and port - {0}:{1}", new Object[]{address.getHostAddress(), port});
         try {
             comm = Communicator.initNewCommunicator(address, port);
             if (isServerUp()) {
                 getListenerRegistrator().removeIpListener(null, csm);
                 getListenerRegistrator().addIpListener(address, csm, true);
-                log.log(Level.INFO, "New server IP and port has been set - {0}:{1}", new Object[]{address.getHostAddress(), port});
+                log.log(Level.CONFIG, "New server IP and port has been set");
+            } else {
+                log.log(Level.CONFIG, "Server could not be contacted");
             }
         } catch (IllegalArgumentException ex) {
             UserLogging.showErrorToUser(ex.getLocalizedMessage());
@@ -113,7 +115,7 @@ public final class Comm_Client implements IService, IServerInterface {
      * @return true for successfull export.
      */
     public boolean exportHistory() {
-        log.fine("Exporting histry to default location with no sorting.");
+        log.info("Exporting histry to default location with no sorting.");
         return history.export(new File(""), new DefaultSorter());
     }
 
@@ -148,7 +150,6 @@ public final class Comm_Client implements IService, IServerInterface {
         Comm_Client result = null;
         try {
             result = new Comm_Client(port);
-
             result.start();
             log.log(Level.INFO, "New client created on port {0}", port);
         } catch (IOException ex) {
@@ -189,7 +190,7 @@ public final class Comm_Client implements IService, IServerInterface {
     public void stopService() {
         serverSocket.stopService();
         sdd.stopService();
-        log.config("Client has been stopped.");
+        log.fine("Client has been stopped.");
     }
 
     @Override

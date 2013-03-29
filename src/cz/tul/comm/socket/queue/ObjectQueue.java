@@ -69,7 +69,7 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
             pushDaemon.addPushReceiver(owner, id);
         }
         
-        log.log(Level.CONFIG, "New listener registered - own: {1}, id:{0}, push:{2}", new Object[]{id.toString(), owner.toString(), wantsPush});
+        log.log(Level.FINE, "New listener registered - own: {1}, id:{0}, push:{2}", new Object[]{id.toString(), owner.toString(), wantsPush});
         
         return result;
     }
@@ -86,7 +86,7 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
             m.remove(owner);
         }
         pushDaemon.removePushReceiver(owner, id);
-        log.log(Level.CONFIG, "Listener deregistered - own: {1}, id:{0}", new Object[]{id.toString(), owner.toString()});
+        log.log(Level.FINE, "Listener deregistered - own: {1}, id:{0}", new Object[]{id.toString(), owner.toString()});
     }
 
     /**
@@ -99,7 +99,7 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
             m.remove(owner);
         }
         pushDaemon.removePushReceiver(owner, null);
-        log.log(Level.CONFIG, "Listener deregistered - own: {0}", new Object[]{owner.toString()});
+        log.log(Level.FINE, "Listener deregistered - own: {0}", new Object[]{owner.toString()});
     }
 
     /**
@@ -122,7 +122,7 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
             }
         }
         
-        log.log(Level.INFO, "Data {0} stored.", data.toString());
+        log.log(Level.CONFIG, "Data {0} stored.", data.toString());
     }
     
     private Collection<Map<IListener, Queue<O>>> getDataQueues() {
@@ -132,6 +132,6 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
     @Override
     public void stopService() {
         pushDaemon.stopService();
-        log.config("ObjectQueue has been stopped.");
+        log.fine("ObjectQueue has been stopped.");
     }
 }

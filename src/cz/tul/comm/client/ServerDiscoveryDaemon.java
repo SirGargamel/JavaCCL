@@ -43,14 +43,14 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
                     //Receive a packet
                     byte[] recvBuf = new byte[15000];
                     DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
-                    log.log(Level.INFO, "Starting listening for discovery packets");
+                    log.log(Level.FINE, "Starting listening for discovery packets");
                     s.receive(packet);
 
                     //Packet received
-                    log.log(Level.INFO, "Discovery packet received from {0}", packet.getAddress().getHostAddress());
-
-                    //See if the packet holds the right message
                     String message = new String(packet.getData()).trim();
+                    log.log(Level.CONFIG, "Discovery packet received from {0} - {1}", new Object[]{packet.getAddress().getHostAddress(), message});
+
+                    //See if the packet holds the right message                    
                     if (message.equals(Constants.DISCOVERY_QUESTION)) {
                         final StringBuilder response = new StringBuilder();
                         response.append(Constants.DISCOVERY_RESPONSE);
@@ -65,7 +65,7 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
 
                         sr.registerServer(packet.getAddress(), Constants.DEFAULT_PORT);
 
-                        log.log(Level.INFO, "Sent response meesage to {0}", sendPacket.getAddress().getHostAddress());
+                        log.log(Level.CONFIG, "Sent response meesage to {0}", sendPacket.getAddress().getHostAddress());
                     }
 
                 } catch (SocketException ex) {
@@ -75,7 +75,7 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
                 }
             } else {
                 try {
-                    log.config("ServerDiscoveryDaemon is falling asleep.");
+                    log.fine("ServerDiscoveryDaemon is falling asleep.");
                     synchronized (this) {
                         this.wait();
                     }
@@ -91,6 +91,6 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
     public void stopService() {
         run = false;
         s.close();
-        log.config("ServerDiscoveryDaemon has been stopped.");
+        log.fine("ServerDiscoveryDaemon has been stopped.");
     }
 }

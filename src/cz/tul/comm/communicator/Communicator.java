@@ -62,7 +62,7 @@ public final class Communicator {
      */
     public void registerHistory(final IHistoryManager hm) {
         this.hm = hm;
-        log.config("History registered.");
+        log.fine("History registered.");
     }
 
     /**
@@ -101,18 +101,18 @@ public final class Communicator {
 
             out.writeObject(data);
             out.flush();
-            log.log(Level.INFO, "Data sent to client {0}:{1}", new Object[]{getAddress().getHostAddress(), getPort()});
+            log.log(Level.CONFIG, "Data sent to client {0}:{1}", new Object[]{getAddress().getHostAddress(), getPort()});
 
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                 result = in.readBoolean();
-                log.log(Level.INFO, "Received reply from client - {0}", result);
+                log.log(Level.FINE, "Received reply from client - {0}", result);
                 stat = Status.ONLINE;
             } catch (IOException ex) {
                 log.log(Level.WARNING, "Error receiving response from output socket", ex);
                 stat = Status.NOT_RESPONDING;
             }
         } catch (SocketTimeoutException ex) {
-            log.log(Level.INFO, "Client on IP {0} is not responding to request.", address.getHostAddress());
+            log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", address.getHostAddress());
             stat = Status.NOT_RESPONDING;
         } catch (IOException ex) {
             log.log(Level.WARNING, "Cannot write to output socket.", ex);
@@ -146,7 +146,7 @@ public final class Communicator {
                 stat = Status.NOT_RESPONDING;
             }
         } catch (SocketTimeoutException ex) {
-            log.log(Level.INFO, "Client on IP {0} is not responding to request.", address.getHostAddress());
+            log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", address.getHostAddress());
             stat = Status.NOT_RESPONDING;
         } catch (IOException ex) {
             log.log(Level.WARNING, "Cannot write to output socket.", ex);

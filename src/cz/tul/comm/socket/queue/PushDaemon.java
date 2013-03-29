@@ -42,18 +42,18 @@ final class PushDaemon<O extends IIdentifiable> extends Thread implements IServi
         }
         l.add(id);
 
-        log.log(Level.CONFIG, "New push receiver for id {0} registered.", id.toString());
+        log.log(Level.FINE, "New push receiver for id {0} registered.", id.toString());
     }
 
     void removePushReceiver(final IListener receiver, final Object id) {
         if (id == null) {
             receivers.remove(receiver);
-            log.log(Level.CONFIG, "Push receiver {1} deregistered.", receiver.toString());
+            log.log(Level.FINE, "Push receiver {1} deregistered.", receiver.toString());
         } else {
             final List<Object> l = receivers.get(receiver);
             if (l != null) {
                 l.remove(id);
-                log.log(Level.CONFIG, "Push receiver for id {0} deregistered.", id.toString());
+                log.log(Level.FINE, "Push receiver for id {0} deregistered.", id.toString());
             }
         }
     }
@@ -73,11 +73,11 @@ final class PushDaemon<O extends IIdentifiable> extends Thread implements IServi
                         while (!q.isEmpty()) {
                             object = q.poll();
                             if (receivers.get(l).contains(object.getId())) {
-                                log.log(Level.INFO, "Pushing data {0} to {1}", new Object[]{object.getId().toString(), l.toString()});
+                                log.log(Level.CONFIG, "Pushing data {0} to {1}", new Object[]{object.getId().toString(), l.toString()});
                                 exec.execute(new Notifier(l, object));
                             } else {
                                 tmp.add((O) object);
-                                log.log(Level.INFO, "Data {0} not pushed to {1} because he is not registered for pushing objects with this ID.", new Object[]{object.getId().toString(), l.toString()});
+                                log.log(Level.CONFIG, "Data {0} not pushed to {1} because he is not registered for pushing objects with this ID.", new Object[]{object.getId().toString(), l.toString()});
                             }
                         }
 
@@ -102,7 +102,7 @@ final class PushDaemon<O extends IIdentifiable> extends Thread implements IServi
     public void stopService() {
         run = false;
         exec.shutdownNow();
-        log.config("PushDameon has been stopped.");
+        log.fine("PushDameon has been stopped.");
     }
 
     private static class Notifier implements Runnable {

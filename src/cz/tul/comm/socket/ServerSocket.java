@@ -47,7 +47,7 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
 
     @Override
     public Queue<IPData> addIpListener(final InetAddress address, final IListener dataListener, final boolean wantsPushNotifications) {
-        log.log(Level.CONFIG, "Added new listener {0} for IP {1}", new Object[]{dataListener.toString(), address.getHostAddress()});
+        log.log(Level.FINE, "Added new listener {0} for IP {1}", new Object[]{dataListener.toString(), address.getHostAddress()});
         return dataStorageIP.registerListener(address, dataListener, wantsPushNotifications);
     }
 
@@ -55,26 +55,26 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
     public void removeIpListener(InetAddress address, IListener dataListener) {
         if (address != null) {
             dataStorageIP.deregisterListener(address, dataListener);
-            log.log(Level.CONFIG, "Removed listener {0} for IP {1}", new Object[]{dataListener.toString(), address.getHostAddress()});
+            log.log(Level.FINE, "Removed listener {0} for IP {1}", new Object[]{dataListener.toString(), address.getHostAddress()});
         } else {
-            log.log(Level.CONFIG, "Removed listener {0}", new Object[]{dataListener.toString()});
+            log.log(Level.FINE, "Removed listener {0}", new Object[]{dataListener.toString()});
             dataStorageIP.deregisterListener(dataListener);
         }
     }
 
     @Override
     public Queue<IIdentifiable> addIdListener(final Object id, final IListener idListener, final boolean wantsPushNotifications) {
-        log.log(Level.CONFIG, "Added new listener {0} for ID {1}", new Object[]{idListener.toString(), id.toString()});
+        log.log(Level.FINE, "Added new listener {0} for ID {1}", new Object[]{idListener.toString(), id.toString()});
         return dataStorageId.registerListener(id, idListener, wantsPushNotifications);
     }
 
     @Override
     public void removeIdListener(Object id, IListener idListener) {
         if (id != null) {
-            log.log(Level.CONFIG, "Removed listener {0} for ID {1}", new Object[]{idListener.toString(), id.toString()});
+            log.log(Level.FINE, "Removed listener {0} for ID {1}", new Object[]{idListener.toString(), id.toString()});
             dataStorageId.deregisterListener(id, idListener);
         } else {
-            log.log(Level.CONFIG, "Removed listener {0}", new Object[]{idListener.toString()});
+            log.log(Level.FINE, "Removed listener {0}", new Object[]{idListener.toString()});
             dataStorageId.deregisterListener(idListener);
         }
     }
@@ -82,13 +82,13 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
     @Override
     public void registerMessageObserver(Observer msgObserver) {
         dataListeners.add(msgObserver);
-        log.log(Level.CONFIG, "Added new message observer - {0}", new Object[]{msgObserver.toString()});
+        log.log(Level.FINE, "Added new message observer - {0}", new Object[]{msgObserver.toString()});
     }
 
     @Override
     public void deregisterMessageObserver(Observer msgObserver) {
         dataListeners.remove(msgObserver);
-        log.log(Level.CONFIG, "Removed message observer - {0}", new Object[]{msgObserver.toString()});
+        log.log(Level.FINE, "Removed message observer - {0}", new Object[]{msgObserver.toString()});
     }
 
     @Override
@@ -97,7 +97,7 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
         while (run) {
             try {
                 s = socket.accept();                
-                log.log(Level.INFO, "Connection accepted from IP {0}:{1}", new Object[]{s.getInetAddress().getHostAddress(), s.getPort()});
+                log.log(Level.CONFIG, "Connection accepted from IP {0}:{1}", new Object[]{s.getInetAddress().getHostAddress(), s.getPort()});
                 final SocketReader sr = new SocketReader(s, dataStorageIP, dataStorageId);
                 sr.registerHistory(hm);
                 for (Observer o : dataListeners) {
@@ -107,7 +107,7 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
             } catch (SocketException ex) {
                 // nothing bad happened
                 // required for proper shutdown
-                log.config("Socket shutdown.");
+                log.fine("Socket shutdown.");
             } catch (IOException ex) {
                 log.log(Level.WARNING, "Server socket IO error occured during waiting for connection.", ex);
             }
@@ -132,7 +132,7 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
      */
     public void registerHistory(final IHistoryManager hm) {
         this.hm = hm;
-        log.config("History registered.");
+        log.fine("History registered.");
     }
 
     /**
@@ -144,21 +144,21 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
     public static ServerSocket createServerSocket(final int port) throws IOException {
         ServerSocket result = new ServerSocket(port);
         result.start();
-        log.finer("New server socket created and started.");
+        log.fine("New server socket created and started.");
         return result;
     }
 
     @Override
     public void stopService() {
         try {
-            run = false;
-            socket.close();
+            run = false;            
             exec.shutdownNow();
             dataStorageIP.stopService();
             dataStorageId.stopService();
-            log.config("Server socket has been stopped.");
+            socket.close();
+            log.fine("Server socket has been stopped.");
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Server socket IO error occured during socket closing.", ex);
+            // expected exception due to listening interruption
         }
     }
 }

@@ -32,7 +32,7 @@ public class InOutSorter extends HistorySorter {
 
     @Override
     public Element sortHistory(final Element rootElement, final Document doc) {
-        log.finer("Sortiing nodes by direction (In | Out).");
+        log.fine("Sorting nodes by direction (In | Out).");
         SortedMap<Object, List<Node>> sortedNodes = new TreeMap<>();
 
         final NodeList nl = rootElement.getChildNodes();
@@ -59,7 +59,7 @@ public class InOutSorter extends HistorySorter {
         try {
             normalizedLocalHost = normalizeIP(InetAddress.getLocalHost().getHostAddress());
         } catch (UnknownHostException ex) {
-            log.log(Level.CONFIG, "Could not obtain local IP address, using loopback.", ex);
+            log.log(Level.FINE, "Could not obtain local IP address, using loopback.", ex);
             normalizedLocalHost = normalizeIP(InetAddress.getLoopbackAddress().getHostAddress());
         }
 

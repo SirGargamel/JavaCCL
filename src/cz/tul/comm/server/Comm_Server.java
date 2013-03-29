@@ -83,7 +83,7 @@ public final class Comm_Server implements IService {
      * @return true for successfull export.
      */
     public boolean exportHistory() {
-        log.fine("Exporting history.");
+        log.info("Exporting history.");
         return history.export(new File(""), null);
     }
 
@@ -157,6 +157,6 @@ public final class Comm_Server implements IService {
         clientStatusDaemon.stopService();
         serverSocket.stopService();
         cdd.stopService();
-        log.config("Server has been stopped.");
+        log.fine("Server has been stopped.");
     }
 }

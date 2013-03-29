@@ -22,7 +22,7 @@ public class TimeSorter extends HistorySorter {
 
     @Override
     public Element sortHistory(final Element rootElement, final Document doc) {
-        log.finer("Sortiing nodes by time.");
+        log.fine("Sorting nodes by time.");
         SortedMap<Object, List<Node>> sortedNodes = new TreeMap<>();
 
         final NodeList nl = rootElement.getChildNodes();
