@@ -4,7 +4,9 @@
  */
 package cz.tul.comm.socket;
 
+import cz.tul.comm.Constants;
 import cz.tul.comm.communicator.Communicator;
+import java.io.IOException;
 import java.net.InetAddress;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -16,16 +18,15 @@ import static org.junit.Assert.*;
  * @author Petr Ječmen
  */
 public class CommunicatorTest {
-
-    private static final int PORT_SERVER = 65432;
+    
     private static ServerSocket ss;
 
     public CommunicatorTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() {
-        ss = ServerSocket.createServerSocket(PORT_SERVER);
+    public static void setUpClass() throws IOException {
+        ss = ServerSocket.createServerSocket(Constants.DEFAULT_PORT);
     }
 
     @AfterClass
@@ -42,10 +43,10 @@ public class CommunicatorTest {
 
         final InetAddress ip = InetAddress.getLoopbackAddress();
         
-        Communicator instance = Communicator.initNewCommunicator(ip, -PORT_SERVER);
+        Communicator instance = Communicator.initNewCommunicator(ip, -1);
         assertNull(instance);
         
-        instance = Communicator.initNewCommunicator(ip, PORT_SERVER);
+        instance = Communicator.initNewCommunicator(ip, Constants.DEFAULT_PORT);
         assertEquals(ip, instance.getAddress());               
 
         final boolean result = instance.sendData("test");

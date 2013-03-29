@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  * @author Petr Ječmen
  */
 public class ClientStatusDaemon extends Thread implements IService, IListener {
-    
+
     private static final Logger log = Logger.getLogger(ClientStatusDaemon.class.getName());
     private static final int DELAY = 5000;
     private static final int TIMEOUT = 500;
@@ -42,14 +42,14 @@ public class ClientStatusDaemon extends Thread implements IService, IListener {
         if (clientManager == null || listenerRegistrator == null) {
             throw new IllegalArgumentException("NULL arguments not allowed");
         }
-        
+
         this.clientManager = clientManager;
         this.listenerRegistrator = listenerRegistrator;
-        
+
         responses = new HashMap<>();
         run = true;
     }
-    
+
     @Override
     public void run() {
         Set<Communicator> clients;
@@ -58,22 +58,26 @@ public class ClientStatusDaemon extends Thread implements IService, IListener {
         while (run) {
             clients = clientManager.getClients();
             for (Communicator c : clients) {
+                final Status currentStatus = c.checkStatus();
+                if (currentStatus == Status.OFFLINE || currentStatus == Status.NA) {
+                    continue;
+                }
+
                 id = UUID.randomUUID();
                 m = new Message(id, MessageHeaders.STATUS, null);
-                
+
                 listenerRegistrator.addIdListener(id, this, true);
                 responses.put(id, c);
-                
+
                 if (!c.sendData(m, TIMEOUT)) {
-                    c.setStatus(Status.OFFLINE);
-                    UserLogging.showWarningToUser("Client " + c.getAddress().getHostAddress() + ":" + c.getPort() + " could not be contacted.");
-                    log.log(Level.FINER, "Client {0}:{1} could not be contacted.", new Object[]{c.getAddress().getHostAddress(), c.getPort()});
+                    c.setStatus(Status.OFFLINE);                    
+                    log.log(Level.INFO, "Client {0}:{1} could not be contacted.", new Object[]{c.getAddress().getHostAddress(), c.getPort()});
                 } else {
                     c.setStatus(Status.NOT_RESPONDING);
-                    log.log(Level.FINER, "Status request to {0}:{1} sent successfully.", new Object[]{c.getAddress().getHostAddress(), c.getPort()});
+                    log.log(Level.INFO, "Status request to {0}:{1} sent successfully.", new Object[]{c.getAddress().getHostAddress(), c.getPort()});
                 }
             }
-            
+
             synchronized (this) {
                 try {
                     this.wait(DELAY);
@@ -83,31 +87,31 @@ public class ClientStatusDaemon extends Thread implements IService, IListener {
             }
         }
     }
-    
+
     @Override
     public void stopService() {
         run = false;
         log.config("ClientStatusDaemon has been stopped.");
     }
-    
+
     @Override
     public void receiveData(final IIdentifiable data) {
         if (data instanceof Message) {
             final Message m = (Message) data;
-            
+
             if (m.getHeader().equals(MessageHeaders.STATUS)
                     && m.getData() instanceof Status) {
                 final UUID id = m.getId();
                 final Communicator c = responses.get(id);
                 final Status status = (Status) m.getData();
-                
+
                 try {
                     c.setStatus(status);
-                    log.log(Level.FINER, "{0}:{1} status report - {2}.", new Object[]{c.getAddress().getHostAddress(), c.getPort(), status});
+                    log.log(Level.INFO, "{0}:{1} status report - {2}.", new Object[]{c.getAddress().getHostAddress(), c.getPort(), status});
                 } catch (IllegalArgumentException ex) {
                     log.log(Level.WARNING, "Illegal data received as status.", ex);
                 }
-                
+
                 listenerRegistrator.removeIdListener(id, this);
                 responses.remove(id);
             }

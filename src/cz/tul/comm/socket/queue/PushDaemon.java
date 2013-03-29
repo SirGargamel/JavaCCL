@@ -73,11 +73,11 @@ final class PushDaemon<O extends IIdentifiable> extends Thread implements IServi
                         while (!q.isEmpty()) {
                             object = q.poll();
                             if (receivers.get(l).contains(object.getId())) {
-                                log.log(Level.FINER, "Pushing data {0} to {1}", new Object[]{object.getId().toString(), l.toString()});
+                                log.log(Level.INFO, "Pushing data {0} to {1}", new Object[]{object.getId().toString(), l.toString()});
                                 exec.execute(new Notifier(l, object));
                             } else {
                                 tmp.add((O) object);
-                                log.log(Level.FINER, "Data {0} not pushed to {1} because he is not registered for pushing objects with this ID.", new Object[]{object.getId().toString(), l.toString()});
+                                log.log(Level.INFO, "Data {0} not pushed to {1} because he is not registered for pushing objects with this ID.", new Object[]{object.getId().toString(), l.toString()});
                             }
                         }
 

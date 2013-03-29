@@ -92,29 +92,28 @@ public final class Communicator {
      */
     public boolean sendData(final Object data, final int timeout) {
         boolean result = false;
-        setStatus(Status.OFFLINE);
+        Status stat = Status.OFFLINE;
 
-        try (final Socket s = new Socket(address, port)) {
+        try (final Socket s = new Socket(address, port)) {            
             s.setSoTimeout(timeout);
 
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-            setStatus(Status.REACHABLE);
 
             out.writeObject(data);
             out.flush();
-            log.log(Level.FINER, "Data sent to client {0}:{1}", new Object[]{getAddress().getHostAddress(), getPort()});
+            log.log(Level.INFO, "Data sent to client {0}:{1}", new Object[]{getAddress().getHostAddress(), getPort()});
 
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                 result = in.readBoolean();
-                log.log(Level.FINER, "Received reply from client - {0}", result);
-                setStatus(Status.ONLINE);
+                log.log(Level.INFO, "Received reply from client - {0}", result);
+                stat = Status.ONLINE;
             } catch (IOException ex) {
                 log.log(Level.WARNING, "Error receiving response from output socket", ex);
-                setStatus(Status.NOT_RESPONDING);
+                stat = Status.NOT_RESPONDING;
             }
         } catch (SocketTimeoutException ex) {
-            log.log(Level.FINER, "Client on IP {0} is not responding to request.", address.getHostAddress());
-            setStatus(Status.NOT_RESPONDING);
+            log.log(Level.INFO, "Client on IP {0} is not responding to request.", address.getHostAddress());
+            stat = Status.NOT_RESPONDING;
         } catch (IOException ex) {
             log.log(Level.WARNING, "Cannot write to output socket.", ex);
         }
@@ -123,11 +122,41 @@ public final class Communicator {
             hm.logMessageSend(address, data, result);
         }
 
+        setStatus(stat);
         return result;
     }
 
     public Status checkStatus() {
-        sendData(new Message(MessageHeaders.KEEP_ALIVE, null), TIMEOUT);
+        boolean result = false;
+        final Object data = new Message(MessageHeaders.KEEP_ALIVE, null);
+        Status stat = Status.OFFLINE;
+
+        try (final Socket s = new Socket(address, port)) {
+            s.setSoTimeout(TIMEOUT);
+
+            final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
+
+            out.writeObject(data);
+            out.flush();
+
+            try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
+                in.readBoolean();
+                stat = Status.REACHABLE;
+            } catch (IOException ex) {
+                stat = Status.NOT_RESPONDING;
+            }
+        } catch (SocketTimeoutException ex) {
+            log.log(Level.INFO, "Client on IP {0} is not responding to request.", address.getHostAddress());
+            stat = Status.NOT_RESPONDING;
+        } catch (IOException ex) {
+            log.log(Level.WARNING, "Cannot write to output socket.", ex);
+        }
+
+        if (hm != null) {
+            hm.logMessageSend(address, data, result);
+        }
+
+        setStatus(stat);        
         return getStatus();
     }
 
@@ -154,7 +183,7 @@ public final class Communicator {
         if (Calendar.getInstance().getTimeInMillis() - getLastStatusUpdate().getTimeInMillis() > STATUS_CHECK_INTERVAL) {
             checkStatus();
         }
-        
+
         return status;
     }
 

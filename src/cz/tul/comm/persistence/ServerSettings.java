@@ -54,7 +54,7 @@ public final class ServerSettings implements Serializable {
      * @return true for successfull load
      */
     public static boolean deserialize(final IClientManager clientManager) {
-        log.log(Level.FINER, "Deserializing server settings.");
+        log.log(Level.INFO, "Deserializing server settings.");
         
         boolean result = true;
         File s = new File(SERIALIZATION_NAME);
@@ -88,7 +88,7 @@ public final class ServerSettings implements Serializable {
      * @return true for successfull save
      */
     public static boolean serialize(final IClientManager clientManager) {
-        log.log(Level.FINER, "Serializing server settings.");
+        log.log(Level.INFO, "Serializing server settings.");
         
         final ServerSettings s = new ServerSettings();
         final Set<String> clients = s.clients;

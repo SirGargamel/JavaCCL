@@ -33,21 +33,15 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
     private final ObjectQueue<IPData> dataStorageIP;
     private final ObjectQueue<IIdentifiable> dataStorageId;
     private final Set<Observer> dataListeners;
-    private IHistoryManager hm;    
+    private IHistoryManager hm;
     private boolean run;
 
-    private ServerSocket(final int port) {
-        java.net.ServerSocket s = null;
-        try {
-            s = new java.net.ServerSocket(port);
-        } catch (IOException ex) {
-            log.log(Level.SEVERE, "Error creating socket on port " + port, ex);
-        }
-        socket = s;
+    private ServerSocket(final int port) throws IOException {
+        socket = new java.net.ServerSocket(port);
         exec = Executors.newCachedThreadPool();
         dataStorageIP = new ObjectQueue<>();
         dataStorageId = new ObjectQueue<>();
-        dataListeners = new HashSet<>();        
+        dataListeners = new HashSet<>();
         run = true;
     }
 
@@ -102,8 +96,8 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
         Socket s;
         while (run) {
             try {
-                s = socket.accept();
-                log.log(Level.FINER, "Connection accepted from IP {0}:{1}", new Object[]{s.getInetAddress().getHostAddress(), s.getPort()});
+                s = socket.accept();                
+                log.log(Level.INFO, "Connection accepted from IP {0}:{1}", new Object[]{s.getInetAddress().getHostAddress(), s.getPort()});
                 final SocketReader sr = new SocketReader(s, dataStorageIP, dataStorageId);
                 sr.registerHistory(hm);
                 for (Observer o : dataListeners) {
@@ -123,7 +117,7 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
     public InetAddress getAddress() {
         return socket.getInetAddress();
     }
-    
+
     /**
      * @return listening port
      */
@@ -147,7 +141,7 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
      * @param port listening port
      * @return new instance of ServerSocket
      */
-    public static ServerSocket createServerSocket(final int port) {
+    public static ServerSocket createServerSocket(final int port) throws IOException {
         ServerSocket result = new ServerSocket(port);
         result.start();
         log.finer("New server socket created and started.");

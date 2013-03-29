@@ -1,9 +1,9 @@
 package cz.tul.comm.persistence;
 
+import cz.tul.comm.Constants;
 import cz.tul.comm.client.IServerInterface;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.gui.UserLogging;
-import cz.tul.comm.server.Comm_Server;
 import java.io.File;
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -31,7 +31,7 @@ public final class ClientSettings implements Serializable {
      * Initialize storge.
      */
     public ClientSettings() {
-        serverAdress = composeServerAddress(DEFAULT_SERVER_IP, Comm_Server.PORT);
+        serverAdress = composeServerAddress(DEFAULT_SERVER_IP, Constants.DEFAULT_PORT);
     }
 
     /**
@@ -57,13 +57,13 @@ public final class ClientSettings implements Serializable {
      * @return true for successfull deserialization
      */
     public static boolean deserialize(final IServerInterface reg) {
-        log.log(Level.FINER, "Deserializing client settings.");
+        log.log(Level.INFO, "Deserializing client settings.");
 
         boolean result = true;
         File s = new File(SERIALIZATION_NAME);
 
         InetAddress ip = null;
-        int port = Comm_Server.PORT;
+        int port = Constants.DEFAULT_PORT;
         if (s.exists()) {
             Object in = SerializationUtils.loadXMLItemFromDisc(s);
             if (in instanceof ClientSettings) {
@@ -103,7 +103,7 @@ public final class ClientSettings implements Serializable {
      * @return true for successfull save
      */
     public static boolean serialize(final Communicator serverCommunicator) {
-        log.log(Level.FINER, "Serializing client settings.");
+        log.log(Level.INFO, "Serializing client settings.");
 
         final ClientSettings s = new ClientSettings();
 

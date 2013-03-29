@@ -31,7 +31,7 @@ public class TextNodeValueSorter extends HistorySorter {
 
     @Override
     public Element sortHistory(final Element rootElement, final Document doc) {
-        log.log(Level.FINER, "Sorting nodes by node {0}.", nodeName);
+        log.log(Level.INFO, "Sorting nodes by node {0}.", nodeName);
         SortedMap<Object, List<Node>> sortedNodes = new TreeMap<>();
 
         final NodeList nl = rootElement.getChildNodes();

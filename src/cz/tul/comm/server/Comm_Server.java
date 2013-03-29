@@ -1,16 +1,19 @@
 package cz.tul.comm.server;
 
+import cz.tul.comm.Constants;
 import cz.tul.comm.persistence.ServerSettings;
 import cz.tul.comm.IService;
 import cz.tul.comm.client.Comm_Client;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.IHistoryManager;
 import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.server.daemons.ClientDiscoveryDaemon;
 import cz.tul.comm.server.daemons.ClientStatusDaemon;
 import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.logging.Level;
@@ -25,17 +28,13 @@ import java.util.logging.Logger;
 public final class Comm_Server implements IService {
 
     private static final Logger log = Logger.getLogger(Comm_Server.class.getName());
-    /**
-     * default port on which server will listen
-     */
-    public static final int PORT = 5252;
     private final ClientDB clients;
     private final ServerSocket serverSocket;
     private final IHistoryManager history;
     private final ClientStatusDaemon clientStatusDaemon;
     private ClientDiscoveryDaemon cdd;
 
-    private Comm_Server(final int port) {
+    private Comm_Server(final int port) throws IOException {
         history = new History();
         serverSocket = ServerSocket.createServerSocket(port);
         serverSocket.registerHistory(history);
@@ -65,7 +64,7 @@ public final class Comm_Server implements IService {
      * @return
      */
     public Communicator registerClient(final InetAddress adress) {
-        log.log(Level.FINE, "Registering new client on IP{0} on default port", adress);
+        log.log(Level.INFO, "Registering new client on IP{0} on default port", adress);
         return clients.registerClient(adress, Comm_Client.PORT);
     }
 
@@ -118,12 +117,10 @@ public final class Comm_Server implements IService {
      * @param port
      * @return new instance of Comm_Server
      */
-    public static Comm_Server initNewServer(final int port) {
+    public static Comm_Server initNewServer(final int port) throws IOException {
         final Comm_Server result = new Comm_Server(port);
-
         result.start();
-
-        log.log(Level.FINE, "New server created on port {0}", port);
+        log.log(Level.INFO, "New server created on port {0}", port);
 
         return result;
     }
@@ -133,7 +130,16 @@ public final class Comm_Server implements IService {
      * @return
      */
     public static Comm_Server initNewServer() {
-        return initNewServer(PORT);
+        Comm_Server s = null;
+        
+        try {
+            s = initNewServer(Constants.DEFAULT_PORT);
+        } catch (IOException ex) {
+            UserLogging.showErrorToUser("Error initializing server on default port.");
+            log.log(Level.SEVERE, "Error initializing server on default port", ex);
+        }
+        
+        return s;
     }
 
     void start() {

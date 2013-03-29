@@ -1,5 +1,6 @@
 package cz.tul.comm.client;
 
+import cz.tul.comm.Constants;
 import cz.tul.comm.persistence.ClientSettings;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.IService;
@@ -13,6 +14,7 @@ import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.logging.Level;
@@ -39,7 +41,7 @@ public final class Comm_Client implements IService, IServerInterface {
     private final ClientSystemMessaging csm;
     private ServerDiscoveryDaemon sdd;
 
-    private Comm_Client(final int port) {
+    private Comm_Client(final int port) throws IOException {
         history = new History();
 
         serverSocket = ServerSocket.createServerSocket(port);
@@ -47,12 +49,12 @@ public final class Comm_Client implements IService, IServerInterface {
 
         status = Status.ONLINE;
         csm = new ClientSystemMessaging(this);
-        
+
         try {
             sdd = new ServerDiscoveryDaemon(this);
         } catch (SocketException ex) {
             log.log(Level.WARNING, "Failed to initiate server discovery daemon.", ex);
-        }                
+        }
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -64,13 +66,13 @@ public final class Comm_Client implements IService, IServerInterface {
 
     @Override
     public void registerServer(final InetAddress address, final int port) {
-        log.log(Level.FINE, "Registering new server IP and port - {0}:{1}", new Object[]{address.getHostAddress(), port});
+        log.log(Level.INFO, "Registering new server IP and port - {0}:{1}", new Object[]{address.getHostAddress(), port});
         try {
             comm = Communicator.initNewCommunicator(address, port);
-            if (isServerUp()) {                
+            if (isServerUp()) {
                 getListenerRegistrator().removeIpListener(null, csm);
                 getListenerRegistrator().addIpListener(address, csm, true);
-                log.log(Level.FINE, "New server IP and port has been set - {0}:{1}", new Object[]{address.getHostAddress(), port});
+                log.log(Level.INFO, "New server IP and port has been set - {0}:{1}", new Object[]{address.getHostAddress(), port});
             }
         } catch (IllegalArgumentException ex) {
             UserLogging.showErrorToUser(ex.getLocalizedMessage());
@@ -86,7 +88,7 @@ public final class Comm_Client implements IService, IServerInterface {
         } else {
             serverStatus = false;
         }
-        log.log(Level.FINE, "Is server running - {0}", serverStatus);
+        log.log(Level.INFO, "Is server running - {0}", serverStatus);
         return serverStatus;
     }
 
@@ -95,12 +97,13 @@ public final class Comm_Client implements IService, IServerInterface {
      *
      * @param data data for sending
      */
-    public void sendData(final Object data) {
-        log.log(Level.FINE, "Seinding data to server - {0}", data.toString());
+    public boolean sendData(final Object data) {
+        log.log(Level.INFO, "Sending data to server - {0}", data.toString());
         if (comm == null || !isServerUp()) {
-            UserLogging.showWarningToUser("Server could not be contacted, please recheck the settings");            
+            UserLogging.showWarningToUser("Server could not be contacted, please recheck the settings");
+            return false;
         } else {
-            comm.sendData(data);
+            return comm.sendData(data);
         }
     }
 
@@ -142,11 +145,15 @@ public final class Comm_Client implements IService, IServerInterface {
      * @return new Client instance
      */
     public static Comm_Client initNewClient(final int port) {
-        final Comm_Client result = new Comm_Client(port);
+        Comm_Client result = null;
+        try {
+            result = new Comm_Client(port);
 
-        result.start();
-
-        log.log(Level.FINE, "New client created on port {0}", port);
+            result.start();
+            log.log(Level.INFO, "New client created on port {0}", port);
+        } catch (IOException ex) {
+            log.log(Level.WARNING, "Failed to initialize client on port " + port, ex);
+        }
 
         return result;
     }
@@ -156,14 +163,23 @@ public final class Comm_Client implements IService, IServerInterface {
      * @return new client instance on default port
      */
     public static Comm_Client initNewClient() {
-        return initNewClient(PORT);
+        int port = Constants.DEFAULT_PORT;
+        Comm_Client c = initNewClient(port);
+        while (c == null) {
+            c = initNewClient(++port);
+            if (c != null) {
+                // perhaps client running on same machine as server
+                c.registerServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
+            }
+        }
+        return c;
     }
 
     private void start() {
         // load settings
         if (!ClientSettings.deserialize(this)) {
             // TODO tell user that settings are wrong
-        }        
+        }
         if (sdd != null) {
             sdd.start();
         }

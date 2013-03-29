@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 class SocketReader extends Observable implements Runnable {
 
     private static final Logger log = Logger.getLogger(SocketReader.class.getName());
-    private final Socket socket;
+    private final Socket socket;    
     private final ObjectQueue<IPData> dataStorageIP;
     private final ObjectQueue<IIdentifiable> dataStorageId;
     private IHistoryManager hm;
@@ -51,7 +51,7 @@ class SocketReader extends Observable implements Runnable {
             this.dataStorageId = dataStorageId;
         } else {
             throw new IllegalArgumentException("Data storage cannot be null");
-        }
+        }        
     }
 
     /**
@@ -69,12 +69,13 @@ class SocketReader extends Observable implements Runnable {
         boolean dataReadAndHandled = false;
 
         final InetAddress ip = socket.getInetAddress();
+        final int port = socket.getPort();
         Object o = null;
         try {
             final ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             o = in.readObject();
-
-            IPData data = new IPData(ip, socket.getPort(), o);
+            
+            IPData data = new IPData(ip, port, o);
 
             setChanged();
             this.notifyObservers(data);
@@ -84,7 +85,7 @@ class SocketReader extends Observable implements Runnable {
             }
             dataStorageIP.storeData(data);
             dataReadAndHandled = true;
-            log.log(Level.FINER, "Identifiable data {0} received and stored to queues.", o.toString());
+            log.log(Level.INFO, "Identifiable data {0} received and stored to queues.", o.toString());
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error reading data from socket.", ex);
         } catch (ClassNotFoundException ex) {
@@ -94,7 +95,7 @@ class SocketReader extends Observable implements Runnable {
         try (final ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
             out.writeBoolean(dataReadAndHandled);
             out.flush();
-            log.log(Level.FINER, "Reply sent.");
+            log.log(Level.INFO, "Reply sent.");
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error writing result data to socket.", ex);
         }

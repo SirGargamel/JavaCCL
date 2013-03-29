@@ -2,7 +2,6 @@ package cz.tul.comm.socket;
 
 import cz.tul.comm.socket.queue.IIdentifiable;
 import java.net.InetAddress;
-import java.util.logging.Logger;
 
 /**
  * Simple data container for received data with IP address from which the data
@@ -11,8 +10,7 @@ import java.util.logging.Logger;
  * @author Gargamel
  */
 public class IPData implements IIdentifiable {
-
-    private static final Logger log = Logger.getLogger(IPData.class.getName());
+    
     private final InetAddress ip;
     private final int port;
     private final Object data;

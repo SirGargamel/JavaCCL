@@ -61,7 +61,7 @@ public final class History implements IHistoryManager {
     public void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted) {
         final Record r = new Record(localHost, ipDestination, data, accepted);
         records.add(r);
-        log.log(Level.FINER, "Sent message stored to history - {0}", r);
+        log.log(Level.INFO, "Sent message stored to history - {0}", r);
 
     }
 
@@ -69,7 +69,7 @@ public final class History implements IHistoryManager {
     public void logMessageReceived(final InetAddress ipSource, final Object data, final boolean accepted) {
         final Record r = new Record(ipSource, localHost, data, accepted);
         records.add(r);
-        log.log(Level.FINER, "Received message stored to history - {0}", r);
+        log.log(Level.INFO, "Received message stored to history - {0}", r);
     }
 
     @Override
@@ -90,7 +90,7 @@ public final class History implements IHistoryManager {
             exportDocumentToXML(target, doc);
             result = true;
 
-            log.log(Level.FINER, "History successfully exported to {0}, sorted using {1}", new Object[]{target.getAbsolutePath(), sorter.getClass().getCanonicalName()});
+            log.log(Level.INFO, "History successfully exported to {0}, sorted using {1}", new Object[]{target.getAbsolutePath(), sorter.getClass().getCanonicalName()});
         } catch (ParserConfigurationException ex) {
             log.log(Level.WARNING, "Failed to create DocumentBuilder", ex);
         } catch (TransformerException ex) {

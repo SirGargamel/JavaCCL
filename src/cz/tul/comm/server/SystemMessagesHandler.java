@@ -40,7 +40,7 @@ public class SystemMessagesHandler implements Observer {
                         try {
                             port = Integer.parseInt(m.getData().toString());
                             clientManager.registerClient(data.getIp(), port);
-                            log.log(Level.FINER, "LOGIN received - {0}", m.toString());
+                            log.log(Level.INFO, "LOGIN received - {0}", m.toString());
                         } catch (NumberFormatException | NullPointerException ex) {
                             log.log(Level.WARNING, "Illegal login data received from {0} - {1}",
                                     new Object[]{data.getIp().getHostAddress(), m.getData().toString()});
@@ -50,9 +50,9 @@ public class SystemMessagesHandler implements Observer {
                         if (m.getData() instanceof Status) {
                             Communicator c = clientManager.getClient(data.getIp(), data.getPort());
                             c.setStatus((Status) m.getData());
-                            log.log(Level.FINER, "Status message {2} received from {0} on port {1}", new Object[]{c.getAddress(), c.getPort(), m.getData().toString()});
+                            log.log(Level.INFO, "Status message {2} received from {0} on port {1}", new Object[]{c.getAddress(), c.getPort(), m.getData().toString()});
                         } else {
-                            log.log(Level.FINER, "Invalid status message received {0}", new Object[]{m.getData().toString()});
+                            log.log(Level.INFO, "Invalid status message received {0}", new Object[]{m.getData().toString()});
                         }
                         break;
                     default:

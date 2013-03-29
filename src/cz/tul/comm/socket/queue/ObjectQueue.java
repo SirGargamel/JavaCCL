@@ -122,7 +122,7 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
             }
         }
         
-        log.log(Level.FINER, "Data {0} stored.", data.toString());
+        log.log(Level.INFO, "Data {0} stored.", data.toString());
     }
     
     private Collection<Map<IListener, Queue<O>>> getDataQueues() {

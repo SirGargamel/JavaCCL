@@ -2,7 +2,6 @@ package cz.tul.comm.client;
 
 import cz.tul.comm.Constants;
 import cz.tul.comm.IService;
-import cz.tul.comm.server.Comm_Server;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -17,11 +16,11 @@ import java.util.logging.Logger;
  * @author Petr Ječmen
  */
 public class ServerDiscoveryDaemon extends Thread implements IService {
-    
+
     private static final Logger log = Logger.getLogger(ServerDiscoveryDaemon.class.getName());
     private final DatagramSocket s;
     private final IServerInterface sr;
-    private boolean run;    
+    private boolean run;
 
     /**
      *
@@ -30,12 +29,12 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
      */
     public ServerDiscoveryDaemon(final IServerInterface sr) throws SocketException {
         this.sr = sr;
-        s = new DatagramSocket(Constants.DEFAULT_PORT_DISCOVERY);
+        s = new DatagramSocket(Constants.DEFAULT_PORT);
         s.setBroadcast(true);
-        
-        run = true;        
+
+        run = true;
     }
-    
+
     @Override
     public void run() {
         while (run) {
@@ -44,11 +43,11 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
                     //Receive a packet
                     byte[] recvBuf = new byte[15000];
                     DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
-                    log.log(Level.FINER, "Starting listening for discovery packets");
+                    log.log(Level.INFO, "Starting listening for discovery packets");
                     s.receive(packet);
 
                     //Packet received
-                    log.log(Level.FINER, "Discovery packet received from {0}", packet.getAddress().getHostAddress());
+                    log.log(Level.INFO, "Discovery packet received from {0}", packet.getAddress().getHostAddress());
 
                     //See if the packet holds the right message
                     String message = new String(packet.getData()).trim();
@@ -57,18 +56,18 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
                         response.append(Constants.DISCOVERY_RESPONSE);
                         response.append(Constants.DISCOVERY_RESPONSE_DELIMITER);
                         response.append(sr.getServerPort());
-                        
+
                         byte[] sendData = response.toString().getBytes();
 
                         //Send a response
                         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, packet.getAddress(), packet.getPort());
                         s.send(sendPacket);
-                        
-                        sr.registerServer(packet.getAddress(), Comm_Server.PORT);
-                        
-                        log.log(Level.FINER, "Sent response meesage to {0}", sendPacket.getAddress().getHostAddress());
+
+                        sr.registerServer(packet.getAddress(), Constants.DEFAULT_PORT);
+
+                        log.log(Level.INFO, "Sent response meesage to {0}", sendPacket.getAddress().getHostAddress());
                     }
-                    
+
                 } catch (SocketException ex) {
                     // everything is fine, wa wanted to interrupt socket receive method
                 } catch (IOException ex) {
@@ -86,8 +85,8 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
             }
         }
         s.close();
-    }    
-    
+    }
+
     @Override
     public void stopService() {
         run = false;

@@ -32,7 +32,7 @@ class ClientSystemMessaging implements IListener {
                     case MessageHeaders.STATUS:
                         final Message response = new Message(m.getId(), m.getHeader(), parent.getStatus());
                         parent.sendData(response);
-                        log.log(Level.FINER, "STATUS question received and response {0} has been sent.", response.toString());
+                        log.log(Level.INFO, "STATUS question received and response {0} has been sent.", response.toString());
                         break;
                     default:
                         // nonsystem msg, nothing to do

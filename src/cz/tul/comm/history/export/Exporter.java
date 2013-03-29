@@ -35,10 +35,10 @@ public abstract class Exporter {
 
         Class<?> c = data.getClass();
         if (exporters.containsKey(c)) {
-            log.log(Level.FINER, "Exporting object using {0} exporter.", c.getName());
+            log.log(Level.INFO, "Exporting object using {0} exporter.", c.getName());
             result = exporters.get(c).exportData(doc, data);
         } else {
-            log.log(Level.FINER, "Exporting object using default exporter.");
+            log.log(Level.INFO, "Exporting object using default exporter.");
             result = doc.createElement(data.getClass().getSimpleName());
             result.appendChild(doc.createTextNode(data.toString()));
         }
@@ -53,6 +53,6 @@ public abstract class Exporter {
      */
     public static void registerExporterUnit(final IExportUnit eu) {
         exporters.put(eu.getExportedClass(), eu);
-        log.log(Level.FINER, "New exporter for class {0} registered.", eu.getExportedClass().getName());
+        log.log(Level.INFO, "New exporter for class {0} registered.", eu.getExportedClass().getName());
     }
 }

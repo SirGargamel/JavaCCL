@@ -10,15 +10,7 @@ public interface Constants {
     /**
      * default server port
      */
-    int DEFAULT_PORT_S = 5252;
-    /**
-     * default client port
-     */
-    int DEFAULT_PORT_C = 5253;
-    /**
-     * default port for client discovery
-     */
-    int DEFAULT_PORT_DISCOVERY = 5254;
+    int DEFAULT_PORT = 5252;     
     /**
      * data used as question for client discovery
      */
