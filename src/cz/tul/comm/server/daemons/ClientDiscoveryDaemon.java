@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 public class ClientDiscoveryDaemon extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(ClientDiscoveryDaemon.class.getName());
-    private static final int DELAY = 60000;
+    private static final int DELAY = 20000;
     private final IClientManager cm;
     private final DatagramSocket s;
     private boolean run;
