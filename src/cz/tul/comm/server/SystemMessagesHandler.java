@@ -51,12 +51,10 @@ public class SystemMessagesHandler implements Observer {
                         break;
                     case MessageHeaders.STATUS:
                         if (m.getData() instanceof Status) {
-                            Communicator c = clientManager.getClient(data.getIp(), data.getPort());
-                            if (m.getData() != null) {
+                            final Communicator c = clientManager.getClient(data.getIp(), data.getPort());
+                            if (c != null) {
                                 c.setStatus((Status) m.getData());
                                 log.log(Level.CONFIG, "Status message {2} received from {0} on port {1}", new Object[]{c.getAddress(), c.getPort(), m.getData().toString()});
-                            } else {
-                                log.warning("NULL status received.");
                             }
                         } else {
                             log.log(Level.WARNING, "Invalid status message received {0}", new Object[]{m.getData().toString()});
