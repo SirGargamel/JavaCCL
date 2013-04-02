@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  * @author Petr Ječmen
  */
 public class ObjectQueue<O extends IIdentifiable> implements IService {
-    
+
     private static final Logger log = Logger.getLogger(ObjectQueue.class.getName());
     private final Map<Object, Map<IListener, Queue<O>>> data;
     private final PushDaemon<O> pushDaemon;
@@ -38,12 +38,12 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
      */
     public Queue<O> getDataQueue(final Object id, final IListener owner) {
         Queue<O> result = null;
-        
+
         Map<IListener, Queue<O>> m = data.get(id);
         if (m != null) {
             result = m.get(owner);
         }
-        
+
         return result;
     }
 
@@ -56,21 +56,21 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
      */
     public Queue<O> registerListener(final Object id, final IListener owner, final boolean wantsPush) {
         Queue<O> result = new ConcurrentLinkedQueue<>();
-        
+
         Map<IListener, Queue<O>> m = data.get(id);
         if (m == null) {
             m = new ConcurrentHashMap<>();
             data.put(id, m);
         }
-        
+
         m.put(owner, result);
-        
+
         if (wantsPush) {
             pushDaemon.addPushReceiver(owner, id);
         }
-        
+
         log.log(Level.FINE, "New listener registered - own: {1}, id:{0}, push:{2}", new Object[]{id.toString(), owner.toString(), wantsPush});
-        
+
         return result;
     }
 
@@ -108,27 +108,29 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
      * @param data received data.
      */
     public void storeData(final O data) {
-        final Map<IListener, Queue<O>> m = this.data.get(data.getId());
-        if (m != null) {
-            for (Queue<O> q : m.values()) {
-                q.add(data);
+        if (data != null) {
+            final Map<IListener, Queue<O>> m = this.data.get(data.getId());
+            if (m != null) {
+                for (Queue<O> q : m.values()) {
+                    q.add(data);
+                }
             }
-        }
-        if (!pushDaemon.isAlive()) {
-            pushDaemon.start();
-        } else {
-            synchronized (pushDaemon) {
-                pushDaemon.notify();
+            if (!pushDaemon.isAlive()) {
+                pushDaemon.start();
+            } else {
+                synchronized (pushDaemon) {
+                    pushDaemon.notify();
+                }
             }
+
+            log.log(Level.CONFIG, "Data {0} stored.", data.toString());
         }
-        
-        log.log(Level.CONFIG, "Data {0} stored.", data.toString());
     }
-    
+
     private Collection<Map<IListener, Queue<O>>> getDataQueues() {
         return Collections.unmodifiableCollection(data.values());
     }
-    
+
     @Override
     public void stopService() {
         pushDaemon.stopService();
