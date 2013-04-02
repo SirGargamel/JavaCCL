@@ -12,6 +12,7 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Calendar;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,6 +32,7 @@ public final class Communicator {
     private final int STATUS_CHECK_INTERVAL = 5000;
     private final InetAddress address;
     private final int port;
+    private UUID id;
     private Calendar lastStatusUpdateTime;
     private Status status;
     private IHistoryManager hm;
@@ -94,12 +96,12 @@ public final class Communicator {
         boolean result = false;
         Status stat = Status.OFFLINE;
 
-        try (final Socket s = new Socket(address, port)) {            
+        try (final Socket s = new Socket(address, port)) {
             s.setSoTimeout(timeout);
 
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
 
-            out.writeObject(data);
+            out.writeObject(new DataPacket(id, data));
             out.flush();
             log.log(Level.CONFIG, "Data sent to client {0}:{1}", new Object[]{getAddress().getHostAddress(), getPort()});
 
@@ -156,7 +158,7 @@ public final class Communicator {
             hm.logMessageSend(address, data, result);
         }
 
-        setStatus(stat);        
+        setStatus(stat);
         return getStatus();
     }
 
@@ -192,6 +194,14 @@ public final class Communicator {
      */
     public int getPort() {
         return port;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     @Override

@@ -1,10 +1,11 @@
 package cz.tul.comm.socket;
 
+import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.socket.queue.IListener;
-import java.net.InetAddress;
 import java.util.Observer;
 import java.util.Queue;
+import java.util.UUID;
 
 /**
  * Registrator of data listeners.
@@ -23,7 +24,7 @@ public interface IListenerRegistrator {
      * @return Queue, which wil be used for data storing when data from this IP
      * is received.
      */
-    Queue<IPData> addIpListener(final InetAddress address, final IListener dataListener, final boolean wantsPushNotifications);
+    Queue<DataPacket> addClientListener(final UUID clientId, final IListener dataListener, final boolean wantsPushNotifications);
 
     /**
      * Deregister given listener for given IP. If IP is null, then the listener
@@ -32,7 +33,7 @@ public interface IListenerRegistrator {
      * @param address IP address for listening
      * @param dataListener target listener
      */
-    void removeIpListener(final InetAddress address, final IListener dataListener);
+    void removeClientListener(final UUID clientId, final IListener dataListener);
 
     /**
      * Register listener for given ID.
@@ -61,12 +62,12 @@ public interface IListenerRegistrator {
      *
      * @param msgObserver message observer
      */
-    void registerMessageObserver(final Observer msgObserver);
+    void addMessageObserver(final Observer msgObserver);
 
     /**
      * Deregister given observer.
      *
      * @param msgObserver message observer
      */
-    void deregisterMessageObserver(final Observer msgObserver);
+    void removeMessageObserver(final Observer msgObserver);
 }

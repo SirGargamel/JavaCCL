@@ -1,6 +1,9 @@
 package cz.tul.comm.socket;
 
+import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.history.IHistoryManager;
+import cz.tul.comm.messaging.Message;
+import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.socket.queue.ObjectQueue;
 import java.io.IOException;
@@ -20,8 +23,8 @@ import java.util.logging.Logger;
 class SocketReader extends Observable implements Runnable {
 
     private static final Logger log = Logger.getLogger(SocketReader.class.getName());
-    private final Socket socket;    
-    private final ObjectQueue<IPData> dataStorageIP;
+    private final Socket socket;
+    private final ObjectQueue<DataPacket> dataStorageClient;
     private final ObjectQueue<IIdentifiable> dataStorageId;
     private IHistoryManager hm;
 
@@ -35,7 +38,7 @@ class SocketReader extends Observable implements Runnable {
      */
     public SocketReader(
             final Socket socket,
-            final ObjectQueue<IPData> dataStorageIP,
+            final ObjectQueue<DataPacket> dataStorageIP,
             final ObjectQueue<IIdentifiable> dataStorageId) {
         if (socket != null) {
             this.socket = socket;
@@ -43,7 +46,7 @@ class SocketReader extends Observable implements Runnable {
             throw new IllegalArgumentException("Socket cannot be null");
         }
         if (dataStorageIP != null) {
-            this.dataStorageIP = dataStorageIP;
+            this.dataStorageClient = dataStorageIP;
         } else {
             throw new IllegalArgumentException("Data storage cannot be null");
         }
@@ -51,7 +54,7 @@ class SocketReader extends Observable implements Runnable {
             this.dataStorageId = dataStorageId;
         } else {
             throw new IllegalArgumentException("Data storage cannot be null");
-        }        
+        }
     }
 
     /**
@@ -69,23 +72,32 @@ class SocketReader extends Observable implements Runnable {
         boolean dataReadAndHandled = false;
 
         final InetAddress ip = socket.getInetAddress();
-        final int port = socket.getPort();
         Object o = null;
         try {
             final ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             o = in.readObject();
-            
-            IPData data = new IPData(ip, port, o);
 
-            setChanged();
-            this.notifyObservers(data);
+            if (o instanceof DataPacket) {
+                final DataPacket dp = (DataPacket) o;
+                final Object data = dp.getData();
 
-            if (o instanceof IIdentifiable) {
-                dataStorageId.storeData((IIdentifiable) o);
+                setChanged();
+                this.notifyObservers(new IPData(ip, dp));
+
+                if (data instanceof IIdentifiable) {
+                    dataStorageId.storeData((IIdentifiable) data);
+                }
+                dataStorageClient.storeData(dp);
+                dataReadAndHandled = true;
+                log.log(Level.CONFIG, "Identifiable data {0} received and stored to queues.", o.toString());
+            } else if (o instanceof Message) {
+                final Message m = (Message) o;
+                if (m.getHeader().equals(MessageHeaders.KEEP_ALIVE)) {
+                    log.log(Level.FINE, "KEEP_ALIVE received from {0}", ip);
+                }
+            } else {
+                log.log(Level.WARNING, "Received data is not an instance of DataPacket - {0}, instance of {1}", new Object[]{o.toString(), o.getClass().getName()});
             }
-            dataStorageIP.storeData(data);
-            dataReadAndHandled = true;
-            log.log(Level.CONFIG, "Identifiable data {0} received and stored to queues.", o.toString());
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error reading data from socket.", ex);
         } catch (ClassNotFoundException ex) {

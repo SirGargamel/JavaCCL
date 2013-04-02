@@ -2,6 +2,7 @@ package cz.tul.comm.socket;
 
 import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.IService;
+import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.history.IHistoryManager;
 import cz.tul.comm.socket.queue.IListener;
 import cz.tul.comm.socket.queue.ObjectQueue;
@@ -13,6 +14,7 @@ import java.util.HashSet;
 import java.util.Observer;
 import java.util.Queue;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -30,35 +32,35 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
     private static final Logger log = Logger.getLogger(ServerSocket.class.getName());
     private final java.net.ServerSocket socket;
     private final ExecutorService exec;
-    private final ObjectQueue<IPData> dataStorageIP;
+    private final ObjectQueue<DataPacket> dataStorageClient;
     private final ObjectQueue<IIdentifiable> dataStorageId;
-    private final Set<Observer> dataListeners;
+    private final Set<Observer> dataListeners;    
     private IHistoryManager hm;
     private boolean run;
 
     private ServerSocket(final int port) throws IOException {
         socket = new java.net.ServerSocket(port);
         exec = Executors.newCachedThreadPool();
-        dataStorageIP = new ObjectQueue<>();
+        dataStorageClient = new ObjectQueue<>();
         dataStorageId = new ObjectQueue<>();
-        dataListeners = new HashSet<>();
+        dataListeners = new HashSet<>();        
         run = true;
     }
 
     @Override
-    public Queue<IPData> addIpListener(final InetAddress address, final IListener dataListener, final boolean wantsPushNotifications) {
-        log.log(Level.FINE, "Added new listener {0} for IP {1}", new Object[]{dataListener.toString(), address.getHostAddress()});
-        return dataStorageIP.registerListener(address, dataListener, wantsPushNotifications);
+    public Queue<DataPacket> addClientListener(final UUID clientId, final IListener dataListener, final boolean wantsPushNotifications) {
+        log.log(Level.FINE, "Added new listener {0} for ID {1}", new Object[]{dataListener.toString(), clientId});
+        return dataStorageClient.registerListener(clientId, dataListener, wantsPushNotifications);
     }
 
     @Override
-    public void removeIpListener(InetAddress address, IListener dataListener) {
-        if (address != null) {
-            dataStorageIP.deregisterListener(address, dataListener);
-            log.log(Level.FINE, "Removed listener {0} for IP {1}", new Object[]{dataListener.toString(), address.getHostAddress()});
+    public void removeClientListener(final UUID clientId, final IListener dataListener) {
+        if (clientId != null) {
+            dataStorageClient.deregisterListener(clientId, dataListener);
+            log.log(Level.FINE, "Removed listener {0} for ID {1}", new Object[]{dataListener.toString(), clientId});
         } else {
             log.log(Level.FINE, "Removed listener {0}", new Object[]{dataListener.toString()});
-            dataStorageIP.deregisterListener(dataListener);
+            dataStorageClient.deregisterListener(dataListener);
         }
     }
 
@@ -80,13 +82,13 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
     }
 
     @Override
-    public void registerMessageObserver(Observer msgObserver) {
+    public void addMessageObserver(Observer msgObserver) {
         dataListeners.add(msgObserver);
         log.log(Level.FINE, "Added new message observer - {0}", new Object[]{msgObserver.toString()});
     }
 
     @Override
-    public void deregisterMessageObserver(Observer msgObserver) {
+    public void removeMessageObserver(Observer msgObserver) {
         dataListeners.remove(msgObserver);
         log.log(Level.FINE, "Removed message observer - {0}", new Object[]{msgObserver.toString()});
     }
@@ -96,9 +98,9 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
         Socket s;
         while (run) {
             try {
-                s = socket.accept();                
+                s = socket.accept();
                 log.log(Level.CONFIG, "Connection accepted from IP {0}:{1}", new Object[]{s.getInetAddress().getHostAddress(), s.getPort()});
-                final SocketReader sr = new SocketReader(s, dataStorageIP, dataStorageId);
+                final SocketReader sr = new SocketReader(s, dataStorageClient, dataStorageId);
                 sr.registerHistory(hm);
                 for (Observer o : dataListeners) {
                     sr.addObserver(o);
@@ -151,9 +153,9 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
     @Override
     public void stopService() {
         try {
-            run = false;            
+            run = false;
             exec.shutdownNow();
-            dataStorageIP.stopService();
+            dataStorageClient.stopService();
             dataStorageId.stopService();
             socket.close();
             log.fine("Server socket has been stopped.");

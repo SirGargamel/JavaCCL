@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
  */
 public class CommunicatorTest {
     
+    private static final int TIMEOUT = 1000;
     private static ServerSocket ss;
 
     public CommunicatorTest() {
@@ -49,7 +50,7 @@ public class CommunicatorTest {
         instance = Communicator.initNewCommunicator(ip, Constants.DEFAULT_PORT);
         assertEquals(ip, instance.getAddress());               
 
-        final boolean result = instance.sendData("test");
+        final boolean result = instance.sendData("test", TIMEOUT);
         assertTrue("Target could not receive data", result);
     }
 }

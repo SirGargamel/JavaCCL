@@ -3,8 +3,8 @@ package cz.tul.comm.client;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.socket.IPData;
-import cz.tul.comm.socket.queue.IIdentifiable;
-import cz.tul.comm.socket.queue.IListener;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,7 +13,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-class ClientSystemMessaging implements IListener {
+class ClientSystemMessaging implements Observer {
 
     private static final Logger log = Logger.getLogger(ClientSystemMessaging.class.getName());
     private final Comm_Client parent;
@@ -23,11 +23,11 @@ class ClientSystemMessaging implements IListener {
     }
 
     @Override
-    public void receiveData(IIdentifiable data) {
-        if (data instanceof IPData) {
-            final IPData ipd = (IPData) data;
-            if (ipd.getData() instanceof Message) {
-                final Message m = (Message) ipd.getData();
+    public void update(Observable o, Object arg) {
+        if (arg instanceof IPData) {
+            final IPData ipd = (IPData) arg;
+            if (ipd.getDataPacket().getData() instanceof Message) {
+                final Message m = (Message) ipd.getDataPacket().getData();
                 switch (m.getHeader()) {
                     case MessageHeaders.STATUS:
                         final Message response = new Message(m.getId(), m.getHeader(), parent.getStatus());
@@ -39,7 +39,7 @@ class ClientSystemMessaging implements IListener {
                         break;
                 }
             } else {
-                log.log(Level.WARNING, "Non message data received.", data);
+                log.log(Level.WARNING, "Non message data received.", arg);
             }
         }
     }

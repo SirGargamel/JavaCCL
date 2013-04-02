@@ -35,14 +35,16 @@ public final class Comm_Server implements IService {
     private ClientDiscoveryDaemon cdd;
 
     private Comm_Server(final int port) throws IOException {
-        history = new History();
-        serverSocket = ServerSocket.createServerSocket(port);
-        serverSocket.registerHistory(history);
+        history = new History();        
 
         clients = new ClientDB();
+        
+        serverSocket = ServerSocket.createServerSocket(port);
+        serverSocket.registerHistory(history);
+        
         clientStatusDaemon = new ClientStatusDaemon(clients, serverSocket);
 
-        getListenerRegistrator().registerMessageObserver(new SystemMessagesHandler(clients));
+        getListenerRegistrator().addMessageObserver(new SystemMessagesHandler(clients));
         try {
             cdd = new ClientDiscoveryDaemon(clients);
         } catch (SocketException ex) {

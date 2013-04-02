@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -69,6 +70,20 @@ final class ClientDB implements IClientManager {
             }
         }
         return null;
+    }
+
+    @Override
+    public Communicator getClient(UUID id) {
+        Communicator result = null;
+        
+        for (Communicator c : clients) {
+            if (id.equals(c.getId())) {
+                result = c;
+                break;
+            }
+        }
+        
+        return result;
     }
 
     @Override

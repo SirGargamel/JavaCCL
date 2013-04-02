@@ -1,6 +1,6 @@
 package cz.tul.comm.socket;
 
-import cz.tul.comm.socket.queue.IIdentifiable;
+import cz.tul.comm.communicator.DataPacket;
 import java.net.InetAddress;
 
 /**
@@ -9,11 +9,10 @@ import java.net.InetAddress;
  *
  * @author Gargamel
  */
-public class IPData implements IIdentifiable {
+public class IPData {
     
-    private final InetAddress ip;
-    private final int port;
-    private final Object data;
+    private final InetAddress ip;    
+    private final DataPacket dataPacket;
 
     /**
      * Store data to container.
@@ -22,15 +21,9 @@ public class IPData implements IIdentifiable {
      * @param port source port
      * @param data received data
      */
-    public IPData(final InetAddress ip, final int port, final Object data) {
-        this.ip = ip;
-        this.port = port;
-        this.data = data;        
-    }
-
-    @Override
-    public Object getId() {
-        return getIp();
+    public IPData(final InetAddress ip, final DataPacket data) {
+        this.ip = ip;        
+        this.dataPacket = data;        
     }
 
     /**
@@ -42,17 +35,10 @@ public class IPData implements IIdentifiable {
     }
 
     /**
-     * @return port number, from which the data hse been received
-     */
-    public int getPort() {
-        return port;
-    }
-
-    /**
      *
      * @return received data
      */
-    public Object getData() {
-        return data;
+    public DataPacket getDataPacket() {
+        return dataPacket;
     }
 }

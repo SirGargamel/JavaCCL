@@ -3,6 +3,7 @@ package cz.tul.comm.server;
 import cz.tul.comm.communicator.Communicator;
 import java.net.InetAddress;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Interface for managing clients.
@@ -35,6 +36,8 @@ public interface IClientManager {
      * registered)
      */
     Communicator getClient(final InetAddress adress, final int port);
+    
+    Communicator getClient(final UUID id);
 
     /**
      * @return list of all clients

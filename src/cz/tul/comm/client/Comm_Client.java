@@ -9,6 +9,7 @@ import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.IHistoryManager;
 import cz.tul.comm.history.sorting.DefaultSorter;
+import cz.tul.comm.messaging.BasicConversator;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.socket.IListenerRegistrator;
@@ -17,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,6 +51,7 @@ public final class Comm_Client implements IService, IServerInterface {
 
         status = Status.ONLINE;
         csm = new ClientSystemMessaging(this);
+        serverSocket.addMessageObserver(csm);
 
         try {
             sdd = new ServerDiscoveryDaemon(this);
@@ -70,9 +73,22 @@ public final class Comm_Client implements IService, IServerInterface {
         try {
             comm = Communicator.initNewCommunicator(address, port);
             if (isServerUp()) {
-                getListenerRegistrator().removeIpListener(null, csm);
-                getListenerRegistrator().addIpListener(address, csm, true);
-                log.log(Level.CONFIG, "New server IP and port has been set");
+                final Message login = new Message(MessageHeaders.LOGIN, serverSocket.getPort());
+                BasicConversator bs = new BasicConversator(comm, serverSocket);
+
+                final Object id = bs.sendAndReceiveData(login);
+                if (id instanceof Message) {
+                    final Message m = (Message) id;
+                    if (m.getHeader().equals(MessageHeaders.LOGIN)
+                            && m.getData() instanceof UUID) {
+                        comm.setId((UUID) m.getData());
+                        log.log(Level.INFO, "Client has been registered to new server, new ID has been received - {0}", comm.getId());
+                    } else {
+                        log.log(Level.WARNING, "Invalid response received - {0}", m.toString());
+                    }
+                } else {
+                    log.log(Level.WARNING, "Invalid response received - {0}", id.toString());
+                }
             } else {
                 log.log(Level.CONFIG, "Server could not be contacted");
             }
@@ -189,7 +205,9 @@ public final class Comm_Client implements IService, IServerInterface {
     @Override
     public void stopService() {
         serverSocket.stopService();
-        sdd.stopService();
+        if (sdd != null) {
+            sdd.stopService();
+        }
         log.fine("Client has been stopped.");
     }
 

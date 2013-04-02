@@ -2,6 +2,7 @@ package cz.tul.comm.socket;
 
 import cz.tul.comm.Constants;
 import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.socket.queue.IListener;
@@ -46,15 +47,15 @@ public class ServerSocketTest {
             fail("Failed to initialize ServerSocket");
         }
 
-        if (instance != null) {
-            final Queue<IPData> queueData = instance.addIpListener(InetAddress.getLoopbackAddress(), owner2, false);
-            assertNotNull(queueData);
-
+        if (instance != null) {            
             UUID msgId = UUID.randomUUID();
             final Queue<IIdentifiable> queueMsg = instance.addIdListener(msgId, owner1, false);
             assertNotNull(queueMsg);
 
             final Communicator c = Communicator.initNewCommunicator(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
+            c.setId(UUID.randomUUID());
+            final Queue<DataPacket> queueData = instance.addClientListener(c.getId(), owner2, false);
+            assertNotNull(queueData);
 
             final Object data1 = "testData";
             final Object data2 = new Integer(50);
@@ -65,7 +66,7 @@ public class ServerSocketTest {
             c.sendData(m);
 
             int counter = 0;
-            for (IPData d : queueData) {
+            for (DataPacket d : queueData) {
                 if (d.getData().equals(data1) || d.getData().equals(data2) || d.getData().equals(m)) {
                     counter++;
                 }
