@@ -1,8 +1,8 @@
 package cz.tul.comm.client;
 
+import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
-import cz.tul.comm.socket.IPData;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
@@ -24,10 +24,10 @@ class ClientSystemMessaging implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-        if (arg instanceof IPData) {
-            final IPData ipd = (IPData) arg;
-            if (ipd.getDataPacket().getData() instanceof Message) {
-                final Message m = (Message) ipd.getDataPacket().getData();
+        if (arg instanceof DataPacket) {
+            final DataPacket data = (DataPacket) arg;
+            if (data.getData() instanceof Message) {
+                final Message m = (Message) data.getData();
                 switch (m.getHeader()) {
                     case MessageHeaders.STATUS:
                         final Message response = new Message(m.getId(), m.getHeader(), parent.getStatus());

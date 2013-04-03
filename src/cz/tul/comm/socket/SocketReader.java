@@ -80,9 +80,10 @@ class SocketReader extends Observable implements Runnable {
             if (o instanceof DataPacket) {
                 final DataPacket dp = (DataPacket) o;
                 final Object data = dp.getData();
+                dp.setSourceIP(ip);
 
                 setChanged();
-                this.notifyObservers(new IPData(ip, dp));
+                this.notifyObservers(dp);
 
                 if (data instanceof IIdentifiable) {
                     dataStorageId.storeData((IIdentifiable) data);

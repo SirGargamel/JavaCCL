@@ -1,10 +1,10 @@
 package cz.tul.comm.server;
 
 import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.communicator.Status;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
-import cz.tul.comm.socket.IPData;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.UUID;
@@ -30,9 +30,9 @@ public class SystemMessagesHandler implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-        if (arg instanceof IPData) {
-            final IPData ipData = (IPData) arg;
-            final Object data = ipData.getDataPacket().getData();
+        if (arg instanceof DataPacket) {
+            final DataPacket ipData = (DataPacket) arg;
+            final Object data = ipData.getData();
             if (data instanceof Message) {
                 final Message m = (Message) data;
                 final String header = m.getHeader();
@@ -42,21 +42,21 @@ public class SystemMessagesHandler implements Observer {
                         try {
                             port = Integer.parseInt(m.getData().toString());
                             UUID clientId = UUID.randomUUID();
-                            Communicator c = clientManager.registerClient(ipData.getIp(), port);
+                            Communicator c = clientManager.registerClient(ipData.getSourceIP(), port);
                             c.setId(clientId);
                             c.sendData(new Message(m.getId(), header, clientId));
                             log.log(Level.CONFIG, "LOGIN received from {0} - {1}, assigning id {2}", new Object[]{m.toString(), clientId});
                         } catch (NumberFormatException ex) {
                             log.log(Level.WARNING, "Illegal login data received from {0} - {1}",
-                                    new Object[]{ipData.getIp().getHostAddress(), m.getData().toString()});
+                                    new Object[]{ipData.getClientID(), m.getData().toString()});
                         } catch (NullPointerException ex) {
                             log.log(Level.WARNING, "Null login data received from {0}",
-                                    new Object[]{ipData.getIp().getHostAddress()});
+                                    new Object[]{ipData.getClientID()});
                         }
                         break;
                     case MessageHeaders.STATUS:
                         if (m.getData() instanceof Status) {
-                            final Communicator c = clientManager.getClient(ipData.getDataPacket().getClientID());
+                            final Communicator c = clientManager.getClient(ipData.getClientID());
                             if (c != null) {
                                 c.setStatus((Status) m.getData());
                                 log.log(Level.CONFIG, "Status message {0} received for IP {1} ,port {2}", new Object[]{m.getData().toString(), c.getAddress(), c.getPort()});

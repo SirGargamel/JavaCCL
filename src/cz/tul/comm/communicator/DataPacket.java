@@ -3,6 +3,7 @@ package cz.tul.comm.communicator;
 import cz.tul.comm.socket.ServerSocket;
 import cz.tul.comm.socket.queue.IIdentifiable;
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.util.UUID;
 
 /**
@@ -15,6 +16,7 @@ public class DataPacket implements Serializable, IIdentifiable {
 
     private final UUID clientID;
     private final Object data;
+    private InetAddress sourceIP;
 
     public DataPacket(UUID clientID, Object data) {
         this.clientID = clientID;
@@ -32,6 +34,14 @@ public class DataPacket implements Serializable, IIdentifiable {
     @Override
     public Object getId() {
         return getClientID();
+    }
+
+    public InetAddress getSourceIP() {
+        return sourceIP;
+    }
+
+    public void setSourceIP(InetAddress sourceAddress) {
+        this.sourceIP = sourceAddress;
     }
 
     @Override
