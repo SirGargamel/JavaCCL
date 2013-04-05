@@ -99,6 +99,13 @@ public final class Comm_Client implements IService, IServerInterface {
             log.log(Level.WARNING, "Illegal parameters for Communicator.", ex);
         }
     }
+    
+    @Override
+    public void deregisterFromServer() {
+        final Message m = new Message(MessageHeaders.LOGOUT, comm.getId());
+        sendData(m);
+        comm = null;
+    }
 
     @Override
     public boolean isServerUp() {
@@ -228,5 +235,5 @@ public final class Comm_Client implements IService, IServerInterface {
     @Override
     public int getServerPort() {
         return serverSocket.getPort();
-    }
+    }    
 }

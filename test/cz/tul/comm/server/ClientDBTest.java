@@ -8,6 +8,7 @@ import cz.tul.comm.communicator.Communicator;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -16,7 +17,7 @@ import static org.junit.Assert.*;
  * @author Petr Ječmen
  */
 public class ClientDBTest {
-    
+
     private static final int PORT = 5253;
 
     public ClientDBTest() {
@@ -52,20 +53,15 @@ public class ClientDBTest {
     @Test
     public void testDeregisterClient() {
         System.out.println("deregisterClient");
-        final ClientDB instance = new ClientDB();        
+        final ClientDB instance = new ClientDB();
 
-        InetAddress adress = InetAddress.getLoopbackAddress();        
+        InetAddress adress = InetAddress.getLoopbackAddress();
 
-        instance.registerClient(adress, PORT);
+        final Communicator c = instance.registerClient(adress, PORT);
         assertEquals(instance.getClients().size(), 1);
-        try {
-            instance.deregisterClient(InetAddress.getByAddress(new byte[]{1, 1, 1, 1}), PORT);
-            assertEquals(instance.getClients().size(), 1);
-        } catch (UnknownHostException ex) {
-            System.err.println("Error creating address from IP, deregistering not fully tested.\n" + ex.getLocalizedMessage());
-        }
-
-        instance.deregisterClient(adress, PORT);
+        instance.deregisterClient(UUID.randomUUID());
+        assertEquals(instance.getClients().size(), 1);
+        instance.deregisterClient(c.getId());
         assertEquals(instance.getClients().size(), 0);
     }
 
@@ -77,7 +73,7 @@ public class ClientDBTest {
         System.out.println("getClient");
         final ClientDB instance = new ClientDB();
 
-        InetAddress adress = InetAddress.getLoopbackAddress();        
+        InetAddress adress = InetAddress.getLoopbackAddress();
 
         Communicator expResult = instance.registerClient(adress, PORT);
         Communicator result = instance.getClient(adress, PORT);
@@ -94,18 +90,18 @@ public class ClientDBTest {
         ClientDB instance = new ClientDB();
         Set result = instance.getClients();
         assertEquals(0, result.size());
-        try {            
-            
-            instance.registerClient(InetAddress.getByAddress(new byte[]{1, 1, 1, 1}), PORT);
-            instance.registerClient(InetAddress.getByAddress(new byte[]{0, 0, 0, 0}), PORT);
+        try {
+
+            final Communicator c1 = instance.registerClient(InetAddress.getByAddress(new byte[]{1, 1, 1, 1}), PORT);
+            final Communicator c2 = instance.registerClient(InetAddress.getByAddress(new byte[]{0, 0, 0, 0}), PORT);
             result = instance.getClients();
             assertEquals(2, result.size());
 
-            instance.deregisterClient(InetAddress.getByAddress(new byte[]{1, 1, 1, 1}), PORT);
+            instance.deregisterClient(c1.getId());
             result = instance.getClients();
             assertEquals(1, result.size());
 
-            instance.deregisterClient(InetAddress.getByAddress(new byte[]{1, 1, 1, 1}), PORT);
+            instance.deregisterClient(c1.getId());
             result = instance.getClients();
             assertEquals(1, result.size());
         } catch (UnknownHostException ex) {

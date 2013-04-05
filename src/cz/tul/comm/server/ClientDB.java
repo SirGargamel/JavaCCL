@@ -49,17 +49,17 @@ final class ClientDB implements IClientManager {
     }
 
     @Override
-    public void deregisterClient(final InetAddress address, final int port) {
+    public void deregisterClient(final UUID id) {
         final Iterator<Communicator> i = clients.iterator();
         Communicator cc;
         while (i.hasNext()) {
             cc = i.next();
-            if (cc.getAddress().equals(address) && cc.getPort() == port) {
+            if (cc.getId().equals(id)) {
                 i.remove();
                 break;
             }
         }
-        log.log(Level.CONFIG, "Client with IP {0} on port {1} deregistered", new Object[]{address.getHostAddress(), port});
+        log.log(Level.CONFIG, "Client with ID {0} deregistered", new Object[]{id});
     }
 
     @Override
@@ -73,16 +73,16 @@ final class ClientDB implements IClientManager {
     }
 
     @Override
-    public Communicator getClient(UUID id) {
+    public Communicator getClient(final UUID id) {
         Communicator result = null;
-        
+
         for (Communicator c : clients) {
             if (id.equals(c.getId())) {
                 result = c;
                 break;
             }
         }
-        
+
         return result;
     }
 

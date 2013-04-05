@@ -11,6 +11,7 @@ public interface MessageHeaders {
      * client registration
      */
     String LOGIN = "login";
+    String LOGOUT = "logout";
     /**
      * question for client status
      */

@@ -27,7 +27,7 @@ public interface IClientManager {
      * @param adress client IP
      * @param port client port
      */
-    void deregisterClient(final InetAddress adress, final int port);
+    void deregisterClient(final UUID id);
 
     /**
      * @param adress client IP

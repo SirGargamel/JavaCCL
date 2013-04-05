@@ -54,6 +54,15 @@ public class SystemMessagesHandler implements Observer {
                                     new Object[]{ipData.getClientID()});
                         }
                         break;
+                    case MessageHeaders.LOGOUT:
+                        final Object id = m.getData();
+                        if (id instanceof UUID) {
+                            clientManager.deregisterClient((UUID) id);
+                            log.log(Level.CONFIG, "Client with id {0} deregistered.", id.toString());
+                        } else {
+                            log.log(Level.WARNING, "Invalid client id received - {0}", id.toString());
+                        }
+                        break;
                     case MessageHeaders.STATUS:
                         if (m.getData() instanceof Status) {
                             final Communicator c = clientManager.getClient(ipData.getClientID());

@@ -15,6 +15,8 @@ public interface IServerInterface {
      * @param port server port
      */
     void registerServer(final InetAddress address, final int port);
+    
+    void deregisterFromServer();
 
     /**
      * Test if the server reachable.
