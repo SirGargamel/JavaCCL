@@ -8,6 +8,8 @@ import cz.tul.comm.history.History;
 import cz.tul.comm.history.IHistoryManager;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.gui.UserLogging;
+import cz.tul.comm.messaging.job.Job;
+import cz.tul.comm.messaging.job.JobManager;
 import cz.tul.comm.server.daemons.ClientDiscoveryDaemon;
 import cz.tul.comm.server.daemons.ClientStatusDaemon;
 import cz.tul.comm.socket.IListenerRegistrator;
@@ -32,6 +34,7 @@ public final class Comm_Server implements IService {
     private final ServerSocket serverSocket;
     private final IHistoryManager history;
     private final ClientStatusDaemon clientStatusDaemon;
+    private final JobManager jobManager;
     private ClientDiscoveryDaemon cdd;
 
     private Comm_Server(final int port) throws IOException {
@@ -50,6 +53,8 @@ public final class Comm_Server implements IService {
         } catch (SocketException ex) {
             log.log(Level.WARNING, "Failed to create ClientDiscoveryDaemon", ex);
         }
+        
+        jobManager = new JobManager(clients, serverSocket);
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -112,6 +117,14 @@ public final class Comm_Server implements IService {
     public IListenerRegistrator getListenerRegistrator() {
         return serverSocket;
     }
+    
+    public void assignDataStorage(final IDataStorage dataStorage) {
+        jobManager.setDataStorage(dataStorage);
+    }
+    
+    public Job submitJob(final Object task) {
+        return jobManager.submitJob(task);
+    }
 
     /**
      * Create and initialize new instance of server.
@@ -152,11 +165,13 @@ public final class Comm_Server implements IService {
         if (cdd != null) {
             cdd.start();
         }
+        jobManager.start();
     }
 
     @Override
     public void stopService() {
         clientStatusDaemon.stopService();
+        jobManager.stopService();
         serverSocket.stopService();
         cdd.stopService();
         log.fine("Server has been stopped.");

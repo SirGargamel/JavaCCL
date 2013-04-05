@@ -12,6 +12,7 @@ import cz.tul.comm.history.sorting.DefaultSorter;
 import cz.tul.comm.messaging.BasicConversator;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
+import cz.tul.comm.messaging.job.IAssignmentListener;
 import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
@@ -38,6 +39,7 @@ public final class Comm_Client implements IService, IServerInterface {
     private static final int TIMEOUT = 1000;
     private final ServerSocket serverSocket;
     private final IHistoryManager history;
+    private IAssignmentListener assignmentListener;
     private Communicator comm;
     private Status status;
     private final ClientSystemMessaging csm;
@@ -147,6 +149,18 @@ public final class Comm_Client implements IService, IServerInterface {
      */
     public IListenerRegistrator getListenerRegistrator() {
         return serverSocket;
+    }
+
+    public void assignAssignmentListener(IAssignmentListener assignmentListener) {
+        this.assignmentListener = assignmentListener;
+    }
+
+    IAssignmentListener getAssignmentListener() {
+        return assignmentListener;
+    }
+    
+    Communicator getServerCommunicator() {
+        return comm;
     }
 
     /**

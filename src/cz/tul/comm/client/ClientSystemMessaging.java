@@ -3,6 +3,8 @@ package cz.tul.comm.client;
 import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
+import cz.tul.comm.messaging.job.ClientSideJob;
+import cz.tul.comm.messaging.job.JobTask;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
@@ -33,6 +35,17 @@ class ClientSystemMessaging implements Observer {
                         final Message response = new Message(m.getId(), m.getHeader(), parent.getStatus());
                         parent.sendData(response);
                         log.log(Level.CONFIG, "STATUS question received and response {0} has been sent.", response.toString());
+                        break;
+                    case MessageHeaders.JOB:
+                        final Object task = m.getData();
+                        if (task != null && task instanceof JobTask) {
+                            final JobTask jt = (JobTask) task;
+                            final ClientSideJob job = new ClientSideJob(jt.getTask(), jt.getJobId(), parent.getServerCommunicator(), parent.getListenerRegistrator(), parent.getAssignmentListener());
+                            parent.getListenerRegistrator().addIdListener(job.getId(), job, true);
+                            parent.getAssignmentListener().receiveTask(job);
+                        } else {
+                            log.warning("NULL job task received");
+                        }                                             
                         break;
                     default:
                         // nonsystem msg, nothing to do
