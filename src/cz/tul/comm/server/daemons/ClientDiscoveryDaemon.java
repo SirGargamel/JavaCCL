@@ -107,7 +107,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
         //Wait for a response
         byte[] recvBuf = new byte[15000];
 
-        while (System.currentTimeMillis() < endTime) {
+        while (System.currentTimeMillis() < endTime && !s.isClosed()) {
             s.setSoTimeout((int) (endTime - System.currentTimeMillis()));
 
             DatagramPacket receivePacket = new DatagramPacket(recvBuf, recvBuf.length);
@@ -136,6 +136,8 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
             } catch (SocketTimeoutException ex) {
                 // nothing bad happened
                 // delay time reached
+            } catch (SocketException ex) {
+                log.log(Level.SEVERE, "Socket exception occured.", ex);
             }
         }
     }
