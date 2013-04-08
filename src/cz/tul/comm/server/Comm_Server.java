@@ -1,5 +1,6 @@
 package cz.tul.comm.server;
 
+import cz.tul.comm.ComponentSwitches;
 import cz.tul.comm.Constants;
 import cz.tul.comm.persistence.ServerSettings;
 import cz.tul.comm.IService;
@@ -38,22 +39,29 @@ public final class Comm_Server implements IService {
     private ClientDiscoveryDaemon cdd;
 
     private Comm_Server(final int port) throws IOException {
-        history = new History();        
+        history = new History();
 
         clients = new ClientDB();
-        
+
         serverSocket = ServerSocket.createServerSocket(port);
         serverSocket.registerHistory(history);
-        
-        clientStatusDaemon = new ClientStatusDaemon(clients, serverSocket);
+
+        if (ComponentSwitches.useClientStatus) {
+            clientStatusDaemon = new ClientStatusDaemon(clients, serverSocket);
+        } else {
+            clientStatusDaemon = null;
+        }
 
         getListenerRegistrator().addMessageObserver(new SystemMessagesHandler(clients));
-        try {
-            cdd = new ClientDiscoveryDaemon(clients);
-        } catch (SocketException ex) {
-            log.log(Level.WARNING, "Failed to create ClientDiscoveryDaemon", ex);
+
+        if (ComponentSwitches.useClientDiscovery) {
+            try {
+                cdd = new ClientDiscoveryDaemon(clients);
+            } catch (SocketException ex) {
+                log.log(Level.WARNING, "Failed to create ClientDiscoveryDaemon", ex);
+            }
         }
-        
+
         jobManager = new JobManager(clients, serverSocket);
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -117,11 +125,11 @@ public final class Comm_Server implements IService {
     public IListenerRegistrator getListenerRegistrator() {
         return serverSocket;
     }
-    
+
     public void assignDataStorage(final IDataStorage dataStorage) {
         jobManager.setDataStorage(dataStorage);
     }
-    
+
     public Job submitJob(final Object task) {
         return jobManager.submitJob(task);
     }
@@ -146,22 +154,24 @@ public final class Comm_Server implements IService {
      */
     public static Comm_Server initNewServer() {
         Comm_Server s = null;
-        
+
         try {
             s = initNewServer(Constants.DEFAULT_PORT);
         } catch (IOException ex) {
             UserLogging.showErrorToUser("Error initializing server on default port.");
             log.log(Level.SEVERE, "Error initializing server on default port", ex);
         }
-        
+
         return s;
     }
 
     void start() {
-        if (!ServerSettings.deserialize(clients)) {
-            // TODO tell user loading settings has failed
+        if (ComponentSwitches.useSettings && !ServerSettings.deserialize(clients)) {
+            UserLogging.showWarningToUser("Error reading settings file, using default ones.");
         }
-        clientStatusDaemon.start();
+        if (clientStatusDaemon != null) {
+            clientStatusDaemon.start();
+        }
         if (cdd != null) {
             cdd.start();
         }
@@ -170,10 +180,16 @@ public final class Comm_Server implements IService {
 
     @Override
     public void stopService() {
-        clientStatusDaemon.stopService();
+        if (clientStatusDaemon != null) {
+            clientStatusDaemon.stopService();
+        }
+        if (cdd != null) {
+            cdd.stopService();
+        }
+        
         jobManager.stopService();
         serverSocket.stopService();
-        cdd.stopService();
+        
         log.fine("Server has been stopped.");
     }
 }

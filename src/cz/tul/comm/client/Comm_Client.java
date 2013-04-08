@@ -1,5 +1,6 @@
 package cz.tul.comm.client;
 
+import cz.tul.comm.ComponentSwitches;
 import cz.tul.comm.Constants;
 import cz.tul.comm.persistence.ClientSettings;
 import cz.tul.comm.communicator.Communicator;
@@ -55,10 +56,12 @@ public final class Comm_Client implements IService, IServerInterface {
         csm = new ClientSystemMessaging(this);
         serverSocket.addMessageObserver(csm);
 
-        try {
-            sdd = new ServerDiscoveryDaemon(this);
-        } catch (SocketException ex) {
-            log.log(Level.FINE, "Failed to initiate server discovery daemon.", ex);
+        if (ComponentSwitches.useClientDiscovery) {
+            try {
+                sdd = new ServerDiscoveryDaemon(this);
+            } catch (SocketException ex) {
+                log.log(Level.FINE, "Failed to initiate server discovery daemon.", ex);
+            }
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -99,7 +102,7 @@ public final class Comm_Client implements IService, IServerInterface {
             log.log(Level.WARNING, "Illegal parameters for Communicator.", ex);
         }
     }
-    
+
     @Override
     public void deregisterFromServer() {
         final Message m = new Message(MessageHeaders.LOGOUT, comm.getId());
@@ -165,7 +168,7 @@ public final class Comm_Client implements IService, IServerInterface {
     IAssignmentListener getAssignmentListener() {
         return assignmentListener;
     }
-    
+
     Communicator getServerCommunicator() {
         return comm;
     }
@@ -215,8 +218,8 @@ public final class Comm_Client implements IService, IServerInterface {
 
     private void start() {
         // load settings
-        if (!ClientSettings.deserialize(this)) {
-            // TODO tell user that settings are wrong
+        if (ComponentSwitches.useSettings && !ClientSettings.deserialize(this)) {
+            UserLogging.showWarningToUser("Error reading settings file, using default ones.");
         }
         if (sdd != null) {
             sdd.start();
@@ -235,5 +238,5 @@ public final class Comm_Client implements IService, IServerInterface {
     @Override
     public int getServerPort() {
         return serverSocket.getPort();
-    }    
+    }
 }
