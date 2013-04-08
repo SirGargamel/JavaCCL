@@ -7,6 +7,7 @@ package cz.tul.comm.messaging.job;
 public enum JobStatus {
 
     SUBMITTED,
+    SENT,
     ASSIGNED,
     COMPUTED,
     CANCELED,

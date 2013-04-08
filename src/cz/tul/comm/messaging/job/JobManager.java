@@ -8,7 +8,9 @@ import cz.tul.comm.server.IDataStorage;
 import cz.tul.comm.socket.IListenerRegistrator;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,12 +27,14 @@ public class JobManager extends Thread implements IService {
     private static final Logger log = Logger.getLogger(JobManager.class.getName());
     private static final int WAIT_TIME = 1000;
     private static final int MAX_CLIENT_NA_TIME = 5000;
+    private static final int MAX_JOB_ASSIGN_TIME = 5000;
     private final IClientManager clientManager;
     private IDataStorage dataStorage;
     private final IListenerRegistrator listenerRegistrator;
     private final Queue<ServerSideJob> jobQueue;
     private final Map<Communicator, ServerSideJob> jobAssignment;
     private final Map<Communicator, Calendar> lastTimeOnline;
+    private final Map<ServerSideJob, Calendar> assignTime;
     private boolean run;
 
     public JobManager(final IClientManager clientManager, final IListenerRegistrator listenerRegistrator) {
@@ -38,6 +42,7 @@ public class JobManager extends Thread implements IService {
         this.listenerRegistrator = listenerRegistrator;
         jobAssignment = new ConcurrentHashMap<>();
         lastTimeOnline = new HashMap<>();
+        assignTime = new HashMap<>();
         jobQueue = new ConcurrentLinkedQueue<>();
 
         run = true;
@@ -65,6 +70,7 @@ public class JobManager extends Thread implements IService {
         while (run) {
             if (!jobQueue.isEmpty()) {
                 processQueue();
+                checkAssignedJobs();
                 checkClients();
             }
             synchronized (this) {
@@ -140,6 +146,34 @@ public class JobManager extends Thread implements IService {
         }
     }
 
+    private void checkAssignedJobs() {
+        final long time = Calendar.getInstance().getTimeInMillis();
+        final Set<ServerSideJob> reassign = new HashSet<>();
+
+        long dif;
+        for (Entry<ServerSideJob, Calendar> e : assignTime.entrySet()) {
+            dif = time - e.getValue().getTimeInMillis();
+            if (dif > MAX_JOB_ASSIGN_TIME) {
+                reassign.add(e.getKey());
+            }
+        }
+
+        Communicator comm;
+        for (ServerSideJob ssj : reassign) {
+            // check client, then resend or give to another
+            comm = ssj.getComm();
+            if (isClientOnline(comm)) {
+                ssj.submitJob(comm);
+            } else {
+                ssj.cancelJob();
+                jobAssignment.remove(comm);
+                if (!jobQueue.contains(ssj)) {
+                    jobQueue.add(ssj);
+                }
+            }
+        }
+    }
+
     private boolean isClientOnline(final Communicator comm) {
         final Status s = comm.getStatus();
         return (s.equals(Status.ONLINE) || s.equals(Status.REACHABLE) || s.equals(Status.BUSY));
@@ -148,5 +182,6 @@ public class JobManager extends Thread implements IService {
     private void assignJob(final ServerSideJob job, final Communicator comm) {
         job.submitJob(comm);
         jobAssignment.put(comm, job);
+        assignTime.put(job, Calendar.getInstance());
     }
 }

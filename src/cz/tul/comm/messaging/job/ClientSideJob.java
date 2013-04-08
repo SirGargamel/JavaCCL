@@ -28,7 +28,10 @@ public class ClientSideJob implements Assignment, IListener {
         this.comm = comm;
         this.jobId = jobId;
         this.listenerRegistrator = listenerRegistrator;
-        this.taskListener = taskListener;       
+        this.taskListener = taskListener;
+        
+        final Message accept = new Message(jobId, JobMessageHeaders.JOB_ACCEPT, null);
+        sendMessage(accept);
     }
 
     private boolean sendMessage(final Message m) {
@@ -50,14 +53,14 @@ public class ClientSideJob implements Assignment, IListener {
             return r.getData();
         } else {
             throw new IllegalArgumentException("Illegal data received as a reply for data request.");
-        }        
+        }
     }
 
     @Override
     public boolean submitResult(Object result) {
         listenerRegistrator.removeIdListener(jobId, this);
         final Message m = new Message(jobId, JobMessageHeaders.JOB_RESULT, result);
-        return sendMessage(m);        
+        return sendMessage(m);
     }
 
     @Override

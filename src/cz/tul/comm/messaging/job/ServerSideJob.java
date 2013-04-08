@@ -42,7 +42,7 @@ public class ServerSideJob implements Job, IListener {
         final Message m = new Message(jobId, MessageHeaders.JOB, jt);
         sendMessage(m);
 
-        jobStatus = JobStatus.ASSIGNED;
+        jobStatus = JobStatus.SENT;
     }
 
     @Override
@@ -123,6 +123,8 @@ public class ServerSideJob implements Job, IListener {
                     listenerRegistrator.removeIdListener(jobId, this);
                     log.log(Level.CONFIG, "Job with ID {0} has been cancelled by client, reason was {1}.", new Object[]{jobId, m.getData()});
                     break;
+                case JobMessageHeaders.JOB_ACCEPT:
+                    jobStatus = JobStatus.ASSIGNED;
                 default:
                     log.log(Level.WARNING, "Data with invalid header received for job - {0}", m.toString());
             }
@@ -143,5 +145,9 @@ public class ServerSideJob implements Job, IListener {
     @Override
     public UUID getId() {
         return jobId;
+    }
+    
+    Communicator getComm() {
+        return comm;
     }
 }
