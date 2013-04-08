@@ -138,6 +138,7 @@ public final class Communicator {
 
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
 
+            stat = status.NA;
             out.writeObject(data);
             out.flush();
 
@@ -151,7 +152,7 @@ public final class Communicator {
             log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", address.getHostAddress());
             stat = Status.NOT_RESPONDING;
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Cannot write to output socket.", ex);
+            log.log(Level.WARNING, "Cannot write to output socket.", ex);            
         }
 
         if (hm != null) {

@@ -2,17 +2,17 @@ package cz.tul.comm.messaging.job;
 
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.communicator.Status;
 import cz.tul.comm.server.IClientManager;
 import cz.tul.comm.server.IDataStorage;
 import cz.tul.comm.socket.IListenerRegistrator;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,17 +23,21 @@ import java.util.logging.Logger;
 public class JobManager extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(JobManager.class.getName());
+    private static final int WAIT_TIME = 1000;
+    private static final int MAX_CLIENT_NA_TIME = 5000;
     private final IClientManager clientManager;
     private IDataStorage dataStorage;
     private final IListenerRegistrator listenerRegistrator;
     private final Queue<ServerSideJob> jobQueue;
-    private final Map<Communicator, List<ServerSideJob>> jobAssignment;
+    private final Map<Communicator, ServerSideJob> jobAssignment;
+    private final Map<Communicator, Calendar> lastTimeOnline;
     private boolean run;
 
     public JobManager(final IClientManager clientManager, final IListenerRegistrator listenerRegistrator) {
         this.clientManager = clientManager;
         this.listenerRegistrator = listenerRegistrator;
         jobAssignment = new ConcurrentHashMap<>();
+        lastTimeOnline = new HashMap<>();
         jobQueue = new ConcurrentLinkedQueue<>();
 
         run = true;
@@ -61,17 +65,17 @@ public class JobManager extends Thread implements IService {
         while (run) {
             if (!jobQueue.isEmpty()) {
                 processQueue();
-                // TODO monitor client status and mark unaviable clients
+                checkClients();
             }
             synchronized (this) {
                 try {
-                    this.wait();
+                    this.wait(WAIT_TIME);
                 } catch (InterruptedException ex) {
                     log.log(Level.WARNING, "Waiting of JobManager has been interrupted", ex);
                 }
             }
         }
-    }    
+    }
 
     @Override
     public void stopService() {
@@ -79,51 +83,70 @@ public class JobManager extends Thread implements IService {
         synchronized (this) {
             this.notify();
         }
-        for (List<ServerSideJob> l : jobAssignment.values()) {
-            for (ServerSideJob ssj : l) {
-                ssj.cancelJob();
-            }
+
+        for (ServerSideJob ssj : jobAssignment.values()) {
+            ssj.cancelJob();
         }
+
         log.fine("JobManager has been stopped.");
     }
 
     private void processQueue() {
         Set<Communicator> clients;
-        List<ServerSideJob> jobList;
         ServerSideJob job;
         clients = clientManager.getClients();
         for (Communicator comm : clients) {
-            if (jobQueue.isEmpty()) {
+            if (jobQueue.isEmpty() || !isClientOnline(comm)) {
                 break;
             }
-            jobList = jobAssignment.get(comm);
-            if (jobList != null
-                    && jobList.size() > 0) {
-                Iterator<ServerSideJob> it = jobList.iterator();
-                while (it.hasNext()) {
-                    job = it.next();
-                    if (job.isDone()) {
-                        log.log(Level.CONFIG, "Job with ID {0} found as done.", new Object[]{job.getId(), comm.getId()});
-                        it.remove();
-                    }
-                }
-                if (!jobList.isEmpty()) {
-                    continue;
-                }
+            job = jobAssignment.get(comm);
+            if (job != null && job.isDone()) {
+                // job cleanup
+                log.log(Level.CONFIG, "Job with ID {0} found as done.", new Object[]{job.getId(), comm.getId()});
+                jobAssignment.remove(comm);
+                jobQueue.remove(job);
+                job = null;
             }
 
-            job = jobQueue.poll();
-            assignJob(job, comm);
-            log.log(Level.CONFIG, "Job with ID {0} assigned to client with ID {1}.", new Object[]{job.getId(), comm.getId()});
+            if (job == null) {
+                // new assignment
+                job = jobQueue.poll();
+                assignJob(job, comm);
+                lastTimeOnline.put(comm, Calendar.getInstance());
+                log.log(Level.CONFIG, "Job with ID {0} assigned to client with ID {1}.", new Object[]{job.getId(), comm.getId()});
+            }
         }
     }
-    
+
+    private void checkClients() {
+        for (Communicator comm : jobAssignment.keySet()) {
+            if (!isClientOnline(comm)) {
+                final Calendar actualTime = Calendar.getInstance();
+                final Calendar lastOnline = lastTimeOnline.get(comm);
+                if (lastOnline != null) {
+                    final long dif = actualTime.getTimeInMillis() - lastOnline.getTimeInMillis();
+                    if (dif > MAX_CLIENT_NA_TIME) {
+                        final ServerSideJob reassigned = jobAssignment.get(comm);
+                        if (!jobQueue.contains(reassigned)) {
+                            jobQueue.add(reassigned);
+                        }
+                    }
+                } else {
+                    log.warning("No online time recorder for joc communicator.");
+                }
+            } else {
+                lastTimeOnline.put(comm, Calendar.getInstance());
+            }
+        }
+    }
+
+    private boolean isClientOnline(final Communicator comm) {
+        final Status s = comm.getStatus();
+        return (s.equals(Status.ONLINE) || s.equals(Status.REACHABLE) || s.equals(Status.BUSY));
+    }
+
     private void assignJob(final ServerSideJob job, final Communicator comm) {
         job.submitJob(comm);
-        List<ServerSideJob> jobs = jobAssignment.get(comm);
-        if (jobs == null) {
-            jobs = new CopyOnWriteArrayList<>();
-        }
-        jobs.add(job);
+        jobAssignment.put(comm, job);
     }
 }
