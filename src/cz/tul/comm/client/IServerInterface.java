@@ -1,5 +1,6 @@
 package cz.tul.comm.client;
 
+import cz.tul.comm.communicator.Communicator;
 import java.net.InetAddress;
 
 /**
@@ -15,7 +16,7 @@ public interface IServerInterface {
      * @param port server port
      */
     void registerServer(final InetAddress address, final int port);
-    
+
     void deregisterFromServer();
 
     /**
@@ -23,7 +24,7 @@ public interface IServerInterface {
      *
      * @return true if the server is aviable and responding
      */
-    boolean isServerUp();        
-    
-    int getServerPort();
+    boolean isServerUp();    
+
+    Communicator getServerComm();
 }

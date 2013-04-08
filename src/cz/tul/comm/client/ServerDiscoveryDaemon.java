@@ -55,7 +55,7 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
                         final StringBuilder response = new StringBuilder();
                         response.append(Constants.DISCOVERY_RESPONSE);
                         response.append(Constants.DISCOVERY_RESPONSE_DELIMITER);
-                        response.append(sr.getServerPort());
+                        response.append(sr.getServerComm().getPort());
 
                         byte[] sendData = response.toString().getBytes();
 

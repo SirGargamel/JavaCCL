@@ -40,7 +40,7 @@ class ClientSystemMessaging implements Observer {
                         final Object task = m.getData();
                         if (task != null && task instanceof JobTask) {
                             final JobTask jt = (JobTask) task;
-                            final ClientSideJob job = new ClientSideJob(jt.getTask(), jt.getJobId(), parent.getServerCommunicator(), parent.getListenerRegistrator(), parent.getAssignmentListener());
+                            final ClientSideJob job = new ClientSideJob(jt.getTask(), jt.getJobId(), parent.getServerComm(), parent.getListenerRegistrator(), parent.getAssignmentListener());
                             parent.getListenerRegistrator().addIdListener(job.getId(), job, true);
                             parent.getAssignmentListener().receiveTask(job);
                         } else {

@@ -169,7 +169,8 @@ public final class Comm_Client implements IService, IServerInterface {
         return assignmentListener;
     }
 
-    Communicator getServerCommunicator() {
+    @Override
+    public Communicator getServerComm() {
         return comm;
     }
 
@@ -233,10 +234,5 @@ public final class Comm_Client implements IService, IServerInterface {
             sdd.stopService();
         }
         log.fine("Client has been stopped.");
-    }
-
-    @Override
-    public int getServerPort() {
-        return serverSocket.getPort();
     }
 }
