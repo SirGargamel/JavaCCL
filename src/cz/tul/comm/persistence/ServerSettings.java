@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,12 +38,12 @@ public final class ServerSettings implements Serializable {
 
         try {
             File s = new File(SERIALIZATION_NAME);
-            List<Field> fields = SimpleXMLFile.loadSimpleXMLFile(s);
-            for (Field f : fields) {
-                switch (f.getName()) {
+            Map<String, String> fields = SimpleXMLFile.loadSimpleXMLFile(s);
+            for (String f : fields.keySet()) {
+                switch (f) {
                     case FIELD_NAME_CLIENT:
                         try {
-                            String[] split = f.getValue().split(IP_PORT_SPLITTER);
+                            String[] split = fields.get(f).split(IP_PORT_SPLITTER);
                             clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1]));
                         } catch (UnknownHostException | NumberFormatException | ArrayIndexOutOfBoundsException ex) {
                             UserLogging.showWarningToUser("Unknown host found in settings - " + ex.getLocalizedMessage());
@@ -51,7 +51,7 @@ public final class ServerSettings implements Serializable {
                         }
                         break;
                     default:
-                        log.log(Level.CONFIG, "Unknown field - {0}", f.getName());
+                        log.log(Level.CONFIG, "Unknown field - {0}", f);
                         break;
                 }
             }
@@ -84,7 +84,7 @@ public final class ServerSettings implements Serializable {
             sb.append(c.getAddress().getHostAddress());
             sb.append(IP_PORT_SPLITTER);
             sb.append(c.getPort());
-            xml.addField(new Field(FIELD_NAME_CLIENT, sb.toString()));
+            xml.addField(FIELD_NAME_CLIENT, sb.toString());
             sb.setLength(0);
         }
 

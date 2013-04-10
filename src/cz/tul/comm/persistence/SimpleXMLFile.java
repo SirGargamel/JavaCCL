@@ -2,8 +2,9 @@ package cz.tul.comm.persistence;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -28,16 +29,32 @@ import org.xml.sax.SAXException;
 public class SimpleXMLFile {
 
     private static final Logger log = Logger.getLogger(SimpleXMLFile.class.getName());
-    private final List<Field> fields;
+    private final Map<String, String> fields;
 
+    /**
+     * Init fresh instance of XML file.
+     */
     public SimpleXMLFile() {
-        this.fields = new ArrayList<>();
+        this.fields = new HashMap<>();
     }
 
-    public void addField(final Field field) {
-        fields.add(field);
+    /**
+     * Store new value pair
+     *
+     * @param fieldName name of the field
+     * @param fieldValue value of the field
+     */
+    public void addField(final String fieldName, final String fieldValue) {
+        fields.put(fieldName, fieldValue);
     }
 
+    /**
+     * Save contents of this instance to a file.
+     *
+     * @param target target file
+     * @return true for successfull saving
+     * @throws IOException error handling target file
+     */
     public boolean storeXML(final File target) throws IOException {
         boolean result = false;
 
@@ -45,7 +62,7 @@ public class SimpleXMLFile {
             if (!target.exists()) {
                 target.createNewFile();
             }
-            
+
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
@@ -55,15 +72,15 @@ public class SimpleXMLFile {
             doc.appendChild(rootElement);
             // data elements
             Element el;
-            for (Field f : fields) {
-                el = doc.createElement(f.getName());
-                el.appendChild(doc.createTextNode(f.getValue()));
+            for (Entry<String, String> e : fields.entrySet()) {
+                el = doc.createElement(e.getKey());
+                el.appendChild(doc.createTextNode(e.getValue()));
                 rootElement.appendChild(el);
             }
             // write the content into xml file
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();            
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");   
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
             DOMSource source = new DOMSource(doc);
             StreamResult out = new StreamResult(target);
@@ -79,9 +96,17 @@ public class SimpleXMLFile {
         return result;
     }
 
-    public static List<Field> loadSimpleXMLFile(final File source) throws IOException, SAXException {
-        List<Field> fields = new ArrayList<>();
-        
+    /**
+     * Load contents of a simple XML file.
+     *
+     * @param source file for reading
+     * @return map filled with loaded pairs of values
+     * @throws IOException error accessing source file
+     * @throws SAXException error parsing XML file
+     */
+    public static Map<String, String> loadSimpleXMLFile(final File source) throws IOException, SAXException {
+        Map<String, String> fields = new HashMap<>();
+
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -105,7 +130,7 @@ public class SimpleXMLFile {
 
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                     Element eElement = (Element) nNode;
-                    fields.add(new Field(eElement.getTagName(), eElement.getTextContent()));
+                    fields.put(eElement.getTagName(), eElement.getTextContent());
                 }
             }
         } catch (ParserConfigurationException ex) {

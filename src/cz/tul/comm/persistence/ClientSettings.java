@@ -8,7 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.xml.sax.SAXException;
@@ -41,12 +41,12 @@ public final class ClientSettings {
         int port = Constants.DEFAULT_PORT;
         try {
             File s = new File(SERIALIZATION_NAME);
-            List<Field> fields = SimpleXMLFile.loadSimpleXMLFile(s);
-            for (Field f : fields) {
-                switch (f.getName()) {
+            Map<String, String> fields = SimpleXMLFile.loadSimpleXMLFile(s);
+            for (String f : fields.keySet()) {
+                switch (f) {
                     case FIELD_NAME_SERVER:
                         try {
-                            String[] split = f.getValue().split(IP_PORT_SPLITTER);
+                            String[] split = fields.get(f).split(IP_PORT_SPLITTER);
                             ip = InetAddress.getByName(split[0]);
                             port = Integer.valueOf(split[1]);
                         } catch (UnknownHostException ex) {
@@ -56,12 +56,12 @@ public final class ClientSettings {
                             UserLogging.showWarningToUser("Unknown server port found in settings - " + ex.getLocalizedMessage());
                             log.log(Level.WARNING, "Unkonwn server port found in settings", ex);
                         } catch (ArrayIndexOutOfBoundsException ex) {
-                            UserLogging.showWarningToUser("Illegal parameters for server IP and port found in settings - " + f.getValue());
+                            UserLogging.showWarningToUser("Illegal parameters for server IP and port found in settings - " + fields.get(f));
                             log.log(Level.WARNING, "Unkonwn server IP and port found in settings.", ex);
                         }
                         break;
                     default:
-                        log.log(Level.CONFIG, "Unknown field - {0}", f.getName());
+                        log.log(Level.FINE, "Unknown field - {0}", f);
                         break;
                 }
             }
@@ -99,9 +99,9 @@ public final class ClientSettings {
 
         SimpleXMLFile xml = new SimpleXMLFile();
 
-        xml.addField(new Field(
+        xml.addField(
                 FIELD_NAME_SERVER,
-                composeServerAddress(serverCommunicator.getAddress(), serverCommunicator.getPort())));
+                composeServerAddress(serverCommunicator.getAddress(), serverCommunicator.getPort()));
 
         boolean result = false;
         try {
