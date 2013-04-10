@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 public class ClientDiscoveryDaemon extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(ClientDiscoveryDaemon.class.getName());
-    private static final int DELAY = 20000;
+    private static final int DELAY = 20_000;
     private final IClientManager cm;
     private final DatagramSocket s;
     private boolean run;
@@ -105,7 +105,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
     public void listenForResponse() throws IOException {
         final long endTime = System.currentTimeMillis() + DELAY;
         //Wait for a response
-        byte[] recvBuf = new byte[15000];
+        byte[] recvBuf = new byte[15_000];
 
         while (System.currentTimeMillis() < endTime && !s.isClosed()) {
             s.setSoTimeout((int) (endTime - System.currentTimeMillis()));

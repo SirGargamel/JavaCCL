@@ -25,9 +25,9 @@ import java.util.logging.Logger;
 public class JobManager extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(JobManager.class.getName());
-    private static final int WAIT_TIME = 1000;
-    private static final int MAX_CLIENT_NA_TIME = 5000;
-    private static final int MAX_JOB_ASSIGN_TIME = 5000;
+    private static final int WAIT_TIME = 1_000;
+    private static final int MAX_CLIENT_NA_TIME = 5_000;
+    private static final int MAX_JOB_ASSIGN_TIME = 5_000;
     private final IClientManager clientManager;
     private IDataStorage dataStorage;
     private final IListenerRegistrator listenerRegistrator;

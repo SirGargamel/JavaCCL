@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-final class ClientDB implements IClientManager {
+class ClientDB implements IClientManager {
 
     private static final Logger log = Logger.getLogger(Communicator.class.getName());
     private final Set<Communicator> clients;

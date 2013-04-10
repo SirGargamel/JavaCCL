@@ -35,4 +35,7 @@ public abstract class UserLogging {
     public static void showErrorToUser(final String errorMessage) {
         JOptionPane.showMessageDialog(null, errorMessage, "Error", JOptionPane.WARNING_MESSAGE);
     }
+
+    private UserLogging() {
+    }
 }

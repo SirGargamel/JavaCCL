@@ -19,7 +19,7 @@ import org.xml.sax.SAXException;
  *
  * @author Petr Ječmen
  */
-public final class ServerSettings implements Serializable {
+public class ServerSettings implements Serializable {
 
     private static final Logger log = Logger.getLogger(ServerSettings.class.getName());
     private static final String SERIALIZATION_NAME = "serverSettings.xml";
@@ -97,5 +97,8 @@ public final class ServerSettings implements Serializable {
         }
 
         return result;
+    }
+
+    private ServerSettings() {
     }
 }

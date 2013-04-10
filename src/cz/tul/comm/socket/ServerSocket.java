@@ -1,13 +1,12 @@
 package cz.tul.comm.socket;
 
-import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.history.IHistoryManager;
+import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.socket.queue.IListener;
 import cz.tul.comm.socket.queue.ObjectQueue;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.HashSet;
@@ -27,9 +26,23 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public final class ServerSocket extends Thread implements IService, IListenerRegistrator {
+public class ServerSocket extends Thread implements IService, IListenerRegistrator {
 
     private static final Logger log = Logger.getLogger(ServerSocket.class.getName());
+
+    /**
+     * Prepare new ServerSocket.
+     *
+     * @param port listening port
+     * @return new instance of ServerSocket
+     * @throws IOException error creating socket on given port 
+     */
+    public static ServerSocket createServerSocket(final int port) throws IOException {
+        ServerSocket result = new ServerSocket(port);
+        result.start();
+        log.fine("New server socket created and started.");
+        return result;
+    }
     private final java.net.ServerSocket socket;
     private final ExecutorService exec;
     private final ObjectQueue<DataPacket> dataStorageClient;
@@ -131,20 +144,6 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
     public void registerHistory(final IHistoryManager hm) {
         this.hm = hm;
         log.fine("History registered.");
-    }
-
-    /**
-     * Prepare new ServerSocket.
-     *
-     * @param port listening port
-     * @return new instance of ServerSocket
-     * @throws IOException error creating socket on given port 
-     */
-    public static ServerSocket createServerSocket(final int port) throws IOException {
-        ServerSocket result = new ServerSocket(port);
-        result.start();
-        log.fine("New server socket created and started.");
-        return result;
     }
 
     @Override

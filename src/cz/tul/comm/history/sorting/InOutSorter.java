@@ -30,6 +30,27 @@ public class InOutSorter extends HistorySorter {
     private static final int IP_PART_COUNT = 4;
     private static final int IP_PART_SIZE = 3;
 
+        private static String normalizeIP(final String ip) {
+        StringBuilder sb = new StringBuilder();
+
+        String[] parts = ip.split(IP_DELIMITER_REGEX);
+        if (parts.length == IP_PART_COUNT) {
+            for (int i = 0; i < IP_PART_COUNT; i++) {
+                for (int j = 0; j < IP_PART_SIZE - parts[i].length(); j++) {
+                    sb.append(IP_ZERO);
+                }
+                sb.append(parts[i]);
+                sb.append(IP_DELIMITER);
+            }
+            sb.setLength(sb.length() - 1);
+        } else {
+            sb.append(ip);
+        }
+
+
+        return sb.toString();
+    }
+
     @Override
     public Element sortHistory(final Element rootElement, final Document doc) {
         log.fine("Sorting nodes by direction (In | Out).");
@@ -98,26 +119,5 @@ public class InOutSorter extends HistorySorter {
         }
 
         return result;
-    }
-
-    private static String normalizeIP(final String ip) {
-        StringBuilder sb = new StringBuilder();
-
-        String[] parts = ip.split(IP_DELIMITER_REGEX);
-        if (parts.length == IP_PART_COUNT) {
-            for (int i = 0; i < IP_PART_COUNT; i++) {
-                for (int j = 0; j < IP_PART_SIZE - parts[i].length(); j++) {
-                    sb.append(IP_ZERO);
-                }
-                sb.append(parts[i]);
-                sb.append(IP_DELIMITER);
-            }
-            sb.setLength(sb.length() - 1);
-        } else {
-            sb.append(ip);
-        }
-
-
-        return sb.toString();
     }
 }

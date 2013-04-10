@@ -2,15 +2,15 @@ package cz.tul.comm.server;
 
 import cz.tul.comm.ComponentSwitches;
 import cz.tul.comm.Constants;
-import cz.tul.comm.persistence.ServerSettings;
 import cz.tul.comm.IService;
 import cz.tul.comm.client.Comm_Client;
-import cz.tul.comm.history.History;
-import cz.tul.comm.history.IHistoryManager;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.gui.UserLogging;
+import cz.tul.comm.history.History;
+import cz.tul.comm.history.IHistoryManager;
 import cz.tul.comm.messaging.job.Job;
 import cz.tul.comm.messaging.job.JobManager;
+import cz.tul.comm.persistence.ServerSettings;
 import cz.tul.comm.server.daemons.ClientDiscoveryDaemon;
 import cz.tul.comm.server.daemons.ClientStatusDaemon;
 import cz.tul.comm.socket.IListenerRegistrator;
@@ -31,6 +31,38 @@ import java.util.logging.Logger;
 public final class Comm_Server implements IService {
 
     private static final Logger log = Logger.getLogger(Comm_Server.class.getName());
+
+    /**
+     * Create and initialize new instance of server.
+     *
+     * @param port server port (muse be valid port nuber between 0 and 65535)
+     * @return new instance of Comm_Server
+     * @throws IOException error opening socket on given port
+     */
+    public static Comm_Server initNewServer(final int port) throws IOException {
+        final Comm_Server result = new Comm_Server(port);
+        result.start();
+        log.log(Level.INFO, "New server created on port {0}", port);
+
+        return result;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public static Comm_Server initNewServer() {
+        Comm_Server s = null;
+
+        try {
+            s = initNewServer(Constants.DEFAULT_PORT);
+        } catch (IOException ex) {
+            UserLogging.showErrorToUser("Error initializing server on default port.");
+            log.log(Level.SEVERE, "Error initializing server on default port", ex);
+        }
+
+        return s;
+    }
     private final ClientDB clients;
     private final ServerSocket serverSocket;
     private final IHistoryManager history;
@@ -147,38 +179,6 @@ public final class Comm_Server implements IService {
      */
     public Job submitJob(final Object task) {
         return jobManager.submitJob(task);
-    }
-
-    /**
-     * Create and initialize new instance of server.
-     *
-     * @param port server port (muse be valid port nuber between 0 and 65535)
-     * @return new instance of Comm_Server
-     * @throws IOException error opening socket on given port
-     */
-    public static Comm_Server initNewServer(final int port) throws IOException {
-        final Comm_Server result = new Comm_Server(port);
-        result.start();
-        log.log(Level.INFO, "New server created on port {0}", port);
-
-        return result;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public static Comm_Server initNewServer() {
-        Comm_Server s = null;
-
-        try {
-            s = initNewServer(Constants.DEFAULT_PORT);
-        } catch (IOException ex) {
-            UserLogging.showErrorToUser("Error initializing server on default port.");
-            log.log(Level.SEVERE, "Error initializing server on default port", ex);
-        }
-
-        return s;
     }
 
     void start() {

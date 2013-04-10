@@ -25,11 +25,30 @@ import java.util.logging.Logger;
  * @see Serializable
  * @author Petr Ječmen
  */
-public final class Communicator {
+public class Communicator {
 
     private static final Logger log = Logger.getLogger(Communicator.class.getName());
+
+    /**
+     * Create new communicator with given IP and on given port
+     * @param address target IP
+     * @param port target port
+     * @return created and initializaed instance of Communicator
+     */
+    public static Communicator initNewCommunicator(final InetAddress address, final int port) {
+        Communicator c;
+        try {
+            c = new Communicator(address, port);
+            c.checkStatus();
+        } catch (IllegalArgumentException ex) {
+            log.log(Level.WARNING, "Illegal arguments used for Communicator creation.", ex);
+            return null;
+        }
+
+        return c;
+    }
     private final int TIMEOUT = 500;
-    private final int STATUS_CHECK_INTERVAL = 5000;
+    private final int STATUS_CHECK_INTERVAL = 5_000;
     private final InetAddress address;
     private final int port;
     private UUID id;
@@ -46,7 +65,7 @@ public final class Communicator {
     private Communicator(final InetAddress address, final int port) {
         if (address == null) {
             throw new IllegalArgumentException("Invalid address \"" + address + "\"");
-        } else if (port < 0 || port > 65535) {
+        } else if (port < 0 || port > 65_535) {
             throw new IllegalArgumentException("Invalid port \"" + port + "\"");
         }
 
@@ -142,7 +161,7 @@ public final class Communicator {
 
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
 
-            stat = status.NA;
+            stat = Status.NA;
             out.writeObject(data);
             out.flush();
 
@@ -230,24 +249,5 @@ public final class Communicator {
         hash = 23 * hash + Objects.hashCode(this.address);
         hash = 23 * hash + this.port;
         return hash;
-    }
-
-    /**
-     * Create new communicator with given IP and on given port
-     * @param address target IP
-     * @param port target port
-     * @return created and initializaed instance of Communicator
-     */
-    public static Communicator initNewCommunicator(final InetAddress address, final int port) {
-        Communicator c;
-        try {
-            c = new Communicator(address, port);
-            c.checkStatus();
-        } catch (IllegalArgumentException ex) {
-            log.log(Level.WARNING, "Illegal arguments used for Communicator creation.", ex);
-            return null;
-        }
-
-        return c;
     }
 }

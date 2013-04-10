@@ -3,15 +3,15 @@ package cz.tul.comm.socket;
 import cz.tul.comm.Constants;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.DataPacket;
-import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.messaging.Message;
+import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.socket.queue.IListener;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Queue;
 import java.util.UUID;
-import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Test;
 
 /**
  *
@@ -27,7 +27,6 @@ public class ServerSocketTest {
      */
     @Test
     public void testServerSocket() {
-        System.out.println("ServerSocket");
 
         final IListener owner1 = new IListener() {
             @Override

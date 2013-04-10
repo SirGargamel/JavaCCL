@@ -20,7 +20,7 @@ import org.xml.sax.SAXException;
  *
  * @author Petr Ječmen
  */
-public final class ClientSettings {
+public class ClientSettings {
 
     private static final Logger log = Logger.getLogger(ClientSettings.class.getName());
     private static final String SERIALIZATION_NAME = "clientSettings.xml";    
@@ -120,5 +120,8 @@ public final class ClientSettings {
         sb.append(IP_PORT_SPLITTER);
         sb.append(port);
         return sb.toString();
+    }
+
+    private ClientSettings() {
     }
 }

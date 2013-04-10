@@ -55,4 +55,7 @@ public abstract class Exporter {
         exporters.put(eu.getExportedClass(), eu);
         log.log(Level.FINE, "New exporter for class {0} registered.", eu.getExportedClass().getName());
     }
+
+    private Exporter() {
+    }
 }

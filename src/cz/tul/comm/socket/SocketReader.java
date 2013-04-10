@@ -36,7 +36,7 @@ class SocketReader extends Observable implements Runnable {
      * @param dataStorageIP IP listeners storage
      * @param dataStorageId ID listeners storage
      */
-    public SocketReader(
+    SocketReader(
             final Socket socket,
             final ObjectQueue<DataPacket> dataStorageIP,
             final ObjectQueue<IIdentifiable> dataStorageId) {

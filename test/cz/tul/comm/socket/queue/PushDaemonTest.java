@@ -6,8 +6,8 @@ package cz.tul.comm.socket.queue;
 
 import cz.tul.comm.messaging.Message;
 import java.util.UUID;
-import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Test;
 
 /**
  *
@@ -23,7 +23,6 @@ public class PushDaemonTest {
      */
     @Test
     public void testPushDaemon() {
-        System.out.println("stopService");
         final ObjectQueue<Message> q = new ObjectQueue<>();
 
         final Listener l1 = new Listener();

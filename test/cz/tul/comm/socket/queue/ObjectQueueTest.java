@@ -9,10 +9,10 @@ import java.util.Queue;
 import java.util.UUID;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -20,15 +20,15 @@ import static org.junit.Assert.*;
  */
 public class ObjectQueueTest {
 
-    public ObjectQueueTest() {
-    }
-
     @BeforeClass
     public static void setUpClass() {
     }
 
     @AfterClass
     public static void tearDownClass() {
+    }
+
+        public ObjectQueueTest() {
     }
 
     @Before
@@ -44,7 +44,6 @@ public class ObjectQueueTest {
      */
     @Test
     public void testObjectQueue() {
-        System.out.println("ObjectQueue");
 
         final ObjectQueue queue = new ObjectQueue();
 
@@ -82,7 +81,6 @@ public class ObjectQueueTest {
 
         @Override
         public void receiveData(IIdentifiable data) {
-            System.out.println("Received data are \"" + data.toString() + "\"");
         }
     }
 }

@@ -3,7 +3,6 @@ package cz.tul.comm.server.daemons;
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.Status;
-import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.server.IClientManager;
@@ -25,7 +24,7 @@ import java.util.logging.Logger;
 public class ClientStatusDaemon extends Thread implements IService, IListener {
 
     private static final Logger log = Logger.getLogger(ClientStatusDaemon.class.getName());
-    private static final int DELAY = 5000;
+    private static final int DELAY = 5_000;
     private static final int TIMEOUT = 500;
     private boolean run;
     private final IClientManager clientManager;

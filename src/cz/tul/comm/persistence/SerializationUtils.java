@@ -122,4 +122,7 @@ public abstract class SerializationUtils {
 
         return result;
     }
+
+    private SerializationUtils() {
+    }
 }

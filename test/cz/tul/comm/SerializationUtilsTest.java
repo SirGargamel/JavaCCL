@@ -3,9 +3,9 @@ package cz.tul.comm;
 import cz.tul.comm.persistence.SerializationUtils;
 import java.io.File;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -15,9 +15,6 @@ public class SerializationUtilsTest {
 
     private static final String TEST_FILE_NAME = "text.tst";
     private static File testFile;
-
-    public SerializationUtilsTest() {
-    }
 
     @BeforeClass
     public static void setUpClass() {
@@ -34,12 +31,14 @@ public class SerializationUtilsTest {
         }
     }
 
+        public SerializationUtilsTest() {
+    }
+
     /**
      * Test of saveItemToDisc method, of class SerializationUtils.
      */
     @Test
     public void testSaveAndLoadItemToDisc() throws Exception {
-        System.out.println("saveItemToDisc");
         final String data = "Serialization tester";
         if (SerializationUtils.saveItemToDisc(testFile, data)) {
             final Object result = SerializationUtils.loadItemFromDisc(testFile);
@@ -54,7 +53,6 @@ public class SerializationUtilsTest {
      */
     @Test
     public void testSaveAndLoadItemToDiscAsXML() {
-        System.out.println("saveItemToDiscAsXML");
         final String data = "Serialization tester";
         if (SerializationUtils.saveItemToDiscAsXML(testFile, data)) {
             final Object result = SerializationUtils.loadXMLItemFromDisc(testFile);

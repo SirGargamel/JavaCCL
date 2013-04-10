@@ -9,9 +9,9 @@ import cz.tul.comm.communicator.Communicator;
 import java.io.IOException;
 import java.net.InetAddress;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -19,11 +19,8 @@ import static org.junit.Assert.*;
  */
 public class CommunicatorTest {
     
-    private static final int TIMEOUT = 1000;
+    private static final int TIMEOUT = 1_000;
     private static ServerSocket ss;
-
-    public CommunicatorTest() {
-    }
 
     @BeforeClass
     public static void setUpClass() throws IOException {
@@ -35,12 +32,14 @@ public class CommunicatorTest {
         ss.stopService();
     }
 
+        public CommunicatorTest() {
+    }
+
     /**
      * Test of getAddress method, of class Communicator.
      */
     @Test
     public void testCommunicator() {
-        System.out.println("Communicator");
 
         final InetAddress ip = InetAddress.getLoopbackAddress();
         

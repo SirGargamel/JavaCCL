@@ -29,6 +29,46 @@ import org.xml.sax.SAXException;
 public class SimpleXMLFile {
 
     private static final Logger log = Logger.getLogger(SimpleXMLFile.class.getName());
+
+    /**
+     * Load contents of a simple XML file.
+     *
+     * @param source file for reading
+     * @return map filled with loaded pairs of values
+     * @throws IOException error accessing source file
+     * @throws SAXException error parsing XML file
+     */
+    public static Map<String, String> loadSimpleXMLFile(final File source) throws IOException, SAXException {
+        Map<String, String> fields = new HashMap<>();
+
+        try {
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(source);
+
+            //optional, but recommended
+            //read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
+            doc.getDocumentElement().normalize();
+
+            System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
+
+            NodeList nList = doc.getChildNodes();
+
+            for (int temp = 0; temp < nList.getLength(); temp++) {
+
+                Node nNode = nList.item(temp);
+
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eElement = (Element) nNode;
+                    fields.put(eElement.getTagName(), eElement.getTextContent());
+                }
+            }
+        } catch (ParserConfigurationException ex) {
+            log.log(Level.SEVERE, "Illegal parser config used.", ex);
+        }
+
+        return fields;
+    }
     private final Map<String, String> fields;
 
     /**
@@ -94,49 +134,5 @@ public class SimpleXMLFile {
         }
 
         return result;
-    }
-
-    /**
-     * Load contents of a simple XML file.
-     *
-     * @param source file for reading
-     * @return map filled with loaded pairs of values
-     * @throws IOException error accessing source file
-     * @throws SAXException error parsing XML file
-     */
-    public static Map<String, String> loadSimpleXMLFile(final File source) throws IOException, SAXException {
-        Map<String, String> fields = new HashMap<>();
-
-        try {
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(source);
-
-            //optional, but recommended
-            //read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
-            doc.getDocumentElement().normalize();
-
-            System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
-
-            NodeList nList = doc.getChildNodes();
-
-            System.out.println("----------------------------");
-
-            for (int temp = 0; temp < nList.getLength(); temp++) {
-
-                Node nNode = nList.item(temp);
-
-                System.out.println("\nCurrent Element :" + nNode.getNodeName());
-
-                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-                    Element eElement = (Element) nNode;
-                    fields.put(eElement.getTagName(), eElement.getTextContent());
-                }
-            }
-        } catch (ParserConfigurationException ex) {
-            log.log(Level.SEVERE, "Illegal parser config used.", ex);
-        }
-
-        return fields;
     }
 }

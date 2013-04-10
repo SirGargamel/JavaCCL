@@ -20,7 +20,7 @@ class ClientSystemMessaging implements Observer {
     private static final Logger log = Logger.getLogger(ClientSystemMessaging.class.getName());
     private final Comm_Client parent;
 
-    public ClientSystemMessaging(Comm_Client parent) {
+    ClientSystemMessaging(Comm_Client parent) {
         this.parent = parent;
     }
 

@@ -2,9 +2,8 @@ package cz.tul.comm.client;
 
 import cz.tul.comm.ComponentSwitches;
 import cz.tul.comm.Constants;
-import cz.tul.comm.persistence.ClientSettings;
-import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.IService;
+import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.Status;
 import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.history.History;
@@ -14,6 +13,7 @@ import cz.tul.comm.messaging.BasicConversator;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.messaging.job.IAssignmentListener;
+import cz.tul.comm.persistence.ClientSettings;
 import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
@@ -30,14 +30,50 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public final class Comm_Client implements IService, IServerInterface {
+public class Comm_Client implements IService, IServerInterface {
 
     private static final Logger log = Logger.getLogger(Comm_Client.class.getName());
     /**
      * Default port on which will client listen.
      */
-    public static final int PORT = 5253;
-    private static final int TIMEOUT = 1000;
+    public static final int PORT = 5_253;
+    private static final int TIMEOUT = 1_000;
+
+    /**
+     * Create and initialize new instance of client.
+     *
+     * @param port
+     * @return new Client instance
+     */
+    public static Comm_Client initNewClient(final int port) {
+        Comm_Client result = null;
+        try {
+            result = new Comm_Client(port);
+            result.start();
+            log.log(Level.INFO, "New client created on port {0}", port);
+        } catch (IOException ex) {
+            log.log(Level.WARNING, "Failed to initialize client on port " + port, ex);
+        }
+
+        return result;
+    }
+
+    /**
+     *
+     * @return new client instance on default port
+     */
+    public static Comm_Client initNewClient() {
+        int port = Constants.DEFAULT_PORT;
+        Comm_Client c = initNewClient(port);
+        while (c == null) {
+            c = initNewClient(++port);
+            if (c != null) {
+                // perhaps client running on same machine as server
+                c.registerServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
+            }
+        }
+        return c;
+    }
     private final ServerSocket serverSocket;
     private final IHistoryManager history;
     private IAssignmentListener assignmentListener;
@@ -191,42 +227,6 @@ public final class Comm_Client implements IService, IServerInterface {
      */
     public Status getStatus() {
         return status;
-    }
-
-    /**
-     * Create and initialize new instance of client.
-     *
-     * @param port
-     * @return new Client instance
-     */
-    public static Comm_Client initNewClient(final int port) {
-        Comm_Client result = null;
-        try {
-            result = new Comm_Client(port);
-            result.start();
-            log.log(Level.INFO, "New client created on port {0}", port);
-        } catch (IOException ex) {
-            log.log(Level.WARNING, "Failed to initialize client on port " + port, ex);
-        }
-
-        return result;
-    }
-
-    /**
-     *
-     * @return new client instance on default port
-     */
-    public static Comm_Client initNewClient() {
-        int port = Constants.DEFAULT_PORT;
-        Comm_Client c = initNewClient(port);
-        while (c == null) {
-            c = initNewClient(++port);
-            if (c != null) {
-                // perhaps client running on same machine as server
-                c.registerServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
-            }
-        }
-        return c;
     }
 
     private void start() {

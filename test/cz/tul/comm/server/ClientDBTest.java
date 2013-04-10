@@ -9,8 +9,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Set;
 import java.util.UUID;
-import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Test;
 
 /**
  *
@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
  */
 public class ClientDBTest {
 
-    private static final int PORT = 5253;
+    private static final int PORT = 5_253;
 
     public ClientDBTest() {
     }
@@ -28,7 +28,6 @@ public class ClientDBTest {
      */
     @Test
     public void testRegisterClient() {
-        System.out.println("registerClient");
         final ClientDB instance = new ClientDB();
 
         InetAddress adress = null;
@@ -52,7 +51,6 @@ public class ClientDBTest {
      */
     @Test
     public void testDeregisterClient() {
-        System.out.println("deregisterClient");
         final ClientDB instance = new ClientDB();
 
         InetAddress adress = InetAddress.getLoopbackAddress();
@@ -70,7 +68,6 @@ public class ClientDBTest {
      */
     @Test
     public void testGetClient() {
-        System.out.println("getClient");
         final ClientDB instance = new ClientDB();
 
         InetAddress adress = InetAddress.getLoopbackAddress();
@@ -86,7 +83,6 @@ public class ClientDBTest {
      */
     @Test
     public void testGetClients() throws UnknownHostException {
-        System.out.println("getClients");
         ClientDB instance = new ClientDB();
         Set result = instance.getClients();
         assertEquals(0, result.size());

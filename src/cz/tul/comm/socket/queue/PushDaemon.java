@@ -18,10 +18,10 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-final class PushDaemon<O extends IIdentifiable> extends Thread implements IService {
+class PushDaemon<O extends IIdentifiable> extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(PushDaemon.class.getName());
-    private static final int TIME_WAIT = 1000;
+    private static final int TIME_WAIT = 1_000;
     private final Collection<Map<IListener, Queue<O>>> data;
     private final Map<IListener, List<Object>> receivers;
     private final ExecutorService exec;
@@ -110,7 +110,7 @@ final class PushDaemon<O extends IIdentifiable> extends Thread implements IServi
         private final IListener listener;
         private final IIdentifiable data;
 
-        public Notifier(IListener listener, IIdentifiable data) {
+        Notifier(IListener listener, IIdentifiable data) {
             this.listener = listener;
             this.data = data;
         }

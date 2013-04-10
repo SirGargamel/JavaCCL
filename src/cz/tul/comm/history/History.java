@@ -33,11 +33,51 @@ import org.w3c.dom.Node;
  *
  * @author Gargamel
  */
-public final class History implements IHistoryManager {
+public class History implements IHistoryManager {
 
     private static final Logger log = Logger.getLogger(History.class.getName());
     private static final String TIME_PATTERN = "yyyy-MM-dd H:m:s:S z";
     private static final DateFormat df = new SimpleDateFormat(TIME_PATTERN);
+
+    private static Document prepareDocument() throws ParserConfigurationException {
+        final DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        final DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+        Document doc = docBuilder.newDocument();
+
+        return doc;
+    }
+
+    private static void exportDocumentToXML(final File target, final Document doc) throws TransformerConfigurationException, TransformerException {
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+        DOMSource source = new DOMSource(doc);
+        StreamResult output = new StreamResult(target);
+
+        transformer.transform(source, output);
+    }
+
+    private static Node convertRecordToXML(final Record r, final Document doc) {
+        final Node result = doc.createElement("Record");
+
+        // TODO convert Record
+        appendStringDataToNode(result, doc, "IPSource", r.getIpSource().getHostAddress());
+        appendStringDataToNode(result, doc, "IPDestination", r.getIpDestination().getHostAddress());
+        appendStringDataToNode(result, doc, "Time", df.format(r.getTime()));
+        appendStringDataToNode(result, doc, "Accepted", String.valueOf(r.wasAccepted()));
+
+        result.appendChild(Exporter.exportObject(r.getData(), doc));
+
+        return result;
+    }
+
+    private static void appendStringDataToNode(final Node n, final Document d, final String name, final String data) {
+        final Element e = d.createElement(name);
+        e.appendChild(d.createTextNode(data));
+        n.appendChild(e);
+    }
     private final Set<Record> records;
     private final InetAddress localHost;
 
@@ -100,14 +140,6 @@ public final class History implements IHistoryManager {
         return result;
     }
 
-    private static Document prepareDocument() throws ParserConfigurationException {
-        final DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-        final DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-        Document doc = docBuilder.newDocument();
-
-        return doc;
-    }
-
     private Element createRootElement(final Document doc) {
         final Element rootElement = doc.createElement("History");
         doc.appendChild(rootElement);
@@ -117,38 +149,6 @@ public final class History implements IHistoryManager {
         }
 
         return rootElement;
-    }
-
-    private static void exportDocumentToXML(final File target, final Document doc) throws TransformerConfigurationException, TransformerException {
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer transformer = transformerFactory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-
-        DOMSource source = new DOMSource(doc);
-        StreamResult output = new StreamResult(target);
-
-        transformer.transform(source, output);
-    }
-
-    private static Node convertRecordToXML(final Record r, final Document doc) {
-        final Node result = doc.createElement("Record");
-
-        // TODO convert Record
-        appendStringDataToNode(result, doc, "IPSource", r.getIpSource().getHostAddress());
-        appendStringDataToNode(result, doc, "IPDestination", r.getIpDestination().getHostAddress());
-        appendStringDataToNode(result, doc, "Time", df.format(r.getTime()));
-        appendStringDataToNode(result, doc, "Accepted", String.valueOf(r.wasAccepted()));
-
-        result.appendChild(Exporter.exportObject(r.getData(), doc));
-
-        return result;
-    }
-
-    private static void appendStringDataToNode(final Node n, final Document d, final String name, final String data) {
-        final Element e = d.createElement(name);
-        e.appendChild(d.createTextNode(data));
-        n.appendChild(e);
     }
 
     @Override

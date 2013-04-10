@@ -19,6 +19,12 @@ public class ExportMessage implements IExportUnit {
 
     private static final Logger log = Logger.getLogger(ExportMessage.class.getName());
 
+        private static void appendStringDataToNode(final Node n, final Document d, final String name, final String data) {
+        final Element e = d.createElement(name);
+        e.appendChild(d.createTextNode(data));
+        n.appendChild(e);
+    }
+
     @Override
     public Element exportData(Document doc, Object data) {
         log.log(Level.FINE, "Exporting message class to XML - {0}", data.toString());
@@ -38,11 +44,5 @@ public class ExportMessage implements IExportUnit {
     @Override
     public Class<?> getExportedClass() {
         return Message.class;
-    }
-
-    private static void appendStringDataToNode(final Node n, final Document d, final String name, final String data) {
-        final Element e = d.createElement(name);
-        e.appendChild(d.createTextNode(data));
-        n.appendChild(e);
     }
 }
