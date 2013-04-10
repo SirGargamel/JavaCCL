@@ -3,7 +3,6 @@ package cz.tul.comm.persistence;
 import cz.tul.comm.Constants;
 import cz.tul.comm.client.IServerInterface;
 import cz.tul.comm.communicator.Communicator;
-import cz.tul.comm.gui.UserLogging;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -23,7 +22,7 @@ import org.xml.sax.SAXException;
 public class ClientSettings {
 
     private static final Logger log = Logger.getLogger(ClientSettings.class.getName());
-    private static final String SERIALIZATION_NAME = "clientSettings.xml";    
+    private static final String SERIALIZATION_NAME = "clientSettings.xml";
     private static final String IP_PORT_SPLITTER = ":";
     private static final String FIELD_NAME_SERVER = "serverIp";
 
@@ -35,7 +34,7 @@ public class ClientSettings {
      */
     public static boolean deserialize(final IServerInterface reg) {
         log.log(Level.CONFIG, "Deserializing client settings.");
-        boolean result = false;
+        boolean result = true;
 
         InetAddress ip = null;
         int port = Constants.DEFAULT_PORT;
@@ -50,13 +49,13 @@ public class ClientSettings {
                             ip = InetAddress.getByName(split[0]);
                             port = Integer.valueOf(split[1]);
                         } catch (UnknownHostException ex) {
-                            UserLogging.showWarningToUser("Unknown server ip found in settings - " + ex.getLocalizedMessage());
+                            result = false;
                             log.log(Level.WARNING, "Unkonwn server ip found in settings", ex);
                         } catch (NumberFormatException ex) {
-                            UserLogging.showWarningToUser("Unknown server port found in settings - " + ex.getLocalizedMessage());
+                            result = false;
                             log.log(Level.WARNING, "Unkonwn server port found in settings", ex);
                         } catch (ArrayIndexOutOfBoundsException ex) {
-                            UserLogging.showWarningToUser("Illegal parameters for server IP and port found in settings - " + fields.get(f));
+                            result = false;
                             log.log(Level.WARNING, "Unkonwn server IP and port found in settings.", ex);
                         }
                         break;
@@ -69,14 +68,12 @@ public class ClientSettings {
             if (ip != null) {
                 reg.registerServer(ip, port);
             }
-
-            result = true;
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error accessing server settings.", ex);
-            UserLogging.showErrorToUser("Cannot access " + SERIALIZATION_NAME);
+            result = false;
+            log.log(Level.WARNING, "Error accessing client settings at " + SERIALIZATION_NAME + ".", ex);
         } catch (SAXException ex) {
-            log.log(Level.WARNING, "XML parsing error.", ex);
-            UserLogging.showErrorToUser("Server settings file is in wrong format, check logs for details.");
+            result = false;
+            log.log(Level.WARNING, "Wrong format of input XML.", ex);
         }
 
         return result;
@@ -107,8 +104,7 @@ public class ClientSettings {
         try {
             result = xml.storeXML(new File(SERIALIZATION_NAME));
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error accessing server settings.", ex);
-            UserLogging.showErrorToUser("Cannot access " + SERIALIZATION_NAME);
+            log.log(Level.WARNING, "Error accessing client settings at " + SERIALIZATION_NAME + ".", ex);
         }
 
         return result;

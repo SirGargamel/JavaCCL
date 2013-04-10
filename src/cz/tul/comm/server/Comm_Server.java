@@ -5,7 +5,6 @@ import cz.tul.comm.Constants;
 import cz.tul.comm.IService;
 import cz.tul.comm.client.Comm_Client;
 import cz.tul.comm.communicator.Communicator;
-import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.IHistoryManager;
 import cz.tul.comm.messaging.job.Job;
@@ -56,8 +55,7 @@ public final class Comm_Server implements IService {
 
         try {
             s = initNewServer(Constants.DEFAULT_PORT);
-        } catch (IOException ex) {
-            UserLogging.showErrorToUser("Error initializing server on default port.");
+        } catch (IOException ex) {            
             log.log(Level.SEVERE, "Error initializing server on default port", ex);
         }
 

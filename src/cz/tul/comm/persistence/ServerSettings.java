@@ -1,7 +1,6 @@
 package cz.tul.comm.persistence;
 
 import cz.tul.comm.communicator.Communicator;
-import cz.tul.comm.gui.UserLogging;
 import cz.tul.comm.server.IClientManager;
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +33,7 @@ public class ServerSettings implements Serializable {
      */
     public static boolean deserialize(final IClientManager clientManager) {
         log.log(Level.CONFIG, "Deserializing server settings.");
-        boolean result = false;
+        boolean result = true;
 
         try {
             File s = new File(SERIALIZATION_NAME);
@@ -45,8 +44,8 @@ public class ServerSettings implements Serializable {
                         try {
                             String[] split = fields.get(f).split(IP_PORT_SPLITTER);
                             clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1]));
-                        } catch (UnknownHostException | NumberFormatException | ArrayIndexOutOfBoundsException ex) {
-                            UserLogging.showWarningToUser("Unknown host found in settings - " + ex.getLocalizedMessage());
+                        } catch (UnknownHostException | NumberFormatException | ArrayIndexOutOfBoundsException ex) {                            
+                            result = false;
                             log.log(Level.WARNING, "Unkonwn host found in settings", ex);
                         }
                         break;
@@ -55,14 +54,12 @@ public class ServerSettings implements Serializable {
                         break;
                 }
             }
-
-            result = true;
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error accessing server settings.", ex);
-            UserLogging.showErrorToUser("Cannot access " + SERIALIZATION_NAME);
+            result = false;
+            log.log(Level.WARNING, "Error accessing server settings at " + SERIALIZATION_NAME + ".", ex);
         } catch (SAXException ex) {
-            log.log(Level.WARNING, "XML parsing error.", ex);
-            UserLogging.showErrorToUser("Server settings file is in wrong format, check logs for details.");
+            result = false;
+            log.log(Level.WARNING, "Wrong format of input XML.", ex);
         }
 
         return result;
@@ -92,8 +89,7 @@ public class ServerSettings implements Serializable {
         try {
             result = xml.storeXML(new File(SERIALIZATION_NAME));
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error accessing server settings.", ex);
-            UserLogging.showErrorToUser("Cannot access " + SERIALIZATION_NAME);
+            log.log(Level.WARNING, "Error accessing server settings at " + SERIALIZATION_NAME + ".", ex);
         }
 
         return result;
