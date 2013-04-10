@@ -22,10 +22,7 @@ public interface IClientManager {
     Communicator registerClient(final InetAddress adress, final int port);
 
     /**
-     * Deregister client with given IP.
-     *
-     * @param adress client IP
-     * @param port client port
+     * @param id client UUID
      */
     void deregisterClient(final UUID id);
 
@@ -36,7 +33,11 @@ public interface IClientManager {
      * registered)
      */
     Communicator getClient(final InetAddress adress, final int port);
-    
+
+    /**
+     * @param id clients UUID
+     * @return client communicator with given UUID
+     */
     Communicator getClient(final UUID id);
 
     /**

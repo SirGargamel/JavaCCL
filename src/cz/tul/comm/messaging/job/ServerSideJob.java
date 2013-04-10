@@ -34,6 +34,10 @@ public class ServerSideJob implements Job, IListener {
         this.dataStorage = dataStorage;
     }
 
+    /**
+     * Assign job to some client and send task to him.
+     * @param comm Client communicator
+     */
     public void submitJob(final Communicator comm) {
         this.comm = comm;
         listenerRegistrator.addIdListener(jobId, this, true);

@@ -18,11 +18,22 @@ public class BasicConversator implements IListener {
     private final IListenerRegistrator listener;
     private IIdentifiable receivedData;
 
+    /**
+     * Prepare new instance of converstaor.
+     *
+     * @param target communication target
+     * @param listener class, which is receiving messages
+     */
     public BasicConversator(final Communicator target, final IListenerRegistrator listener) {
         this.target = target;
         this.listener = listener;
     }
 
+    /**
+     * Send data to target and receive an answer
+     * @param dataToSend data for sending
+     * @return response from target
+     */
     public IIdentifiable sendAndReceiveData(final IIdentifiable dataToSend) {
         receivedData = null;
 

@@ -116,10 +116,6 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
         }
     }
 
-    public InetAddress getAddress() {
-        return socket.getInetAddress();
-    }
-
     /**
      * @return listening port
      */
@@ -142,6 +138,7 @@ public final class ServerSocket extends Thread implements IService, IListenerReg
      *
      * @param port listening port
      * @return new instance of ServerSocket
+     * @throws IOException error creating socket on given port 
      */
     public static ServerSocket createServerSocket(final int port) throws IOException {
         ServerSocket result = new ServerSocket(port);

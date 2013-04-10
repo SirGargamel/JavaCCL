@@ -128,6 +128,10 @@ public final class Communicator {
         return result;
     }
 
+    /**
+     * Check status of target.
+     * @return current status of target.
+     */
     public Status checkStatus() {
         boolean result = false;
         final Object data = new Message(MessageHeaders.KEEP_ALIVE, null);
@@ -197,10 +201,16 @@ public final class Communicator {
         return port;
     }
 
+    /**     
+     * @return Communicator ID (assigned by server)
+     */
     public UUID getId() {
         return id;
     }
 
+    /**     
+     * @param id new Communicator UUID
+     */
     public void setId(UUID id) {
         this.id = id;
     }
@@ -222,6 +232,12 @@ public final class Communicator {
         return hash;
     }
 
+    /**
+     * Create new communicator with given IP and on given port
+     * @param address target IP
+     * @param port target port
+     * @return created and initializaed instance of Communicator
+     */
     public static Communicator initNewCommunicator(final InetAddress address, final int port) {
         Communicator c;
         try {

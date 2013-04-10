@@ -37,6 +37,12 @@ public class JobManager extends Thread implements IService {
     private final Map<ServerSideJob, Calendar> assignTime;
     private boolean run;
 
+    /**
+     * Prepare new instance of JobManager.
+     *
+     * @param clientManager client manager
+     * @param listenerRegistrator listener registrator
+     */
     public JobManager(final IClientManager clientManager, final IListenerRegistrator listenerRegistrator) {
         this.clientManager = clientManager;
         this.listenerRegistrator = listenerRegistrator;
@@ -48,10 +54,21 @@ public class JobManager extends Thread implements IService {
         run = true;
     }
 
+    /**
+     * Assign data storage
+     *
+     * @param dataStorage class handling data requests
+     */
     public void setDataStorage(IDataStorage dataStorage) {
         this.dataStorage = dataStorage;
     }
 
+    /**
+     * Submit job for computation
+     *
+     * @param task jobs task
+     * @return interface for job control
+     */
     public Job submitJob(final Object task) {
         final ServerSideJob result = new ServerSideJob(task, listenerRegistrator, dataStorage);
         jobQueue.add(result);

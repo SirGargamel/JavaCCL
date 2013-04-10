@@ -132,6 +132,7 @@ public final class Comm_Client implements IService, IServerInterface {
      * Send data to server.
      *
      * @param data data for sending
+     * @return true for successfull data sending 
      */
     public boolean sendData(final Object data) {
         log.log(Level.INFO, "Sending data to server - {0}", data.toString());
@@ -167,6 +168,11 @@ public final class Comm_Client implements IService, IServerInterface {
         return serverSocket;
     }
 
+    /**
+     * Atach interface, that will handle assignment computation.
+     *
+     * @param assignmentListener class hnadling assignment computation
+     */
     public void assignAssignmentListener(IAssignmentListener assignmentListener) {
         this.assignmentListener = assignmentListener;
     }

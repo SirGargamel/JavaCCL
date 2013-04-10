@@ -18,15 +18,27 @@ public class DataPacket implements Serializable, IIdentifiable {
     private final Object data;
     private InetAddress sourceIP;
 
+    /**
+     * Init new data packet.
+     *
+     * @param clientID clients ID
+     * @param data data for sending
+     */
     public DataPacket(UUID clientID, Object data) {
         this.clientID = clientID;
         this.data = data;
     }
 
+    /**
+     * @return clients ID
+     */
     public UUID getClientID() {
         return clientID;
     }
 
+    /**
+     * @return data for sending
+     */
     public Object getData() {
         return data;
     }
@@ -36,10 +48,16 @@ public class DataPacket implements Serializable, IIdentifiable {
         return getClientID();
     }
 
+    /**
+     * @return IP, from which the data packet has been sent
+     */
     public InetAddress getSourceIP() {
         return sourceIP;
     }
 
+    /**
+     * @param sourceAddress set IP, from which the DataPacket has been received
+     */
     public void setSourceIP(InetAddress sourceAddress) {
         this.sourceIP = sourceAddress;
     }
@@ -52,7 +70,7 @@ public class DataPacket implements Serializable, IIdentifiable {
             sb.append(clientID.toString());
         } else {
             sb.append("No ID");
-        }        
+        }
         if (data != null) {
             sb.append(" - ");
             sb.append(data.toString());

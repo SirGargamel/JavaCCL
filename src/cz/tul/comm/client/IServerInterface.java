@@ -17,6 +17,9 @@ public interface IServerInterface {
      */
     void registerServer(final InetAddress address, final int port);
 
+    /**
+     * Send server info that client no longer wants to participate.
+     */
     void deregisterFromServer();
 
     /**
@@ -24,7 +27,10 @@ public interface IServerInterface {
      *
      * @return true if the server is aviable and responding
      */
-    boolean isServerUp();    
+    boolean isServerUp();
 
+    /**
+     * @return server communicator
+     */
     Communicator getServerComm();
 }

@@ -23,13 +23,22 @@ public class ClientSideJob implements Assignment, IListener {
     private final Communicator comm;
     private final UUID jobId;
 
+    /**
+     * Create new instance.
+     *
+     * @param task
+     * @param jobId
+     * @param comm
+     * @param listenerRegistrator
+     * @param taskListener
+     */
     public ClientSideJob(final Object task, final UUID jobId, final Communicator comm, final IListenerRegistrator listenerRegistrator, final IAssignmentListener taskListener) {
         this.task = task;
         this.comm = comm;
         this.jobId = jobId;
         this.listenerRegistrator = listenerRegistrator;
         this.taskListener = taskListener;
-        
+
         final Message accept = new Message(jobId, JobMessageHeaders.JOB_ACCEPT, null);
         sendMessage(accept);
     }

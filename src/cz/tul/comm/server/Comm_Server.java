@@ -132,10 +132,19 @@ public final class Comm_Server implements IService {
         return serverSocket;
     }
 
+    /**
+     * @param dataStorage class hnadling data requests
+     */
     public void assignDataStorage(final IDataStorage dataStorage) {
         jobManager.setDataStorage(dataStorage);
     }
 
+    /**
+     * Submit new job for computation
+     *
+     * @param task jobs task
+     * @return interface for job control and result obtaining
+     */
     public Job submitJob(final Object task) {
         return jobManager.submitJob(task);
     }
@@ -143,8 +152,9 @@ public final class Comm_Server implements IService {
     /**
      * Create and initialize new instance of server.
      *
-     * @param port
+     * @param port server port (muse be valid port nuber between 0 and 65535)
      * @return new instance of Comm_Server
+     * @throws IOException error opening socket on given port
      */
     public static Comm_Server initNewServer(final int port) throws IOException {
         final Comm_Server result = new Comm_Server(port);

@@ -17,7 +17,7 @@ public interface IListenerRegistrator {
     /**
      * Register listener for given IP.
      *
-     * @param address IP address for listening
+     * @param clientId UUID of target listener
      * @param dataListener target listener
      * @param wantsPushNotifications true if listeners wants to be notified that
      * message has arrived
@@ -30,7 +30,7 @@ public interface IListenerRegistrator {
      * Deregister given listener for given IP. If IP is null, then the listener
      * is removed completely (from all IPs).
      *
-     * @param address IP address for listening
+     * @param clientId UUID of target listener
      * @param dataListener target listener
      */
     void removeClientListener(final UUID clientId, final IListener dataListener);

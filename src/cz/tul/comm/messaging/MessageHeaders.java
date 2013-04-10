@@ -11,6 +11,9 @@ public interface MessageHeaders {
      * client registration
      */
     String LOGIN = "login";
+    /**
+     * client is logging out
+     */
     String LOGOUT = "logout";
     /**
      * question for client status
@@ -20,6 +23,9 @@ public interface MessageHeaders {
      * keep alives should be ignored as they function only for cummunication
      * check
      */
-    String KEEP_ALIVE = "keepAlive";    
+    String KEEP_ALIVE = "keepAlive";
+    /**
+     * job assignment
+     */
     String JOB = "job";
 }
