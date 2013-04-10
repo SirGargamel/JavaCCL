@@ -64,12 +64,18 @@ public final class Comm_Client implements IService, IServerInterface {
             }
         }
 
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ClientSettings.serialize(comm);
+        if (ComponentSwitches.useSettings) {
+            if (!ClientSettings.deserialize(this)) {
+                log.warning("Error loading client settings.");
             }
-        }));
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    ClientSettings.serialize(comm);
+                }
+            }));
+        }
+
     }
 
     @Override
@@ -218,10 +224,6 @@ public final class Comm_Client implements IService, IServerInterface {
     }
 
     private void start() {
-        // load settings
-        if (ComponentSwitches.useSettings && !ClientSettings.deserialize(this)) {
-            UserLogging.showWarningToUser("Error reading settings file, using default ones.");
-        }
         if (sdd != null) {
             sdd.start();
         }

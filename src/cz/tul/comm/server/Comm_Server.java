@@ -64,12 +64,18 @@ public final class Comm_Server implements IService {
 
         jobManager = new JobManager(clients, serverSocket);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ServerSettings.serialize(clients);
+        if (ComponentSwitches.useSettings) {
+            if (!ServerSettings.deserialize(clients)) {
+                log.warning("Error loading server settings.");
             }
-        }));
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    ServerSettings.serialize(clients);
+                }
+            }));
+        }
+
     }
 
     /**
@@ -166,9 +172,6 @@ public final class Comm_Server implements IService {
     }
 
     void start() {
-        if (ComponentSwitches.useSettings && !ServerSettings.deserialize(clients)) {
-            UserLogging.showWarningToUser("Error reading settings file, using default ones.");
-        }
         if (clientStatusDaemon != null) {
             clientStatusDaemon.start();
         }
@@ -186,10 +189,10 @@ public final class Comm_Server implements IService {
         if (cdd != null) {
             cdd.stopService();
         }
-        
+
         jobManager.stopService();
         serverSocket.stopService();
-        
+
         log.fine("Server has been stopped.");
     }
 }
