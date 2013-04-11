@@ -118,10 +118,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
                 log.log(Level.CONFIG, "Broadcast response from client {0} : {1}", new Object[]{receivePacket.getAddress().getHostAddress(), message});
 
                 //Check if the message is correct
-                if (message.equals(Constants.DISCOVERY_RESPONSE)) {
-                    cm.registerClient(receivePacket.getAddress(), Constants.DEFAULT_PORT);
-                } else if (message.startsWith(Constants.DISCOVERY_RESPONSE)) {
-                    // TODO parse IP and port
+                if (message.startsWith(Constants.DISCOVERY_RESPONSE)) {                    
                     final String ports = message.replaceFirst(Constants.DISCOVERY_RESPONSE, "").replaceFirst(Constants.DISCOVERY_RESPONSE_DELIMITER, "");
                     try {
                         final int port = Integer.valueOf(ports);
