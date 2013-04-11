@@ -7,6 +7,8 @@ import cz.tul.comm.server.IClientManager;
 import cz.tul.comm.server.IDataStorage;
 import cz.tul.comm.socket.IListenerRegistrator;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -34,7 +36,8 @@ public class JobManager extends Thread implements IService {
     private final Queue<ServerSideJob> jobQueue;
     private final Map<Communicator, ServerSideJob> jobAssignment;
     private final Map<Communicator, Calendar> lastTimeOnline;
-    private final Map<ServerSideJob, Calendar> assignTime;
+    private final Map<ServerSideJob, Calendar> assignTime;   
+    private final Set<Job> jobs;
     private boolean run;
 
     /**
@@ -49,7 +52,8 @@ public class JobManager extends Thread implements IService {
         jobAssignment = new ConcurrentHashMap<>();
         lastTimeOnline = new HashMap<>();
         assignTime = new HashMap<>();
-        jobQueue = new ConcurrentLinkedQueue<>();
+        jobQueue = new ConcurrentLinkedQueue<>();       
+        jobs = new HashSet<>();
 
         run = true;
     }
@@ -72,6 +76,7 @@ public class JobManager extends Thread implements IService {
     public Job submitJob(final Object task) {
         final ServerSideJob result = new ServerSideJob(task, listenerRegistrator, dataStorage);
         jobQueue.add(result);
+        jobs.add(result);
 
         log.log(Level.CONFIG, "Job with ID {0} submitted.", result.getId());
         synchronized (this) {
@@ -80,13 +85,36 @@ public class JobManager extends Thread implements IService {
 
         return result;
     }
+    
+    public void waitForJobs() {
+        while (!jobQueue.isEmpty() && !jobAssignment.isEmpty()) {
+            synchronized (this) {
+                try {
+                    this.wait(WAIT_TIME);
+                } catch (InterruptedException ex) {
+                    log.log(Level.WARNING, "Waiting for all jobs to complete failed.", ex);
+                }
+            }
+        }
+    }
+    
+    public void clearAllJobs() {
+        jobQueue.clear();
+        jobAssignment.clear();
+        lastTimeOnline.clear();
+        assignTime.clear();        
+    }
+    
+    public Collection<Job> getAllJobs() {
+        return Collections.unmodifiableCollection(jobs);
+    }
 
     @Override
     public void run() {
         log.fine("JobManager has been started.");
         while (run) {
             if (!jobQueue.isEmpty()) {
-                processQueue();
+                assignJobs();
                 checkAssignedJobs();
                 checkClients();
             }
@@ -114,7 +142,7 @@ public class JobManager extends Thread implements IService {
         log.fine("JobManager has been stopped.");
     }
 
-    private void processQueue() {
+    private void assignJobs() {
         Set<Communicator> clients;
         ServerSideJob job;
         clients = clientManager.getClients();
@@ -127,7 +155,7 @@ public class JobManager extends Thread implements IService {
                 // job cleanup
                 log.log(Level.CONFIG, "Job with ID {0} found as done.", new Object[]{job.getId(), comm.getId()});
                 jobAssignment.remove(comm);
-                jobQueue.remove(job);
+                jobQueue.remove(job);                
                 job = null;
             }
 
@@ -155,7 +183,7 @@ public class JobManager extends Thread implements IService {
                         }
                     }
                 } else {
-                    log.warning("No online time recorder for joc communicator.");
+                    log.warning("No online time recorder for job communicator.");
                 }
             } else {
                 lastTimeOnline.put(comm, Calendar.getInstance());
