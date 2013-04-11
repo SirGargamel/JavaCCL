@@ -34,8 +34,7 @@ public class Comm_Client implements IService, IServerInterface {
     private static final Logger log = Logger.getLogger(Comm_Client.class.getName());
     /**
      * Default port on which will client listen.
-     */
-    public static final int PORT = 5_253;
+     */    
     private static final int TIMEOUT = 1_000;
 
     /**

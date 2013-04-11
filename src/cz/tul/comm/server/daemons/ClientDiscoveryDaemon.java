@@ -2,7 +2,6 @@ package cz.tul.comm.server.daemons;
 
 import cz.tul.comm.Constants;
 import cz.tul.comm.IService;
-import cz.tul.comm.client.Comm_Client;
 import cz.tul.comm.server.IClientManager;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -120,7 +119,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
 
                 //Check if the message is correct
                 if (message.equals(Constants.DISCOVERY_RESPONSE)) {
-                    cm.registerClient(receivePacket.getAddress(), Comm_Client.PORT);
+                    cm.registerClient(receivePacket.getAddress(), Constants.DEFAULT_PORT);
                 } else if (message.startsWith(Constants.DISCOVERY_RESPONSE)) {
                     // TODO parse IP and port
                     final String ports = message.replaceFirst(Constants.DISCOVERY_RESPONSE, "").replaceFirst(Constants.DISCOVERY_RESPONSE_DELIMITER, "");

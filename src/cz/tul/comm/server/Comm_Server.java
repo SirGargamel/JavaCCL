@@ -3,7 +3,6 @@ package cz.tul.comm.server;
 import cz.tul.comm.ComponentSwitches;
 import cz.tul.comm.Constants;
 import cz.tul.comm.IService;
-import cz.tul.comm.client.Comm_Client;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.IHistoryManager;
@@ -116,7 +115,7 @@ public final class Comm_Server implements IService {
      */
     public Communicator registerClient(final InetAddress adress) {
         log.log(Level.INFO, "Registering new client on IP{0} on default port", adress);
-        return clients.registerClient(adress, Comm_Client.PORT);
+        return clients.registerClient(adress, Constants.DEFAULT_PORT);
     }
 
     /**
@@ -125,7 +124,7 @@ public final class Comm_Server implements IService {
      * @return
      */
     public Communicator getClient(final InetAddress address) {
-        return clients.getClient(address, Comm_Client.PORT);
+        return clients.getClient(address, Constants.DEFAULT_PORT);
     }
 
     /**
