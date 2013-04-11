@@ -6,6 +6,7 @@ import java.util.SortedMap;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Abstract class defining interface for history sorters, which will sort XML
@@ -52,6 +53,24 @@ public abstract class HistorySorter {
                 result.appendChild(group);
             }
         }
+        return result;
+    }
+    
+    protected String extractValue(final Node element, final String nodeName) {
+        String result = "";
+
+        if (element instanceof Element) {
+            final Element e = (Element) element;
+            NodeList nl = e.getElementsByTagName(nodeName);
+            if (nl.getLength() > 0) {
+                Node n = nl.item(0);
+                if (n instanceof Element) {
+                    final Element eInner = (Element) n;
+                    result = eInner.getTextContent();                    
+                }
+            }
+        }
+
         return result;
     }
 }

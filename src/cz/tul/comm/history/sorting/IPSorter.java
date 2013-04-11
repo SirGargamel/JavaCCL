@@ -69,7 +69,7 @@ public class IPSorter extends HistorySorter {
         String key;
         for (int i = 0; i < nl.getLength(); i++) {
             nd = nl.item(i);
-            key = extractValue(nd);
+            key = extractIP(nd);
             if (key != null) {
                 List<Node> l = sortedNodes.get(key);
                 if (l == null) {
@@ -83,22 +83,8 @@ public class IPSorter extends HistorySorter {
         return storeMapToNode(doc, sortedNodes, nodeName);
     }
 
-    private String extractValue(final Node element) {
-        String result = "";
-
-        if (element instanceof Element) {
-            final Element e = (Element) element;
-            NodeList nl = e.getElementsByTagName(nodeName);
-            if (nl.getLength() > 0) {
-                Node n = nl.item(0);
-                if (n instanceof Element) {
-                    final Element eInner = (Element) n;
-                    String ip = eInner.getTextContent();
-                    result = normalizeIP(ip);
-                }
-            }
-        }
-
-        return result;
+    private String extractIP(final Node element) {
+        String result = extractValue(element, nodeName);        
+        return normalizeIP(result);
     }
 }
