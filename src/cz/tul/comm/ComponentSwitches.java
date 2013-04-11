@@ -1,5 +1,7 @@
 package cz.tul.comm;
 
+import java.util.logging.Level;
+
 /**
  * Switches for enabling / disabling optional parts of communication library.
  *
@@ -20,6 +22,17 @@ public class ComponentSwitches {
      */
     public static boolean useClientStatus = true;
     public static boolean useClientAutoConnectLocalhost = true;
+    public static final boolean useFileLogger = true;
+    public static final boolean useDebugMode = true;
+    
+    static {
+        if (useFileLogger) {
+            Utils.prepareFileLogger();
+        }
+        if (useDebugMode) {
+            Utils.adjustMainLoggerLevel(Level.FINE);
+        }
+    }
 
     private ComponentSwitches() {
     }
