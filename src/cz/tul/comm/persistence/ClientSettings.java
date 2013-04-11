@@ -56,7 +56,7 @@ public class ClientSettings {
                             log.log(Level.WARNING, "Unkonwn server port found in settings", ex);
                         } catch (ArrayIndexOutOfBoundsException ex) {
                             result = false;
-                            log.log(Level.WARNING, "Unkonwn server IP and port found in settings.", ex);
+                            log.log(Level.WARNING, "Unkonwn server info found in settings.", ex);
                         }
                         break;
                     default:

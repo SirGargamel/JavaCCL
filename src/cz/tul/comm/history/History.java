@@ -132,9 +132,11 @@ public class History implements IHistoryManager {
 
             log.log(Level.CONFIG, "History successfully exported to {0}, sorted using {1}", new Object[]{target.getAbsolutePath(), sorter.getClass().getCanonicalName()});
         } catch (ParserConfigurationException ex) {
-            log.log(Level.WARNING, "Failed to create DocumentBuilder", ex);
+            log.log(Level.WARNING, "Failed to create DocumentBuilder.", ex);
+        } catch (TransformerConfigurationException ex) {
+            log.log(Level.WARNING, "Failed to create Transformer.", ex);
         } catch (TransformerException ex) {
-            log.log(Level.WARNING, "Failed to create Transformer", ex);
+            log.log(Level.WARNING, "Failed to transform history into XML.", ex);
         }
 
         return result;

@@ -31,6 +31,7 @@ public class Communicator {
 
     /**
      * Create new communicator with given IP and on given port
+     *
      * @param address target IP
      * @param port target port
      * @return created and initializaed instance of Communicator
@@ -62,7 +63,7 @@ public class Communicator {
      * @param address target IP
      * @param port target port
      */
-    private Communicator(final InetAddress address, final int port) {
+    public Communicator(final InetAddress address, final int port) {
         if (address == null) {
             throw new IllegalArgumentException("Invalid address \"" + address + "\"");
         } else if (port < 0 || port > 65_535) {
@@ -149,6 +150,7 @@ public class Communicator {
 
     /**
      * Check status of target.
+     *
      * @return current status of target.
      */
     public Status checkStatus() {
@@ -164,18 +166,17 @@ public class Communicator {
             stat = Status.NA;
             out.writeObject(data);
             out.flush();
+            stat = Status.NOT_RESPONDING;
 
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                 in.readBoolean();
                 stat = Status.REACHABLE;
-            } catch (IOException ex) {
-                stat = Status.NOT_RESPONDING;
+            } catch (IOException ex) {                
             }
         } catch (SocketTimeoutException ex) {
             log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", address.getHostAddress());
             stat = Status.NOT_RESPONDING;
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Cannot write to output socket.", ex);            
         }
 
         if (hm != null) {
@@ -220,14 +221,14 @@ public class Communicator {
         return port;
     }
 
-    /**     
+    /**
      * @return Communicator ID (assigned by server)
      */
     public UUID getId() {
         return id;
     }
 
-    /**     
+    /**
      * @param id new Communicator UUID
      */
     public void setId(UUID id) {

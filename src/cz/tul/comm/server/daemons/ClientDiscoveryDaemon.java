@@ -128,7 +128,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
                         final int port = Integer.valueOf(ports);
                         cm.registerClient(receivePacket.getAddress(), port);
                     } catch (NumberFormatException ex) {
-                        log.log(Level.WARNING, "Response with port in wrong format - " + message, ex);
+                        log.log(Level.WARNING, "Response in wrong format - " + message, ex);
                     }
 
 
@@ -137,7 +137,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
                 // nothing bad happened
                 // delay time reached
             } catch (SocketException ex) {
-                log.log(Level.SEVERE, "Socket exception occured.", ex);
+                log.log(Level.WARNING, "Socket exception occured.", ex);
             }
         }
     }

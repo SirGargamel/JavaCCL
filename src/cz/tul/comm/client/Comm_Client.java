@@ -95,6 +95,7 @@ public class Comm_Client implements IService, IServerInterface {
             try {
                 sdd = new ServerDiscoveryDaemon(this);
             } catch (SocketException ex) {
+                log.log(Level.INFO, "Failed to initiate server discovery daemon, server must be configured manually.");
                 log.log(Level.FINE, "Failed to initiate server discovery daemon.", ex);
             }
         }

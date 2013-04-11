@@ -69,9 +69,13 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
                     }
 
                 } catch (SocketException ex) {
-                    // everything is fine, wa wanted to interrupt socket receive method
+                    if (run == false) {
+                        // everything is fine, wa wanted to interrupt socket receive method
+                    } else {
+                        log.log(Level.WARNING, "Error operating socket.", ex);
+                    }
                 } catch (IOException ex) {
-                    log.log(Level.WARNING, "Error answering client discovery packet", ex);
+                    log.log(Level.WARNING, "Error receiving or answering to client discovery packet", ex);
                 }
             } else {
                 try {

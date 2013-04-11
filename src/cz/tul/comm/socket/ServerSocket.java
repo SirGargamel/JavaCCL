@@ -121,10 +121,9 @@ public class ServerSocket extends Thread implements IService, IListenerRegistrat
                 exec.execute(sr);
             } catch (SocketException ex) {
                 // nothing bad happened
-                // required for proper shutdown
-                log.fine("Socket shutdown.");
+                // required for proper shutdown                
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Server socket IO error occured during waiting for connection.", ex);
+                log.log(Level.WARNING, "Server socket IO error occured during connection accepting.", ex);
             }
         }
     }

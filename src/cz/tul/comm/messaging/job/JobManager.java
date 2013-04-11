@@ -122,7 +122,7 @@ public class JobManager extends Thread implements IService {
                 try {
                     this.wait(WAIT_TIME);
                 } catch (InterruptedException ex) {
-                    log.log(Level.WARNING, "Waiting of JobManager has been interrupted", ex);
+                    log.log(Level.WARNING, "Waiting of JobManager has been interrupted.", ex);
                 }
             }
         }
