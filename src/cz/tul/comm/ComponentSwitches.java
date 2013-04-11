@@ -19,6 +19,7 @@ public class ComponentSwitches {
      * enable/disable cycling update of client status (for non-working clients)
      */
     public static boolean useClientStatus = true;
+    public static boolean useClientAutoConnectLocalhost = true;
 
     private ComponentSwitches() {
     }

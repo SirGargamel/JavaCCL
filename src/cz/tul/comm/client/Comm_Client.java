@@ -230,6 +230,9 @@ public class Comm_Client implements IService, IServerInterface {
     private void start() {
         if (sdd != null) {
             sdd.start();
+        } else if (ComponentSwitches.useClientAutoConnectLocalhost) {
+            log.info("Could not init server discovery, tryiing to connect to local host.");
+            registerServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
         }
     }
     
