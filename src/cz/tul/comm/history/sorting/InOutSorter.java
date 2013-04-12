@@ -1,18 +1,16 @@
 package cz.tul.comm.history.sorting;
 
+import cz.tul.comm.history.Record;
+import static cz.tul.comm.history.sorting.HistorySorter.convertRecordToXML;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Sorts messages in two grops - one group is filled with inbound messages, the
@@ -22,88 +20,37 @@ import org.w3c.dom.NodeList;
  */
 public class InOutSorter extends HistorySorter {
 
-    private static final Logger log = Logger.getLogger(InOutSorter.class.getName());
-    private static final String NODE_NAME = "IPSource";
-    private static final String IP_DELIMITER = ".";
-    private static final String IP_DELIMITER_REGEX = "[" + IP_DELIMITER + "]";
-    private static final String IP_ZERO = "0";
-    private static final int IP_PART_COUNT = 4;
-    private static final int IP_PART_SIZE = 3;
-
-        private static String normalizeIP(final String ip) {
-        StringBuilder sb = new StringBuilder();
-
-        String[] parts = ip.split(IP_DELIMITER_REGEX);
-        if (parts.length == IP_PART_COUNT) {
-            for (int i = 0; i < IP_PART_COUNT; i++) {
-                for (int j = 0; j < IP_PART_SIZE - parts[i].length(); j++) {
-                    sb.append(IP_ZERO);
-                }
-                sb.append(parts[i]);
-                sb.append(IP_DELIMITER);
-            }
-            sb.setLength(sb.length() - 1);
-        } else {
-            sb.append(ip);
-        }
-
-
-        return sb.toString();
-    }
+    private static final Logger log = Logger.getLogger(InOutSorter.class.getName());        
 
     @Override
-    public Element sortHistory(final Element rootElement, final Document doc) {
+    public List<Element> sortHistory(final Collection<Record> records, final Document doc) {
         log.fine("Sorting nodes by direction (In | Out).");
-        SortedMap<Object, List<Node>> sortedNodes = new TreeMap<>();
 
-        final NodeList nl = rootElement.getChildNodes();
-        Node nd;
-        String key;
-        for (int i = 0; i < nl.getLength(); i++) {
-            nd = nl.item(i);
-            key = extractIP(nd);
-            if (key != null) {
-                List<Node> l = sortedNodes.get(key);
-                if (l == null) {
-                    l = new ArrayList<>();
-                    sortedNodes.put(key, l);
-                }
-                l.add(nd);
-            }
-        }
-
-
-        final Element result = doc.createElement("History");
+        final List<Element> result = new ArrayList<>(2);
         final Element groupIn = doc.createElement("In");
         final Element groupOut = doc.createElement("Out");
-        String normalizedLocalHost;
+
+        InetAddress localHost;
         try {
-            normalizedLocalHost = normalizeIP(InetAddress.getLocalHost().getHostAddress());
+            localHost = InetAddress.getLocalHost();
         } catch (UnknownHostException ex) {
             log.log(Level.FINE, "Could not obtain local IP address, using loopback.", ex);
-            normalizedLocalHost = normalizeIP(InetAddress.getLoopbackAddress().getHostAddress());
+            localHost = InetAddress.getLoopbackAddress();
         }
 
-        Element group;
-        for (Map.Entry<Object, List<Node>> e : sortedNodes.entrySet()) {
-            boolean out = e.getKey().equals(normalizedLocalHost);
-            if (out) {
-                group = groupOut;
+        Element e;
+        for (Record r : records) {
+            e = convertRecordToXML(r, doc);
+            if (r.getIpSource().equals(localHost)) {
+                groupIn.appendChild(e);
             } else {
-                group = groupIn;
-            }
-            for (Node n : e.getValue()) {
-                group.appendChild(n);
+                groupOut.appendChild(e);
             }
         }
-        result.appendChild(groupIn);
-        result.appendChild(groupOut);
+
+        result.add(groupIn);
+        result.add(groupOut);
 
         return result;
-    }
-
-    private String extractIP(final Node element) {
-        String result = extractValue(element, NODE_NAME);        
-        return normalizeIP(result);
     }
 }

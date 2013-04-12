@@ -7,10 +7,9 @@ import cz.tul.comm.history.sorting.HistorySorter;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,7 +25,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  * Class for storing information about sent and received messages.
@@ -36,8 +34,6 @@ import org.w3c.dom.Node;
 public class History implements IHistoryManager {
 
     private static final Logger log = Logger.getLogger(History.class.getName());
-    private static final String TIME_PATTERN = "yyyy-MM-dd H:m:s:S z";
-    private static final DateFormat df = new SimpleDateFormat(TIME_PATTERN);
 
     private static Document prepareDocument() throws ParserConfigurationException {
         final DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -57,26 +53,6 @@ public class History implements IHistoryManager {
         StreamResult output = new StreamResult(target);
 
         transformer.transform(source, output);
-    }
-
-    private static Node convertRecordToXML(final Record r, final Document doc) {
-        final Node result = doc.createElement("Record");
-
-        // TODO convert Record
-        appendStringDataToNode(result, doc, "IPSource", r.getIpSource().getHostAddress());
-        appendStringDataToNode(result, doc, "IPDestination", r.getIpDestination().getHostAddress());
-        appendStringDataToNode(result, doc, "Time", df.format(r.getTime()));
-        appendStringDataToNode(result, doc, "Accepted", String.valueOf(r.wasAccepted()));
-
-        result.appendChild(Exporter.exportObject(r.getData(), doc));
-
-        return result;
-    }
-
-    private static void appendStringDataToNode(final Node n, final Document d, final String name, final String data) {
-        final Element e = d.createElement(name);
-        e.appendChild(d.createTextNode(data));
-        n.appendChild(e);
     }
     private final Set<Record> records;
     private final InetAddress localHost;
@@ -122,11 +98,11 @@ public class History implements IHistoryManager {
 
         try {
             final Document doc = prepareDocument();
-            final Element rootElement = createRootElement(doc);
-
-            final Element newRootElement = sorter.sortHistory(rootElement, doc);
-            doc.replaceChild(newRootElement, rootElement);
-
+            final Element rootElement = doc.createElement("History");
+            final List<Element> data = sorter.sortHistory(records, doc);
+            for (Element e : data) {
+                rootElement.appendChild(e);
+            }
             exportDocumentToXML(target, doc);
             result = true;
 
@@ -140,17 +116,6 @@ public class History implements IHistoryManager {
         }
 
         return result;
-    }
-
-    private Element createRootElement(final Document doc) {
-        final Element rootElement = doc.createElement("History");
-        doc.appendChild(rootElement);
-
-        for (Record r : records) {
-            rootElement.appendChild(convertRecordToXML(r, doc));
-        }
-
-        return rootElement;
     }
 
     @Override

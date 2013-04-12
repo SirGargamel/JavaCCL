@@ -1,5 +1,10 @@
 package cz.tul.comm.history.sorting;
 
+import cz.tul.comm.history.Record;
+import cz.tul.comm.history.export.Exporter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -15,6 +20,9 @@ import org.w3c.dom.NodeList;
  * @author Petr Ječmen
  */
 public abstract class HistorySorter {
+    
+    private static final String TIME_PATTERN = "yyyy-MM-dd H:m:s:S z";
+    private static final DateFormat df = new SimpleDateFormat(TIME_PATTERN);
 
     /**
      * Sort child {@link Element}s and sort them according to given parameter.
@@ -23,7 +31,7 @@ public abstract class HistorySorter {
      * @param doc target XML document
      * @return New History element, in which all children are sorted.
      */
-    public abstract Element sortHistory(final Element rootElement, final Document doc);
+    public abstract List<Element> sortHistory(final Collection<Record> records, final Document doc);
 
     /**
      * Take {@link SortedMap} filled with data and export it to XML document.
@@ -72,5 +80,25 @@ public abstract class HistorySorter {
         }
 
         return result;
+    }        
+    
+    protected static Element convertRecordToXML(final Record r, final Document doc) {
+        final Element result = doc.createElement("Record");
+
+        // TODO convert Record
+        appendStringDataToNode(result, doc, "IPSource", r.getIpSource().getHostAddress());
+        appendStringDataToNode(result, doc, "IPDestination", r.getIpDestination().getHostAddress());
+        appendStringDataToNode(result, doc, "Time", df.format(r.getTime()));
+        appendStringDataToNode(result, doc, "Accepted", String.valueOf(r.wasAccepted()));
+
+        result.appendChild(Exporter.exportObject(r.getData(), doc));
+
+        return result;
+    }
+    
+    private static void appendStringDataToNode(final Node n, final Document d, final String name, final String data) {
+        final Element e = d.createElement(name);
+        e.appendChild(d.createTextNode(data));
+        n.appendChild(e);
     }
 }

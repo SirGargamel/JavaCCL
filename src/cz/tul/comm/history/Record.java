@@ -18,7 +18,7 @@ public class Record {
     private final Date time;
     private final boolean accepted;
 
-    Record(InetAddress ipSource, InetAddress ipDestination, Object data, final boolean accepted) {
+    Record(final InetAddress ipSource, final InetAddress ipDestination, Object data, final boolean accepted) {
         this.ipSource = ipSource;
         this.ipDestination = ipDestination;
         this.data = data;
@@ -27,23 +27,23 @@ public class Record {
         time = new Date();
     }
 
-    InetAddress getIpSource() {
+    public InetAddress getIpSource() {
         return ipSource;
     }
 
-    InetAddress getIpDestination() {
+    public InetAddress getIpDestination() {
         return ipDestination;
     }
 
-    Object getData() {
+    public Object getData() {
         return data;
     }
 
-    Date getTime() {
+    public Date getTime() {
         return time;
     }
 
-    boolean wasAccepted() {
+    public boolean wasAccepted() {
         return accepted;
     }
     
