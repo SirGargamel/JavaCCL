@@ -142,10 +142,9 @@ public class JobManager extends Thread implements IService {
         log.fine("JobManager has been stopped.");
     }
 
-    private void assignJobs() {
-        Set<Communicator> clients;
+    private void assignJobs() {         
         ServerSideJob job;
-        clients = clientManager.getClients();
+        final Collection<Communicator> clients = clientManager.getClients();
         for (Communicator comm : clients) {
             if (jobQueue.isEmpty() || !isClientOnline(comm)) {
                 break;

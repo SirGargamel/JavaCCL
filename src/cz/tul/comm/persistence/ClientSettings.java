@@ -66,7 +66,7 @@ public class ClientSettings {
             }
 
             if (ip != null) {
-                reg.registerServer(ip, port);
+                reg.registerToServer(ip, port);
             }
         } catch (IOException ex) {
             result = false;

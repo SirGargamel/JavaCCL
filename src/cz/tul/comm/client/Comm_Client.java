@@ -29,12 +29,12 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class Comm_Client implements IService, IServerInterface {
-    
+public class Comm_Client implements IService, IServerInterface, Client {
+
     private static final Logger log = Logger.getLogger(Comm_Client.class.getName());
     /**
      * Default port on which will client listen.
-     */    
+     */
     private static final int TIMEOUT = 1_000;
 
     /**
@@ -43,7 +43,7 @@ public class Comm_Client implements IService, IServerInterface {
      * @param port
      * @return new Client instance
      */
-    public static Comm_Client initNewClient(final int port) {
+    public static Client initNewClient(final int port) {
         Comm_Client result = null;
         try {
             result = new Comm_Client(port);
@@ -52,7 +52,7 @@ public class Comm_Client implements IService, IServerInterface {
         } catch (IOException ex) {
             log.log(Level.WARNING, "Failed to initialize client on port " + port, ex);
         }
-        
+
         return result;
     }
 
@@ -60,14 +60,14 @@ public class Comm_Client implements IService, IServerInterface {
      *
      * @return new client instance on default port
      */
-    public static Comm_Client initNewClient() {
+    public static Client initNewClient() {
         int port = Constants.DEFAULT_PORT;
-        Comm_Client c = initNewClient(port);
+        Client c = initNewClient(port);
         while (c == null) {
             c = initNewClient(++port);
             if (c != null) {
                 // perhaps client running on same machine as server
-                c.registerServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
+                c.registerToServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
             }
         }
         return c;
@@ -79,17 +79,17 @@ public class Comm_Client implements IService, IServerInterface {
     private Status status;
     private final ClientSystemMessaging csm;
     private ServerDiscoveryDaemon sdd;
-    
+
     private Comm_Client(final int port) throws IOException {
         history = new History();
-        
+
         serverSocket = ServerSocket.createServerSocket(port);
         serverSocket.registerHistory(history);
-        
+
         status = Status.ONLINE;
         csm = new ClientSystemMessaging(this);
         serverSocket.addMessageObserver(csm);
-        
+
         if (ComponentSwitches.useClientDiscovery) {
             try {
                 sdd = new ServerDiscoveryDaemon(this);
@@ -98,7 +98,7 @@ public class Comm_Client implements IService, IServerInterface {
                 log.log(Level.FINE, "Failed to initiate server discovery daemon.", ex);
             }
         }
-        
+
         if (ComponentSwitches.useSettings) {
             if (!ClientSettings.deserialize(this)) {
                 log.warning("Error loading client settings.");
@@ -110,23 +110,30 @@ public class Comm_Client implements IService, IServerInterface {
                 }
             }));
         }
+
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                stopService();
+            }
+        }));
     }
-    
+
     @Override
-    public void registerServer(final InetAddress address, final int port) {
-        log.log(Level.CONFIG, "Registering new server IP and port - {0}:{1}", new Object[]{address.getHostAddress(), port});
+    public void registerToServer(final InetAddress address, final int port) {
+        log.log(Level.CONFIG, "Registering new server IP and port - {0}:{1}", new Object[]{address.getHostAddress(), port});        
         comm = Communicator.initNewCommunicator(address, port);
         if (isServerUp()) {
             final Message login = new Message(MessageHeaders.LOGIN, serverSocket.getPort());
             BasicConversator bs = new BasicConversator(comm, serverSocket);
-            
+
             final Object id = bs.sendAndReceiveData(login);
             if (id instanceof Message) {
                 final Message m = (Message) id;
                 if (m.getHeader().equals(MessageHeaders.LOGIN)
                         && m.getData() instanceof UUID) {
                     comm.setId((UUID) m.getData());
-                    log.log(Level.INFO, "Client has been registered to new server, new ID has been received - {0}", comm.getId());
+                    log.log(Level.INFO, "Client has been registered to new server, new ID has been received - {0}", comm.getId());                    
                 } else {
                     log.log(Level.WARNING, "Invalid response received - {0}", m.toString());
                 }
@@ -135,16 +142,16 @@ public class Comm_Client implements IService, IServerInterface {
             }
         } else {
             log.log(Level.CONFIG, "Server could not be contacted");
-        }
+        }                
     }
-    
+
     @Override
     public void deregisterFromServer() {
         final Message m = new Message(MessageHeaders.LOGOUT, comm.getId());
         sendData(m);
         comm = null;
     }
-    
+
     @Override
     public boolean isServerUp() {
         boolean serverStatus;
@@ -163,12 +170,13 @@ public class Comm_Client implements IService, IServerInterface {
      * @param data data for sending
      * @return true for successfull data sending
      */
+    @Override
     public boolean sendData(final Object data) {
         log.log(Level.INFO, "Sending data to server - {0}", data.toString());
         if (comm == null) {
             throw new NullPointerException("No server communicator set");
         } else {
-            if (!isServerUp()) {                
+            if (!isServerUp()) {
                 log.warning("Server could not be contacted.");
                 return false;
             } else {
@@ -182,6 +190,7 @@ public class Comm_Client implements IService, IServerInterface {
      *
      * @return true for successfull export.
      */
+    @Override
     public boolean exportHistory() {
         log.info("Exporting histry to default location with no sorting.");
         return history.export(new File(""), new DefaultSorter());
@@ -190,6 +199,7 @@ public class Comm_Client implements IService, IServerInterface {
     /**
      * @return history manager for this client
      */
+    @Override
     public IHistoryManager getHistory() {
         return history;
     }
@@ -197,6 +207,7 @@ public class Comm_Client implements IService, IServerInterface {
     /**
      * @return interface for listener registration
      */
+    @Override
     public IListenerRegistrator getListenerRegistrator() {
         return serverSocket;
     }
@@ -206,14 +217,15 @@ public class Comm_Client implements IService, IServerInterface {
      *
      * @param assignmentListener class hnadling assignment computation
      */
+    @Override
     public void assignAssignmentListener(IAssignmentListener assignmentListener) {
         this.assignmentListener = assignmentListener;
     }
-    
+
     IAssignmentListener getAssignmentListener() {
         return assignmentListener;
     }
-    
+
     @Override
     public Communicator getServerComm() {
         return comm;
@@ -222,19 +234,20 @@ public class Comm_Client implements IService, IServerInterface {
     /**
      * @return client status
      */
+    @Override
     public Status getStatus() {
         return status;
     }
-    
+
     private void start() {
         if (sdd != null) {
             sdd.start();
         } else if (ComponentSwitches.useClientAutoConnectLocalhost) {
             log.info("Could not init server discovery, tryiing to connect to local host.");
-            registerServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
+            registerToServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
         }
     }
-    
+
     @Override
     public void stopService() {
         serverSocket.stopService();

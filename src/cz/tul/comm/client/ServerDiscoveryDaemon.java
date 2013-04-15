@@ -63,7 +63,7 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
                         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, packet.getAddress(), packet.getPort());
                         s.send(sendPacket);
 
-                        sr.registerServer(packet.getAddress(), Constants.DEFAULT_PORT);
+                        sr.registerToServer(packet.getAddress(), Constants.DEFAULT_PORT);
 
                         log.log(Level.CONFIG, "Sent response meesage to {0}", sendPacket.getAddress().getHostAddress());
                     }

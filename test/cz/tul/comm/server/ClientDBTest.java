@@ -7,7 +7,7 @@ package cz.tul.comm.server;
 import cz.tul.comm.communicator.Communicator;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Set;
+import java.util.Collection;
 import java.util.UUID;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -84,7 +84,7 @@ public class ClientDBTest {
     @Test
     public void testGetClients() throws UnknownHostException {
         ClientDB instance = new ClientDB();
-        Set result = instance.getClients();
+        Collection<Communicator> result = instance.getClients();
         assertEquals(0, result.size());
         try {
 

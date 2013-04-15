@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,7 +27,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public final class Comm_Server implements IService {
+public final class Comm_Server implements IService, Server {
 
     private static final Logger log = Logger.getLogger(Comm_Server.class.getName());
 
@@ -37,7 +38,7 @@ public final class Comm_Server implements IService {
      * @return new instance of Comm_Server
      * @throws IOException error opening socket on given port
      */
-    public static Comm_Server initNewServer(final int port) throws IOException {
+    public static Server initNewServer(final int port) throws IOException {
         final Comm_Server result = new Comm_Server(port);
         result.start();
         log.log(Level.INFO, "New server created on port {0}", port);
@@ -49,12 +50,12 @@ public final class Comm_Server implements IService {
      *
      * @return
      */
-    public static Comm_Server initNewServer() {
-        Comm_Server s = null;
+    public static Server initNewServer() {
+        Server s = null;
 
         try {
             s = initNewServer(Constants.DEFAULT_PORT);
-        } catch (IOException ex) {            
+        } catch (IOException ex) {
             log.log(Level.SEVERE, "Error initializing server on default port", ex);
         }
 
@@ -105,6 +106,12 @@ public final class Comm_Server implements IService {
             }));
         }
 
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                stopService();
+            }
+        }));
     }
 
     /**
@@ -113,6 +120,7 @@ public final class Comm_Server implements IService {
      * @param adress client IP
      * @return
      */
+    @Override
     public Communicator registerClient(final InetAddress adress) {
         log.log(Level.INFO, "Registering new client on IP{0} on default port", adress);
         return clients.registerClient(adress, Constants.DEFAULT_PORT);
@@ -123,6 +131,7 @@ public final class Comm_Server implements IService {
      * @param address
      * @return
      */
+    @Override
     public Communicator getClient(final InetAddress address) {
         return clients.getClient(address, Constants.DEFAULT_PORT);
     }
@@ -132,6 +141,7 @@ public final class Comm_Server implements IService {
      *
      * @return true for successfull export.
      */
+    @Override
     public boolean exportHistory() {
         log.info("Exporting history.");
         return history.export(new File(""), null);
@@ -140,6 +150,7 @@ public final class Comm_Server implements IService {
     /**
      * @return history manager for this client
      */
+    @Override
     public IHistoryManager getHistory() {
         return history;
     }
@@ -148,6 +159,7 @@ public final class Comm_Server implements IService {
      *
      * @return
      */
+    @Override
     public IClientManager getClientManager() {
         return clients;
     }
@@ -157,6 +169,7 @@ public final class Comm_Server implements IService {
      *
      * @return
      */
+    @Override
     public IListenerRegistrator getListenerRegistrator() {
         return serverSocket;
     }
@@ -164,6 +177,7 @@ public final class Comm_Server implements IService {
     /**
      * @param dataStorage class hnadling data requests
      */
+    @Override
     public void assignDataStorage(final IDataStorage dataStorage) {
         jobManager.setDataStorage(dataStorage);
     }
@@ -174,6 +188,7 @@ public final class Comm_Server implements IService {
      * @param task jobs task
      * @return interface for job control and result obtaining
      */
+    @Override
     public Job submitJob(final Object task) {
         return jobManager.submitJob(task);
     }
@@ -201,5 +216,10 @@ public final class Comm_Server implements IService {
         serverSocket.stopService();
 
         log.fine("Server has been stopped.");
+    }
+
+    @Override
+    public Communicator getClient(UUID id) {
+        return clients.getClient(id);
     }
 }

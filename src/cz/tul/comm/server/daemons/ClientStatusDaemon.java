@@ -9,9 +9,9 @@ import cz.tul.comm.server.IClientManager;
 import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.socket.queue.IListener;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,7 +51,7 @@ public class ClientStatusDaemon extends Thread implements IService, IListener {
 
     @Override
     public void run() {
-        Set<Communicator> clients;
+        Collection<Communicator> clients;
         Message m;
         UUID id;
         while (run) {

@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.xml.sax.SAXException;
@@ -73,9 +73,9 @@ public class ServerSettings implements Serializable {
      */
     public static boolean serialize(final IClientManager clientManager) {
         log.log(Level.CONFIG, "Serializing server settings.");
-        SimpleXMLFile xml = new SimpleXMLFile();
+        final SimpleXMLFile xml = new SimpleXMLFile();
 
-        Set<Communicator> comms = clientManager.getClients();
+        final Collection<Communicator> comms = clientManager.getClients();
         StringBuilder sb = new StringBuilder();
         for (Communicator c : comms) {
             sb.append(c.getAddress().getHostAddress());

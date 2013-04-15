@@ -3,6 +3,7 @@ package cz.tul.comm.server;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.history.IHistoryManager;
 import java.net.InetAddress;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -87,7 +88,7 @@ class ClientDB implements IClientManager {
     }
 
     @Override
-    public Set<Communicator> getClients() {
+    public Collection<Communicator> getClients() {
         return Collections.unmodifiableSet(clients);
     }
 

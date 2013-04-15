@@ -2,7 +2,7 @@ package cz.tul.comm.server;
 
 import cz.tul.comm.communicator.Communicator;
 import java.net.InetAddress;
-import java.util.Set;
+import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -43,5 +43,5 @@ public interface IClientManager {
     /**
      * @return list of all clients
      */
-    Set<Communicator> getClients();
+    Collection<Communicator> getClients();
 }
