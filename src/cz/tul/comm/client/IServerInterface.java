@@ -15,7 +15,7 @@ public interface IServerInterface {
      * @param address server IP
      * @param port server port
      */
-    void registerToServer(final InetAddress address, final int port);
+    boolean registerToServer(final InetAddress address, final int port);
 
     /**
      * Send server info that client no longer wants to participate.

@@ -49,7 +49,7 @@ public interface Client extends IService {
 
     boolean isServerUp();
 
-    void registerToServer(final InetAddress address, final int port);
+    boolean registerToServer(final InetAddress address, final int port);
 
     /**
      * Send data to server.

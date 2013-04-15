@@ -120,8 +120,9 @@ public class Comm_Client implements IService, IServerInterface, Client {
     }
 
     @Override
-    public void registerToServer(final InetAddress address, final int port) {
-        log.log(Level.CONFIG, "Registering new server IP and port - {0}:{1}", new Object[]{address.getHostAddress(), port});        
+    public boolean registerToServer(final InetAddress address, final int port) {
+        log.log(Level.CONFIG, "Registering new server IP and port - {0}:{1}", new Object[]{address.getHostAddress(), port});
+        boolean result = false;
         comm = Communicator.initNewCommunicator(address, port);
         if (isServerUp()) {
             final Message login = new Message(MessageHeaders.LOGIN, serverSocket.getPort());
@@ -133,7 +134,8 @@ public class Comm_Client implements IService, IServerInterface, Client {
                 if (m.getHeader().equals(MessageHeaders.LOGIN)
                         && m.getData() instanceof UUID) {
                     comm.setId((UUID) m.getData());
-                    log.log(Level.INFO, "Client has been registered to new server, new ID has been received - {0}", comm.getId());                    
+                    result = true;
+                    log.log(Level.INFO, "Client has been registered to new server, new ID has been received - {0}", comm.getId());
                 } else {
                     log.log(Level.WARNING, "Invalid response received - {0}", m.toString());
                 }
@@ -142,7 +144,8 @@ public class Comm_Client implements IService, IServerInterface, Client {
             }
         } else {
             log.log(Level.CONFIG, "Server could not be contacted");
-        }                
+        }
+        return result;
     }
 
     @Override
