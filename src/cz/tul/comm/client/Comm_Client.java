@@ -65,10 +65,6 @@ public class Comm_Client implements IService, IServerInterface, Client {
         Client c = initNewClient(port);
         while (c == null) {
             c = initNewClient(++port);
-            if (c != null) {
-                // perhaps client running on same machine as server
-                c.registerToServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
-            }
         }
         return c;
     }
