@@ -77,10 +77,12 @@ class ClientDB implements IClientManager {
     public Communicator getClient(final UUID id) {
         Communicator result = null;
 
-        for (Communicator c : clients) {
-            if (id.equals(c.getId())) {
-                result = c;
-                break;
+        if (id != null) {
+            for (Communicator c : clients) {
+                if (id.equals(c.getId())) {
+                    result = c;
+                    break;
+                }
             }
         }
 
