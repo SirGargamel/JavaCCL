@@ -171,10 +171,11 @@ public class Communicator {
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                 in.readBoolean();
                 stat = Status.REACHABLE;
-            } catch (IOException ex) {                
+            } catch (IOException ex) {
+                log.log(Level.FINE, "Client on IP {0} did not open stream for answer.", address.getHostAddress());
             }
         } catch (SocketTimeoutException ex) {
-            log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", address.getHostAddress());
+            log.log(Level.FINE, "Client on IP {0} is not responding to request.", address.getHostAddress());
             stat = Status.NOT_RESPONDING;
         } catch (IOException ex) {
         }
