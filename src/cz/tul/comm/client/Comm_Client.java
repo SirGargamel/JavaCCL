@@ -93,19 +93,7 @@ public class Comm_Client implements IService, IServerInterface, Client {
                 log.log(Level.INFO, "Failed to initiate server discovery daemon, server must be configured manually.");
                 log.log(Level.FINE, "Failed to initiate server discovery daemon.", ex);
             }
-        }
-
-        if (ComponentSwitches.useSettings) {
-            if (!ClientSettings.deserialize(this)) {
-                log.warning("Error loading client settings.");
-            }
-            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    ClientSettings.serialize(comm);
-                }
-            }));
-        }
+        }        
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -244,6 +232,18 @@ public class Comm_Client implements IService, IServerInterface, Client {
         } else if (ComponentSwitches.useClientAutoConnectLocalhost) {
             log.info("Could not init server discovery, tryiing to connect to local host.");
             registerToServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
+        }
+        
+        if (ComponentSwitches.useSettings) {
+            if (!ClientSettings.deserialize(this)) {
+                log.warning("Error loading client settings.");
+            }
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    ClientSettings.serialize(comm);
+                }
+            }));
         }
     }
 

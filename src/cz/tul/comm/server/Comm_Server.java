@@ -94,18 +94,6 @@ public final class Comm_Server implements IService, Server {
 
         jobManager = new JobManager(clients, serverSocket);
 
-        if (ComponentSwitches.useSettings) {
-            if (!ServerSettings.deserialize(clients)) {
-                log.warning("Error loading server settings.");
-            }
-            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    ServerSettings.serialize(clients);
-                }
-            }));
-        }
-
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
@@ -194,6 +182,18 @@ public final class Comm_Server implements IService, Server {
     }
 
     void start() {
+        if (ComponentSwitches.useSettings) {
+            if (!ServerSettings.deserialize(clients)) {
+                log.warning("Error loading server settings.");
+            }
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    ServerSettings.serialize(clients);
+                }
+            }));
+        }
+
         if (clientStatusDaemon != null) {
             clientStatusDaemon.start();
         }
