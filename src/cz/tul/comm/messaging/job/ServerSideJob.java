@@ -129,6 +129,7 @@ public class ServerSideJob implements Job, IListener {
                     break;
                 case JobMessageHeaders.JOB_ACCEPT:
                     jobStatus = JobStatus.ASSIGNED;
+                    break;
                 default:
                     log.log(Level.WARNING, "Data with invalid header received for job - {0}", m.toString());
             }
