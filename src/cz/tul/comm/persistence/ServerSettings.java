@@ -35,31 +35,35 @@ public class ServerSettings implements Serializable {
         log.log(Level.CONFIG, "Deserializing server settings.");
         boolean result = true;
 
-        try {
-            File s = new File(SERIALIZATION_NAME);
-            Map<String, String> fields = SimpleXMLFile.loadSimpleXMLFile(s);
-            for (String f : fields.keySet()) {
-                switch (f) {
-                    case FIELD_NAME_CLIENT:
-                        try {
-                            String[] split = fields.get(f).split(IP_PORT_SPLITTER);
-                            clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1]));
-                        } catch (UnknownHostException | NumberFormatException | ArrayIndexOutOfBoundsException ex) {                            
-                            result = false;
-                            log.log(Level.WARNING, "Unkonwn host found in settings", ex);
-                        }
-                        break;
-                    default:
-                        log.log(Level.CONFIG, "Unknown field - {0}", f);
-                        break;
+        File s = new File(SERIALIZATION_NAME);
+        if (s.exists()) {
+            try {
+                Map<String, String> fields = SimpleXMLFile.loadSimpleXMLFile(s);
+                for (String f : fields.keySet()) {
+                    switch (f) {
+                        case FIELD_NAME_CLIENT:
+                            try {
+                                String[] split = fields.get(f).split(IP_PORT_SPLITTER);
+                                clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1]));
+                            } catch (UnknownHostException | NumberFormatException | ArrayIndexOutOfBoundsException ex) {
+                                result = false;
+                                log.log(Level.WARNING, "Unkonwn host found in settings", ex);
+                            }
+                            break;
+                        default:
+                            log.log(Level.CONFIG, "Unknown field - {0}", f);
+                            break;
+                    }
                 }
+            } catch (IOException ex) {
+                result = false;
+                log.log(Level.WARNING, "Error accessing server settings at " + SERIALIZATION_NAME + ".", ex);
+            } catch (SAXException ex) {
+                result = false;
+                log.log(Level.WARNING, "Wrong format of input XML.", ex);
             }
-        } catch (IOException ex) {
+        } else {
             result = false;
-            log.log(Level.WARNING, "Error accessing server settings at " + SERIALIZATION_NAME + ".", ex);
-        } catch (SAXException ex) {
-            result = false;
-            log.log(Level.WARNING, "Wrong format of input XML.", ex);
         }
 
         return result;

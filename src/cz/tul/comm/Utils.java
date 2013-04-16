@@ -27,7 +27,9 @@ public class Utils {
         try {
             Logger l = Logger.getGlobal();
             Handler fh = new FileHandler(LOG_FILE_NAME, true);
-            fh.setLevel(l.getLevel());
+            if (l.getLevel() != null) {
+                fh.setLevel(l.getLevel());
+            }
             l.addHandler(fh);
         } catch (IOException | SecurityException ex) {
             log.log(Level.SEVERE, "Error preparing file logger.", ex);

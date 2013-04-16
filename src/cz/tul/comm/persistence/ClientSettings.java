@@ -36,44 +36,48 @@ public class ClientSettings {
         log.log(Level.CONFIG, "Deserializing client settings.");
         boolean result = true;
 
-        InetAddress ip = null;
-        int port = Constants.DEFAULT_PORT;
-        try {
-            File s = new File(SERIALIZATION_NAME);
-            Map<String, String> fields = SimpleXMLFile.loadSimpleXMLFile(s);
-            for (String f : fields.keySet()) {
-                switch (f) {
-                    case FIELD_NAME_SERVER:
-                        try {
-                            String[] split = fields.get(f).split(IP_PORT_SPLITTER);
-                            ip = InetAddress.getByName(split[0]);
-                            port = Integer.valueOf(split[1]);
-                        } catch (UnknownHostException ex) {
-                            result = false;
-                            log.log(Level.WARNING, "Unkonwn server ip found in settings", ex);
-                        } catch (NumberFormatException ex) {
-                            result = false;
-                            log.log(Level.WARNING, "Unkonwn server port found in settings", ex);
-                        } catch (ArrayIndexOutOfBoundsException ex) {
-                            result = false;
-                            log.log(Level.WARNING, "Unkonwn server info found in settings.", ex);
-                        }
-                        break;
-                    default:
-                        log.log(Level.FINE, "Unknown field - {0}", f);
-                        break;
+        File s = new File(SERIALIZATION_NAME);
+        if (s.exists()) {
+            InetAddress ip = null;
+            int port = Constants.DEFAULT_PORT;
+            try {
+                Map<String, String> fields = SimpleXMLFile.loadSimpleXMLFile(s);
+                for (String f : fields.keySet()) {
+                    switch (f) {
+                        case FIELD_NAME_SERVER:
+                            try {
+                                String[] split = fields.get(f).split(IP_PORT_SPLITTER);
+                                ip = InetAddress.getByName(split[0]);
+                                port = Integer.valueOf(split[1]);
+                            } catch (UnknownHostException ex) {
+                                result = false;
+                                log.log(Level.WARNING, "Unkonwn server ip found in settings", ex);
+                            } catch (NumberFormatException ex) {
+                                result = false;
+                                log.log(Level.WARNING, "Unkonwn server port found in settings", ex);
+                            } catch (ArrayIndexOutOfBoundsException ex) {
+                                result = false;
+                                log.log(Level.WARNING, "Unkonwn server info found in settings.", ex);
+                            }
+                            break;
+                        default:
+                            log.log(Level.FINE, "Unknown field - {0}", f);
+                            break;
+                    }
                 }
-            }
 
-            if (ip != null) {
-                reg.registerToServer(ip, port);
+                if (ip != null) {
+                    reg.registerToServer(ip, port);
+                }
+            } catch (IOException ex) {
+                result = false;
+                log.log(Level.WARNING, "Error accessing client settings at " + SERIALIZATION_NAME + ".", ex);
+            } catch (SAXException ex) {
+                result = false;
+                log.log(Level.WARNING, "Wrong format of input XML.", ex);
             }
-        } catch (IOException ex) {
+        } else {
             result = false;
-            log.log(Level.WARNING, "Error accessing client settings at " + SERIALIZATION_NAME + ".", ex);
-        } catch (SAXException ex) {
-            result = false;
-            log.log(Level.WARNING, "Wrong format of input XML.", ex);
         }
 
         return result;
