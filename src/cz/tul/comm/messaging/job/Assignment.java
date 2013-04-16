@@ -35,7 +35,7 @@ public interface Assignment {
      *
      * @param reason descritpion why the job was cancelled
      */
-    void cancelJob(final String reason);
+    void cancel(final String reason);
 
     /**
      * @return assignments ID

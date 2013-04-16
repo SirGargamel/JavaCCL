@@ -78,7 +78,7 @@ public class ClientSideJob implements Assignment, IListener {
     }
 
     @Override
-    public void cancelJob(final String reason) {
+    public void cancel(final String reason) {
         final Message m = new Message(jobId, JobMessageHeaders.JOB_CANCEL, reason);
         sendMessage(m);
         listenerRegistrator.removeIdListener(jobId, this);
