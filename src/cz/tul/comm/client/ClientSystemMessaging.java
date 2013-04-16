@@ -37,15 +37,19 @@ class ClientSystemMessaging implements Observer {
                         log.log(Level.CONFIG, "STATUS question received and response {0} has been sent.", response.toString());
                         break;
                     case MessageHeaders.JOB:
-                        final Object task = m.getData();
-                        if (task != null && task instanceof JobTask) {
-                            final JobTask jt = (JobTask) task;
-                            final ClientSideJob job = new ClientSideJob(jt.getTask(), jt.getJobId(), parent.getServerComm(), parent.getListenerRegistrator(), parent.getAssignmentListener());
-                            parent.getListenerRegistrator().addIdListener(job.getId(), job, true);
-                            parent.getAssignmentListener().receiveTask(job);
+                        if (parent.getAssignmentListener() != null) {
+                            final Object task = m.getData();
+                            if (task != null && task instanceof JobTask) {
+                                final JobTask jt = (JobTask) task;
+                                final ClientSideJob job = new ClientSideJob(jt.getTask(), jt.getJobId(), parent.getServerComm(), parent.getListenerRegistrator(), parent.getAssignmentListener());
+                                parent.getListenerRegistrator().addIdListener(job.getId(), job, true);
+                                parent.getAssignmentListener().receiveTask(job);
+                            } else {
+                                log.warning("NULL job task received");
+                            }
                         } else {
-                            log.warning("NULL job task received");
-                        }                                             
+                            log.warning("No assignment listener set, job cannot be computed.");
+                        }
                         break;
                     default:
                         // nonsystem msg, nothing to do
