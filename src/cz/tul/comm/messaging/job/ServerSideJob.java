@@ -102,12 +102,12 @@ public class ServerSideJob implements Job, IListener {
             switch (m.getHeader()) {
                 case JobMessageHeaders.JOB_RESULT:
                     jobStatus = JobStatus.COMPUTED;
-                    result = m.getData();
+                    result = m.getData();                    
+                    listenerRegistrator.removeIdListener(jobId, this);
+                    log.log(Level.CONFIG, "Result for job with ID {0} has been received.", jobId);
                     synchronized (this) {
                         this.notify();
                     }
-                    listenerRegistrator.removeIdListener(jobId, this);
-                    log.log(Level.CONFIG, "Result for job with ID {0} has been received.", jobId);
                     break;
                 case JobMessageHeaders.JOB_DATA_REQUEST:
                     final Object reqData;
