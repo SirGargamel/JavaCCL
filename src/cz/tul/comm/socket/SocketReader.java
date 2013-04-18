@@ -90,7 +90,7 @@ class SocketReader extends Observable implements Runnable {
                 }
                 dataStorageClient.storeData(dp);
                 dataReadAndHandled = true;
-                log.log(Level.CONFIG, "Identifiable data {0} received and stored to queues.", o.toString());
+                log.log(Level.CONFIG, "Data [{0}] received and stored to queues.", data.toString());
             } else if (o instanceof Message) {
                 final Message m = (Message) o;
                 if (m.getHeader().equals(MessageHeaders.KEEP_ALIVE)) {
