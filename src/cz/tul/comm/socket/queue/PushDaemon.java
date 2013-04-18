@@ -73,7 +73,7 @@ class PushDaemon<O extends IIdentifiable> extends Thread implements IService {
                         while (!q.isEmpty()) {
                             object = q.poll();
                             if (receivers.get(l).contains(object.getId())) {
-                                log.log(Level.CONFIG, "Pushing data {0} to {1}", new Object[]{object.getId().toString(), l.toString()});
+                                log.log(Level.FINE, "Pushing data {0} to {1}", new Object[]{object.getId().toString(), l.toString()});
                                 exec.execute(new Notifier(l, object));
                             } else {
                                 tmp.add((O) object);
