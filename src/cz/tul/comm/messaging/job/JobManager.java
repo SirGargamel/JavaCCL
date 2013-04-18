@@ -36,7 +36,7 @@ public class JobManager extends Thread implements IService {
     private final Queue<ServerSideJob> jobQueue;
     private final Map<Communicator, ServerSideJob> jobAssignment;
     private final Map<Communicator, Calendar> lastTimeOnline;
-    private final Map<ServerSideJob, Calendar> assignTime;   
+    private final Map<ServerSideJob, Calendar> assignTime;
     private final Set<Job> jobs;
     private boolean run;
 
@@ -52,7 +52,7 @@ public class JobManager extends Thread implements IService {
         jobAssignment = new ConcurrentHashMap<>();
         lastTimeOnline = new HashMap<>();
         assignTime = new HashMap<>();
-        jobQueue = new ConcurrentLinkedQueue<>();       
+        jobQueue = new ConcurrentLinkedQueue<>();
         jobs = new HashSet<>();
 
         run = true;
@@ -85,7 +85,7 @@ public class JobManager extends Thread implements IService {
 
         return result;
     }
-    
+
     public void waitForJobs() {
         while (!jobQueue.isEmpty() && !jobAssignment.isEmpty()) {
             synchronized (this) {
@@ -97,14 +97,14 @@ public class JobManager extends Thread implements IService {
             }
         }
     }
-    
+
     public void clearAllJobs() {
         jobQueue.clear();
         jobAssignment.clear();
         lastTimeOnline.clear();
-        assignTime.clear();        
+        assignTime.clear();
     }
-    
+
     public Collection<Job> getAllJobs() {
         return Collections.unmodifiableCollection(jobs);
     }
@@ -142,19 +142,22 @@ public class JobManager extends Thread implements IService {
         log.fine("JobManager has been stopped.");
     }
 
-    private void assignJobs() {         
+    private void assignJobs() {
         ServerSideJob job;
         final Collection<Communicator> clients = clientManager.getClients();
         for (Communicator comm : clients) {
-            if (jobQueue.isEmpty() || !isClientOnline(comm)) {
+            if (jobQueue.isEmpty()) {
                 break;
+            }
+            if (!isClientOnline(comm)) {
+                continue;
             }
             job = jobAssignment.get(comm);
             if (job != null && job.isDone()) {
                 // job cleanup
                 log.log(Level.CONFIG, "Job with ID {0} found as done.", new Object[]{job.getId(), comm.getId()});
                 jobAssignment.remove(comm);
-                jobQueue.remove(job);                
+                jobQueue.remove(job);
                 job = null;
             }
 
@@ -224,8 +227,8 @@ public class JobManager extends Thread implements IService {
     }
 
     private void assignJob(final ServerSideJob job, final Communicator comm) {
-        job.submitJob(comm);
         jobAssignment.put(comm, job);
         assignTime.put(job, Calendar.getInstance());
+        job.submitJob(comm);
     }
 }

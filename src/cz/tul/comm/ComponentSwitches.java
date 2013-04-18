@@ -12,19 +12,20 @@ public class ComponentSwitches {
     /**
      * enable/disable loading/saving settings
      */
-    public static boolean useSettings = true;
+    public static boolean useSettings = false;
     /**
      * enable/disable discovering clients using UDP broadcast
      */
-    public static boolean useClientDiscovery = true;
+    public static boolean useClientDiscovery = false;
+    public static boolean useClientAutoConnectLocalhost = true;
     /**
      * enable/disable cycling update of client status (for non-working clients)
      */
-    public static boolean useClientStatus = true;
-    public static boolean useClientAutoConnectLocalhost = true;
+    public static boolean useClientStatus = false;
     public static final boolean useFileLogger = true;
-    public static final boolean useDebugMode = true;
-    
+    public static final boolean useDebugMode = false;
+    public static final boolean useKeepAlive = false;
+
     static {
         if (useFileLogger) {
             Utils.prepareFileLogger();

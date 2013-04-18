@@ -36,4 +36,9 @@ public class JobTask implements Serializable {
     public Object getTask() {
         return task;
     }
+    
+    @Override
+    public String toString() {
+        return "JobTask with ID ".concat(jobId.toString());
+    }
 }

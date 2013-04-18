@@ -112,7 +112,7 @@ public class ServerSocket extends Thread implements IService, IListenerRegistrat
         while (run) {
             try {
                 s = socket.accept();
-                log.log(Level.CONFIG, "Connection accepted from IP {0}:{1}", new Object[]{s.getInetAddress().getHostAddress(), s.getPort()});
+                log.log(Level.FINE, "Connection accepted from IP {0}:{1}", new Object[]{s.getInetAddress().getHostAddress(), s.getPort()});
                 final SocketReader sr = new SocketReader(s, dataStorageClient, dataStorageId);
                 sr.registerHistory(hm);
                 for (Observer o : dataListeners) {

@@ -123,7 +123,7 @@ public class Communicator {
 
             out.writeObject(new DataPacket(id, data));
             out.flush();
-            log.log(Level.CONFIG, "Data sent to client {0}:{1}", new Object[]{getAddress().getHostAddress(), getPort()});
+            log.log(Level.CONFIG, "Data sent to {0}:{1} - [{2}]", new Object[]{getAddress().getHostAddress(), getPort(), data.toString()});
 
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                 result = in.readBoolean();

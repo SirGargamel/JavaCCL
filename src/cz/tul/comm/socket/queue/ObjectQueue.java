@@ -125,7 +125,7 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
                 }
             }
 
-            log.log(Level.CONFIG, "Data {0} stored.", data.toString());
+            log.log(Level.FINE, "Data [{0}] stored.", data.toString());
         }
     }
 

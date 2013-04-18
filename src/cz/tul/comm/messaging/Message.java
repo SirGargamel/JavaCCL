@@ -65,14 +65,12 @@ public class Message implements Serializable, IIdentifiable {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
-        result.append("[");
+        StringBuilder result = new StringBuilder();        
         result.append(header);
         result.append(" - ");
         if (data != null) {
             result.append(data.toString());
-        }
-        result.append("]");
+        }        
 
         return result.toString();
     }

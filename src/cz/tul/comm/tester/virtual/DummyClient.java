@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class DummyClient implements IAssignmentListener, IClose {
+public class DummyClient implements IAssignmentListener, IDummy {
 
     private static final Logger log = Logger.getLogger(DummyClient.class.getName());
     private final Client c;
@@ -28,25 +28,38 @@ public class DummyClient implements IAssignmentListener, IClose {
      *
      */
     public DummyClient() {
-        c = Comm_Client.initNewClient();
+        c = Comm_Client.initNewClient();        
         exec = Executors.newCachedThreadPool();
+        c.assignAssignmentListener(this);
     }
 
     @Override
     public void receiveTask(Assignment task) {
+        if (currentTask != null && currentTask.isDone()) {
+            currentTask = null;
+            currentFuture = null;
+        }
+        
         if (currentTask != null) {
             log.config("Client is already computing.");
+            task.cancel("Already computing.");
         } else {
-            final Object run = task.getTask();
-            if (run instanceof Runnable) {
-                final Runnable r = (Runnable) run;
-                currentFuture = exec.submit(r);
+            log.config("Received work, starting computation.");
+            currentTask = task;
+            final Object work = currentTask.getTask();
+            if (work instanceof Work) {
+                final Work w = (Work) work;
+                
+                w.setCloser(this);
+                w.setTask(currentTask);
+                
+                currentFuture = exec.submit(w);                
 
                 try {
                     final Object result = currentFuture.get();
                     task.submitResult(result);
                 } catch (InterruptedException | ExecutionException ex) {
-                    log.log(Level.WARNING, "Error computing result.", ex.getLocalizedMessage());
+                    log.log(Level.WARNING, "Error computing result.\n{0}", ex.getLocalizedMessage());
                 }
             }
         }

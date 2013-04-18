@@ -55,8 +55,7 @@ public class ServerSideJob implements Job, IListener {
     }
 
     @Override
-    public Object getResult(final boolean blockingGet) {
-        // TODO wait for result
+    public Object getResult(final boolean blockingGet) {        
         if (blockingGet) {
             while (result == null) {
                 synchronized (this) {
@@ -102,6 +101,7 @@ public class ServerSideJob implements Job, IListener {
             final Message m = (Message) data;
             switch (m.getHeader()) {
                 case JobMessageHeaders.JOB_RESULT:
+                    jobStatus = JobStatus.COMPUTED;
                     result = m.getData();
                     synchronized (this) {
                         this.notify();

@@ -70,7 +70,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
         // Try the 255.255.255.255 first
         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), Constants.DEFAULT_PORT);
         s.send(sendPacket);
-        log.log(Level.CONFIG, "Discovery packet sent to: 255.255.255.255 (DEFAULT)");
+        log.log(Level.FINE, "Discovery packet sent to: 255.255.255.255 (DEFAULT)");
 
         // Broadcast the message over all the network interfaces
         Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -92,7 +92,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
                 s.send(sendPacket);
 
 
-                log.log(Level.CONFIG, "Discovery packet sent to: {0}; Interface: {1}", new Object[]{broadcast.getHostAddress(), networkInterface.getDisplayName()});
+                log.log(Level.FINE, "Discovery packet sent to: {0}; Interface: {1}", new Object[]{broadcast.getHostAddress(), networkInterface.getDisplayName()});
             }
         }
     }
@@ -114,11 +114,10 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
                 s.receive(receivePacket);
                 String message = new String(receivePacket.getData()).trim();
 
-                //We have a response
-                log.log(Level.CONFIG, "Broadcast response from client {0} : {1}", new Object[]{receivePacket.getAddress().getHostAddress(), message});
 
-                //Check if the message is correct
-                if (message.startsWith(Constants.DISCOVERY_RESPONSE)) {                    
+                //Check if the response is login message
+                if (message.startsWith(Constants.DISCOVERY_RESPONSE)) {
+                    log.log(Level.FINE, "Received login response from {0} : {1}", new Object[]{receivePacket.getAddress().getHostAddress(), message});
                     final String ports = message.replaceFirst(Constants.DISCOVERY_RESPONSE, "").replaceFirst(Constants.DISCOVERY_RESPONSE_DELIMITER, "");
                     try {
                         final int port = Integer.valueOf(ports);
@@ -126,8 +125,8 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
                     } catch (NumberFormatException ex) {
                         log.log(Level.WARNING, "Response in wrong format - " + message, ex);
                     }
-
-
+                } else {
+                    log.log(Level.FINE, "Broadcast response from {0} : {1}", new Object[]{receivePacket.getAddress().getHostAddress(), message});
                 }
             } catch (SocketTimeoutException ex) {
                 // nothing bad happened

@@ -90,10 +90,9 @@ public class Comm_Client implements IService, IServerInterface, Client {
             try {
                 sdd = new ServerDiscoveryDaemon(this);
             } catch (SocketException ex) {
-                log.log(Level.INFO, "Failed to initiate server discovery daemon, server must be configured manually.");
                 log.log(Level.FINE, "Failed to initiate server discovery daemon.", ex);
             }
-        }        
+        }
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -127,7 +126,7 @@ public class Comm_Client implements IService, IServerInterface, Client {
                 log.log(Level.WARNING, "Invalid response received - {0}", id.toString());
             }
         } else {
-            log.log(Level.CONFIG, "Server could not be contacted");
+            log.log(Level.CONFIG, "Server could not be contacted.");
         }
         return result;
     }
@@ -226,14 +225,7 @@ public class Comm_Client implements IService, IServerInterface, Client {
         return status;
     }
 
-    private void start() {
-        if (sdd != null) {
-            sdd.start();
-        } else if (ComponentSwitches.useClientAutoConnectLocalhost) {
-            log.info("Could not init server discovery, trying to connect to local host.");
-            registerToServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
-        }
-        
+    private void start() {        
         if (ComponentSwitches.useSettings) {
             if (!ClientSettings.deserialize(this)) {
                 log.warning("Error loading client settings.");
@@ -244,6 +236,12 @@ public class Comm_Client implements IService, IServerInterface, Client {
                     ClientSettings.serialize(comm);
                 }
             }));
+        }
+        if (sdd != null) {
+            sdd.start();
+        } else if (ComponentSwitches.useClientAutoConnectLocalhost && !isServerUp()) {
+            log.info("Could not init server discovery, trying to connect to local host.");
+            registerToServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
         }
     }
 

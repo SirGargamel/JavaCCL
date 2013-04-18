@@ -41,4 +41,6 @@ public interface Assignment {
      * @return assignments ID
      */
     UUID getId();
+    
+    boolean isDone();
 }

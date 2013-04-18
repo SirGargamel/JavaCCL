@@ -31,6 +31,7 @@ public class BasicConversator implements IListener {
 
     /**
      * Send data to target and receive an answer
+     *
      * @param dataToSend data for sending
      * @return response from target
      */
@@ -39,17 +40,22 @@ public class BasicConversator implements IListener {
 
         final Object id = dataToSend.getId();
         listener.addIdListener(id, this, true);
+
+        log.log(Level.CONFIG, "Starting conversation with id {0} to {1} - [{2}]", new Object[]{id.toString(), target.getAddress().getHostAddress(), dataToSend.toString()});
         target.sendData(dataToSend);
 
         synchronized (this) {
-            try {
-                this.wait();
-            } catch (InterruptedException ex) {
-                log.log(Level.WARNING, "Waiting of BasicConverstaro has been interrupted, result may not be actual data.", ex);
+            if (receivedData == null) {
+                try {
+                    this.wait();
+                } catch (InterruptedException ex) {
+                    log.log(Level.WARNING, "Waiting of BasicConversator has been interrupted, result may not be actual data.", ex);
+                }
             }
-        }
+        }        
 
         listener.removeIdListener(id, this);
+        
         return receivedData;
     }
 
@@ -58,6 +64,7 @@ public class BasicConversator implements IListener {
         receivedData = data;
         synchronized (this) {
             this.notify();
+            log.log(Level.CONFIG, "Received reply for conversation with id {0} - [{1}]", new Object[]{data.getId(), data.toString()});
         }
     }
 }

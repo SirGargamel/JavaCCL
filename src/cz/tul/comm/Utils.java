@@ -16,7 +16,7 @@ public class Utils {
     private static final String LOG_FILE_NAME = "systemLog.xml";
 
     public static void adjustMainLoggerLevel(final Level level) {
-        Logger l = Logger.getGlobal();
+        Logger l = log.getParent();
         l.setLevel(level);
         for (Handler h : l.getHandlers()) {
             h.setLevel(level);
@@ -25,10 +25,12 @@ public class Utils {
 
     public static void prepareFileLogger() {
         try {
-            Logger l = Logger.getGlobal();
+            Logger l = log.getParent();
             Handler fh = new FileHandler(LOG_FILE_NAME, true);
             if (l.getLevel() != null) {
                 fh.setLevel(l.getLevel());
+            } else {
+                fh.setLevel(Level.ALL);
             }
             l.addHandler(fh);
         } catch (IOException | SecurityException ex) {

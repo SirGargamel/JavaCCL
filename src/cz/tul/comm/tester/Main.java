@@ -2,6 +2,7 @@ package cz.tul.comm.tester;
 
 import cz.tul.comm.ComponentSwitches;
 import cz.tul.comm.Constants;
+import cz.tul.comm.Utils;
 import cz.tul.comm.client.Client;
 import cz.tul.comm.client.Comm_Client;
 import cz.tul.comm.client.IServerInterface;
@@ -31,6 +32,7 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
@@ -319,6 +321,8 @@ public class Main {
     }
 
     static void testWithDummies(String[] args) {
+        Utils.adjustMainLoggerLevel(Level.CONFIG);
+        
         boolean interactiveMode = false;
         DummyServer srv = null;
         int repCount;
@@ -326,7 +330,7 @@ public class Main {
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
                 case "-c":
-                    final Object cl = new DummyClient();
+                    final DummyClient dc = new DummyClient();                    
                     break;
                 case "-s":
                     srv = new DummyServer();
@@ -359,7 +363,7 @@ public class Main {
 
         if (interactiveMode && srv != null) {
             System.out.println("Starting interactive mode.");
-            System.out.println("Input commands as tuples action - repetition count (for example C-1000 for thousand computations).");
+            System.out.println("Input commands as \"action repetitionCount\" (for example C 1000 for thousand basic computations).");
             System.out.println("Aviable actions are {C | CAT | CBT | CRAT | CRBT}.");
 
             String line;
@@ -367,11 +371,11 @@ public class Main {
             boolean run = true;
             String[] split;
             while (run) {
-                line = in.nextLine().trim().replaceAll("[ ]*", "");
+                line = in.nextLine().trim().replaceAll("[ ]+", " ");
                 if (line.equals("quit")) {
                     run = false;
                 } else {
-                    split = line.split("-");
+                    split = line.split(" ");
                     if (split.length == 2) {
                         action = parseAction(split[0]);
                         try {
@@ -391,20 +395,20 @@ public class Main {
 
     private static Action parseAction(final String cmd) {
         Action result = null;
-        switch (cmd) {
-            case "C":
+        switch (cmd.toLowerCase(Locale.getDefault())) {
+            case "c":
                 result = Action.COMPUTE;
                 break;
-            case "CAT":
+            case "cat":
                 result = Action.CANCEL_AFTER_TIME;
                 break;
-            case "CBT":
+            case "cbt":
                 result = Action.CANCEL_BEFORE_TIME;
                 break;
-            case "CRAT":
+            case "crat":
                 result = Action.CRASH_AFTER_TIME;
                 break;
-            case "CRBT":
+            case "crbt":
                 result = Action.CRASH_BEFORE_TIME;
                 break;
         }

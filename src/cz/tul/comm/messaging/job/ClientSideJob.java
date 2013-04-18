@@ -22,6 +22,7 @@ public class ClientSideJob implements Assignment, IListener {
     private final IAssignmentListener taskListener;
     private final Communicator comm;
     private final UUID jobId;
+    private boolean isDone;
 
     /**
      * Create new instance.
@@ -41,6 +42,8 @@ public class ClientSideJob implements Assignment, IListener {
 
         final Message accept = new Message(jobId, JobMessageHeaders.JOB_ACCEPT, null);
         sendMessage(accept);
+        
+        isDone = false;
     }
 
     private boolean sendMessage(final Message m) {
@@ -68,6 +71,7 @@ public class ClientSideJob implements Assignment, IListener {
     @Override
     public boolean submitResult(Object result) {
         listenerRegistrator.removeIdListener(jobId, this);
+        isDone = true;
         final Message m = new Message(jobId, JobMessageHeaders.JOB_RESULT, result);
         return sendMessage(m);
     }
@@ -110,5 +114,10 @@ public class ClientSideJob implements Assignment, IListener {
     @Override
     public UUID getId() {
         return jobId;
+    }
+
+    @Override
+    public boolean isDone() {
+        return isDone;
     }
 }

@@ -77,7 +77,7 @@ public class History implements IHistoryManager {
     public void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted) {
         final Record r = new Record(localHost, ipDestination, data, accepted);
         records.add(r);
-        log.log(Level.CONFIG, "Sent message stored to history - {0}", r);
+        log.log(Level.FINE, "Sent message stored to history - {0}", r);
 
     }
 
@@ -85,7 +85,7 @@ public class History implements IHistoryManager {
     public void logMessageReceived(final InetAddress ipSource, final Object data, final boolean accepted) {
         final Record r = new Record(ipSource, localHost, data, accepted);
         records.add(r);
-        log.log(Level.CONFIG, "Received message stored to history - {0}", r);
+        log.log(Level.FINE, "Received message stored to history - {0}", r);
     }
 
     @Override

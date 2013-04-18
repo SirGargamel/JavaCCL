@@ -4,7 +4,7 @@ package cz.tul.comm.tester.virtual;
  *
  * @author Petr Ječmen
  */
-public interface IClose {
+public interface IDummy {
 
     void closeClient();
 }

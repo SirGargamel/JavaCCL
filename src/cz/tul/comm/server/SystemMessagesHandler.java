@@ -45,20 +45,20 @@ public class SystemMessagesHandler implements Observer {
                             Communicator c = clientManager.registerClient(ipData.getSourceIP(), port);
                             c.setId(clientId);
                             c.sendData(new Message(m.getId(), header, clientId));
-                            log.log(Level.CONFIG, "LOGIN received from {0} - {1}, assigning id {2}", new Object[]{m.toString(), clientId});
+                            log.log(Level.CONFIG, "LOGIN received from {0}, assigning id {1}", new Object[]{ipData.getSourceIP(), clientId});
                         } catch (NumberFormatException ex) {
                             log.log(Level.WARNING, "Illegal login data received from {0} - {1}",
-                                    new Object[]{ipData.getClientID(), m.getData().toString()});
+                                    new Object[]{ipData.getSourceIP(), m.getData().toString()});
                         } catch (NullPointerException ex) {
                             log.log(Level.WARNING, "Null login data received from {0}",
-                                    new Object[]{ipData.getClientID()});
+                                    new Object[]{ipData.getSourceIP()});
                         }
                         break;
                     case MessageHeaders.LOGOUT:
                         final Object id = m.getData();
                         if (id instanceof UUID) {
                             clientManager.deregisterClient((UUID) id);
-                            log.log(Level.CONFIG, "Client with id {0} deregistered.", id.toString());
+                            log.log(Level.CONFIG, "Client with id {0} deregistered.", ipData.getClientID());
                         } else {
                             log.log(Level.WARNING, "Invalid client id received - {0}", id.toString());
                         }

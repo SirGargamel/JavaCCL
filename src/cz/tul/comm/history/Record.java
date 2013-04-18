@@ -52,10 +52,10 @@ public class Record {
         final StringBuilder sb = new StringBuilder();
         
         sb.append("From ");
-        sb.append(ipSource);
+        sb.append(ipSource.getHostAddress());
         sb.append(" to ");
-        sb.append(ipDestination);
-        sb.append(" at ");
+        sb.append(ipDestination.getHostAddress());
+        sb.append(" on ");
         sb.append(time);
         sb.append(". Data - ");
         sb.append(data.toString());
