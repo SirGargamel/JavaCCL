@@ -78,21 +78,15 @@ public class Work implements Callable<Object>, Serializable {
         return action.toString().concat("-".concat(String.valueOf(repCount))).concat("-").concat(String.valueOf(res));
     }
 
-    private static boolean compute(final int repetitionCount) {        
-        final List<Double> listA = new ArrayList<>(repetitionCount);
-        final List<Double> listB = new ArrayList<>(repetitionCount);
-
-        for (int i = 0; i < repetitionCount; i++) {
-            listA.add(r.nextGaussian());
-            listB.add(r.nextGaussian());
+    private boolean compute(final int repetitionCount) {        
+        synchronized (this) {
+            try {
+                this.wait(repetitionCount);
+            } catch (InterruptedException ex) {
+                return false;
+            }
         }
 
-        Collections.sort(listA);
-        Collections.sort(listB);
-        
-        Collections.rotate(listA, r.nextInt(repetitionCount));
-        Collections.rotate(listB, r.nextInt(repetitionCount));
-
-        return Collections.disjoint(listA, listB);
+        return true;
     }
 }

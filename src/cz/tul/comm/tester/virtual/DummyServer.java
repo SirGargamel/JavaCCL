@@ -36,10 +36,8 @@ public class DummyServer {
         }
 
         @Override
-        public void run() {
-            System.out.println("Waiting for completion of job with id " + job.getId() + ".");
-            final Object result = job.getResult(true);
-            System.out.println("Job with id " + job.getId() + " completed with result " + result + ".");
+        public void run() {            
+            final Object result = job.getResult(true);            
         }
     }
 }

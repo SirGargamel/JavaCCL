@@ -69,36 +69,14 @@ class SocketReader extends Observable implements Runnable {
 
     @Override
     public void run() {
-        boolean dataReadAndHandled = false;
+        boolean dataRead = false;
 
         final InetAddress ip = socket.getInetAddress();
         Object o = null;
         try {
             final ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             o = in.readObject();
-
-            if (o instanceof DataPacket) {
-                final DataPacket dp = (DataPacket) o;
-                final Object data = dp.getData();
-                dp.setSourceIP(ip);
-
-                setChanged();
-                this.notifyObservers(dp);
-
-                if (data instanceof IIdentifiable) {
-                    dataStorageId.storeData((IIdentifiable) data);
-                }
-                dataStorageClient.storeData(dp);
-                dataReadAndHandled = true;
-                log.log(Level.CONFIG, "Data [{0}] received and stored to queues.", data.toString());
-            } else if (o instanceof Message) {
-                final Message m = (Message) o;
-                if (m.getHeader().equals(MessageHeaders.KEEP_ALIVE)) {
-                    log.log(Level.FINE, "KEEP_ALIVE received from {0}", ip);
-                }
-            } else {
-                log.log(Level.WARNING, "Received data is not an instance of DataPacket - {0}, instance of {1}", new Object[]{o.toString(), o.getClass().getName()});
-            }
+            dataRead = true;
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error reading data from socket.", ex);
         } catch (ClassNotFoundException ex) {
@@ -106,7 +84,7 @@ class SocketReader extends Observable implements Runnable {
         }
 
         try (final ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
-            out.writeBoolean(dataReadAndHandled);
+            out.writeBoolean(dataRead);
             out.flush();
             log.log(Level.FINE, "Reply sent.");
         } catch (IOException ex) {
@@ -114,7 +92,35 @@ class SocketReader extends Observable implements Runnable {
         }
 
         if (hm != null) {
-            hm.logMessageReceived(ip, o, dataReadAndHandled);
+            hm.logMessageReceived(ip, o, dataRead);
+        }
+
+        if (o instanceof DataPacket) {
+            final DataPacket dp = (DataPacket) o;
+            dp.setSourceIP(ip);
+            final Object data = dp.getData();            
+            
+            log.log(Level.CONFIG, "Data [{0}] received, storing to queues.", data.toString());
+
+            setChanged();
+            this.notifyObservers(dp);
+
+            if (data instanceof IIdentifiable) {
+                dataStorageId.storeData((IIdentifiable) data);
+            }
+            dataStorageClient.storeData(dp);                        
+        } else if (o instanceof Message) { 
+            final Message m = (Message) o;
+            switch (m.getHeader()) {
+                case (MessageHeaders.KEEP_ALIVE) :
+                    // no further actions needed
+                    break;
+                default:
+                    log.log(Level.WARNING, "Received Message with undefined header - {0}", new Object[]{m.toString()});
+                    break;
+            }
+        } else {
+            log.log(Level.WARNING, "Received data is not an instance of DataPacket - {0}", new Object[]{o});
         }
     }
 }

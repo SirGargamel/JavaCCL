@@ -116,16 +116,17 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
                 for (Queue<O> q : m.values()) {
                     q.add(data);
                 }
-            }
-            if (!pushDaemon.isAlive()) {
-                pushDaemon.start();
-            } else {
-                synchronized (pushDaemon) {
-                    pushDaemon.notify();
+
+                log.log(Level.FINE, "Data [{0}] stored.", data.toString());
+
+                if (!pushDaemon.isAlive()) {
+                    pushDaemon.start();
+                } else {
+                    synchronized (pushDaemon) {
+                        pushDaemon.notify();
+                    }
                 }
             }
-
-            log.log(Level.FINE, "Data [{0}] stored.", data.toString());
         }
     }
 

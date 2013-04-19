@@ -44,9 +44,8 @@ public class ServerSideJob implements Job, IListener {
 
         final JobTask jt = new JobTask(jobId, task);
         final Message m = new Message(jobId, MessageHeaders.JOB, jt);
-        sendMessage(m);
-
         jobStatus = JobStatus.SENT;
+        sendMessage(m);        
     }
 
     @Override
@@ -78,6 +77,10 @@ public class ServerSideJob implements Job, IListener {
         sendMessage(m);
         listenerRegistrator.removeIdListener(jobId, this);
         log.log(Level.CONFIG, "Job with ID {0} has been cancelled by server.", jobId);
+    }
+
+    public void setStatus(JobStatus jobStatus) {
+        this.jobStatus = jobStatus;
     }
 
     @Override
