@@ -4,6 +4,7 @@ import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.history.IHistoryManager;
 import cz.tul.comm.messaging.job.Job;
+import cz.tul.comm.messaging.job.JobManager;
 import cz.tul.comm.socket.IListenerRegistrator;
 import java.net.InetAddress;
 import java.util.UUID;
@@ -52,6 +53,8 @@ public interface Server extends IService {
      * @return
      */
     IListenerRegistrator getListenerRegistrator();
+    
+    JobManager getJobManager();
 
     /**
      * Register new client communicationg on given IP and on default port.

@@ -162,6 +162,10 @@ public final class Comm_Server implements IService, Server {
         return serverSocket;
     }
 
+    public JobManager getJobManager() {
+        return jobManager;
+    }
+
     /**
      * @param dataStorage class hnadling data requests
      */
