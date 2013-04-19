@@ -41,7 +41,7 @@ public class ServerSocketTest {
 
         ServerSocket instance = null;
         try {
-            instance = ServerSocket.createServerSocket(Constants.DEFAULT_PORT);
+            instance = ServerSocket.createServerSocket(Constants.DEFAULT_PORT, null);
         } catch (IOException ex) {
             fail("Failed to initialize ServerSocket");
         }

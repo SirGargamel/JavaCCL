@@ -37,13 +37,14 @@ public class ServerSocket extends Thread implements IService, IListenerRegistrat
      * @return new instance of ServerSocket
      * @throws IOException error creating socket on given port 
      */
-    public static ServerSocket createServerSocket(final int port) throws IOException {
-        ServerSocket result = new ServerSocket(port);
+    public static ServerSocket createServerSocket(final int port, final IDFilter idFilter) throws IOException {
+        ServerSocket result = new ServerSocket(port, idFilter);
         result.start();
         log.fine("New server socket created and started.");
         return result;
     }
     private final java.net.ServerSocket socket;
+    private final IDFilter idFilter;
     private final ExecutorService exec;
     private final ObjectQueue<DataPacket> dataStorageClient;
     private final ObjectQueue<IIdentifiable> dataStorageId;
@@ -51,8 +52,9 @@ public class ServerSocket extends Thread implements IService, IListenerRegistrat
     private IHistoryManager hm;
     private boolean run;
 
-    private ServerSocket(final int port) throws IOException {
+    private ServerSocket(final int port, final IDFilter idFilter) throws IOException {
         socket = new java.net.ServerSocket(port);
+        this.idFilter = idFilter;
         exec = Executors.newCachedThreadPool();
         dataStorageClient = new ObjectQueue<>();
         dataStorageId = new ObjectQueue<>();
@@ -113,7 +115,7 @@ public class ServerSocket extends Thread implements IService, IListenerRegistrat
             try {
                 s = socket.accept();
                 log.log(Level.FINE, "Connection accepted from IP {0}:{1}", new Object[]{s.getInetAddress().getHostAddress(), s.getPort()});
-                final SocketReader sr = new SocketReader(s, dataStorageClient, dataStorageId);
+                final SocketReader sr = new SocketReader(s, idFilter, dataStorageClient, dataStorageId);
                 sr.registerHistory(hm);
                 for (Observer o : dataListeners) {
                     sr.addObserver(o);

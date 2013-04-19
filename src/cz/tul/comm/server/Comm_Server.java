@@ -73,7 +73,7 @@ public final class Comm_Server implements IService, Server {
 
         clients = new ClientDB();
 
-        serverSocket = ServerSocket.createServerSocket(port);
+        serverSocket = ServerSocket.createServerSocket(port, clients);
         serverSocket.registerHistory(history);
 
         if (ComponentSwitches.useClientStatus) {

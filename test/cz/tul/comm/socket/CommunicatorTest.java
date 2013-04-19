@@ -24,7 +24,7 @@ public class CommunicatorTest {
 
     @BeforeClass
     public static void setUpClass() throws IOException {
-        ss = ServerSocket.createServerSocket(Constants.DEFAULT_PORT);
+        ss = ServerSocket.createServerSocket(Constants.DEFAULT_PORT, null);
     }
 
     @AfterClass

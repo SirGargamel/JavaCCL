@@ -12,6 +12,7 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Calendar;
 import java.util.Objects;
+import java.util.Observable;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,7 +26,7 @@ import java.util.logging.Logger;
  * @see Serializable
  * @author Petr Ječmen
  */
-public class Communicator {
+public class Communicator extends Observable {
 
     private static final Logger log = Logger.getLogger(Communicator.class.getName());
 
@@ -75,6 +76,9 @@ public class Communicator {
 
         lastStatusUpdateTime = Calendar.getInstance();
         status = Status.NA;
+        
+        setChanged();
+        notifyObservers();
     }
 
     /**
@@ -194,6 +198,9 @@ public class Communicator {
     public void setStatus(final Status newStatus) {
         status = newStatus;
         lastStatusUpdateTime = Calendar.getInstance();
+        
+        setChanged();
+        notifyObservers(status);
     }
 
     /**
@@ -234,6 +241,8 @@ public class Communicator {
      */
     public void setId(UUID id) {
         this.id = id;
+        setChanged();
+        notifyObservers(this.id);
     }
 
     @Override

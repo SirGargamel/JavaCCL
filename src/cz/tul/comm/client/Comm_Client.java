@@ -13,6 +13,7 @@ import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.messaging.job.IAssignmentListener;
 import cz.tul.comm.persistence.ClientSettings;
+import cz.tul.comm.socket.IDFilter;
 import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
@@ -29,7 +30,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class Comm_Client implements IService, IServerInterface, Client {
+public class Comm_Client implements IService, IServerInterface, Client, IDFilter {
 
     private static final Logger log = Logger.getLogger(Comm_Client.class.getName());
     /**
@@ -77,14 +78,7 @@ public class Comm_Client implements IService, IServerInterface, Client {
     private ServerDiscoveryDaemon sdd;
 
     private Comm_Client(final int port) throws IOException {
-        history = new History();
-
-        serverSocket = ServerSocket.createServerSocket(port);
-        serverSocket.registerHistory(history);
-
-        status = Status.ONLINE;
-        csm = new ClientSystemMessaging(this);
-        serverSocket.addMessageObserver(csm);
+        history = new History();                
 
         if (ComponentSwitches.useClientDiscovery) {
             try {
@@ -100,6 +94,13 @@ public class Comm_Client implements IService, IServerInterface, Client {
                 stopService();
             }
         }));
+        
+        serverSocket = ServerSocket.createServerSocket(port, this);
+        serverSocket.registerHistory(history);
+        
+        status = Status.ONLINE;
+        csm = new ClientSystemMessaging(this);
+        serverSocket.addMessageObserver(csm);
     }
 
     @Override
@@ -217,9 +218,6 @@ public class Comm_Client implements IService, IServerInterface, Client {
         return comm;
     }
 
-    /**
-     * @return client status
-     */
     @Override
     public Status getStatus() {
         return status;
@@ -252,5 +250,10 @@ public class Comm_Client implements IService, IServerInterface, Client {
             sdd.stopService();
         }
         log.fine("Client has been stopped.");
+    }
+
+    @Override
+    public boolean isIdAllowed(UUID id) {
+        return comm.getId().equals(id);
     }
 }
