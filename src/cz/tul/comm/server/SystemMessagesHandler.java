@@ -2,7 +2,6 @@ package cz.tul.comm.server;
 
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.DataPacket;
-import cz.tul.comm.communicator.Status;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
 import java.util.Observable;
@@ -61,17 +60,6 @@ public class SystemMessagesHandler implements Observer {
                             log.log(Level.CONFIG, "Client with id {0} deregistered.", ipData.getClientID());
                         } else {
                             log.log(Level.WARNING, "Invalid client id received - {0}", id.toString());
-                        }
-                        break;
-                    case MessageHeaders.STATUS:
-                        if (m.getData() instanceof Status) {
-                            final Communicator c = clientManager.getClient(ipData.getClientID());
-                            if (c != null) {
-                                c.setStatus((Status) m.getData());
-                                log.log(Level.CONFIG, "Status message {0} received for IP {1} ,port {2}", new Object[]{m.getData().toString(), c.getAddress(), c.getPort()});
-                            }
-                        } else {
-                            log.log(Level.WARNING, "Invalid status message received {0}", new Object[]{m.getData().toString()});
                         }
                         break;
                     default:

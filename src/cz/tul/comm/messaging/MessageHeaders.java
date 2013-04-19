@@ -14,11 +14,7 @@ public interface MessageHeaders {
     /**
      * client is logging out
      */
-    String LOGOUT = "logout";
-    /**
-     * question for client status
-     */
-    String STATUS = "status";
+    String LOGOUT = "logout";    
     /**
      * keep alives should be ignored as they function only for cummunication
      * check

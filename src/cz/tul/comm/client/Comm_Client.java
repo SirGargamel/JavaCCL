@@ -218,11 +218,6 @@ public class Comm_Client implements IService, IServerInterface, Client, IDFilter
         return comm;
     }
 
-    @Override
-    public Status getStatus() {
-        return status;
-    }
-
     private void start() {        
         if (ComponentSwitches.useSettings) {
             if (!ClientSettings.deserialize(this)) {

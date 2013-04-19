@@ -173,8 +173,9 @@ public class Communicator extends Observable {
             stat = Status.NOT_RESPONDING;
 
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
-                in.readBoolean();
                 stat = Status.REACHABLE;
+                in.readBoolean();
+                stat = Status.ONLINE;
             } catch (IOException ex) {
                 log.log(Level.FINE, "Client on IP {0} did not open stream for answer.", address.getHostAddress());
             }

@@ -77,7 +77,7 @@ public final class Comm_Server implements IService, Server {
         serverSocket.registerHistory(history);
 
         if (ComponentSwitches.useClientStatus) {
-            clientStatusDaemon = new ClientStatusDaemon(clients, serverSocket);
+            clientStatusDaemon = new ClientStatusDaemon(clients);
         } else {
             clientStatusDaemon = null;
         }

@@ -31,11 +31,6 @@ class ClientSystemMessaging implements Observer {
             if (data.getData() instanceof Message) {
                 final Message m = (Message) data.getData();
                 switch (m.getHeader()) {
-                    case MessageHeaders.STATUS:
-                        final Message response = new Message(m.getId(), m.getHeader(), parent.getStatus());
-                        parent.sendData(response);
-                        log.log(Level.CONFIG, "STATUS question received and response {0} has been sent.", response.toString());
-                        break;
                     case MessageHeaders.JOB:
                         if (parent.getAssignmentListener() != null) {
                             final Object task = m.getData();

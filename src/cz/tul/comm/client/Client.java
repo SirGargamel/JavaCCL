@@ -42,11 +42,6 @@ public interface Client extends IService {
 
     Communicator getServerComm();
 
-    /**
-     * @return client status
-     */
-    Status getStatus();
-
     boolean isServerUp();
 
     boolean registerToServer(final InetAddress address, final int port);
