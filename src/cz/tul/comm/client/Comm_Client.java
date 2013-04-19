@@ -254,6 +254,11 @@ public class Comm_Client implements IService, IServerInterface, Client, IDFilter
 
     @Override
     public boolean isIdAllowed(UUID id) {
-        return comm.getId().equals(id);
+        final UUID commId = comm.getId();
+        if (commId == null) {
+            return true;
+        } else {
+            return comm.getId().equals(id);
+        }                
     }
 }
