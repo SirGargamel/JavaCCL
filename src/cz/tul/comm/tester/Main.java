@@ -322,7 +322,7 @@ public class Main {
 
     static void testWithDummies(String[] args) {
         Utils.adjustMainLoggerLevel(Level.CONFIG);
-        
+
         boolean interactiveMode = false;
         DummyServer srv = null;
         int repCount;
@@ -330,7 +330,7 @@ public class Main {
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
                 case "-c":
-                    final DummyClient dc = new DummyClient();                    
+                    final DummyClient dc = new DummyClient();
                     break;
                 case "-s":
                     srv = new DummyServer();
@@ -361,34 +361,38 @@ public class Main {
             }
         }
 
-        if (interactiveMode && srv != null) {
-            System.out.println("Starting interactive mode.");
-            System.out.println("Input commands as \"action repetitionCount\" (for example C 1000 for thousand basic computations).");
-            System.out.println("Aviable actions are {C | CAT | CBT | CRAT | CRBT}.");
+        if (srv != null) {
+            if (interactiveMode) {
+                System.out.println("Starting interactive mode.");
+                System.out.println("Input commands as \"action repetitionCount\" (for example C 1000 for thousand basic computations).");
+                System.out.println("Aviable actions are {C | CAT | CBT | CRAT | CRBT}.");
 
-            String line;
-            Scanner in = new Scanner(System.in);
-            boolean run = true;
-            String[] split;
-            while (run) {
-                line = in.nextLine().trim().replaceAll("[ ]+", " ");
-                if (line.equals("quit")) {
-                    run = false;
-                } else {
-                    split = line.split(" ");
-                    if (split.length == 2) {
-                        action = parseAction(split[0]);
-                        try {
-                            repCount = Integer.parseInt(split[1]);
-                            srv.submitJob(action, repCount);
-                            System.out.println("Submitted job " + action + " with " + repCount + " repetitions.");
-                        } catch (NumberFormatException ex) {
-                            log.log(Level.WARNING, "Illegal count of repetitions used - {0}", split[1]);
-                        }
+                String line;
+                Scanner in = new Scanner(System.in);
+                boolean run = true;
+                String[] split;
+                while (run) {
+                    line = in.nextLine().trim().replaceAll("[ ]+", " ");
+                    if (line.equals("quit")) {
+                        run = false;
                     } else {
-                        System.out.println("Invalid input.");
+                        split = line.split(" ");
+                        if (split.length == 2) {
+                            action = parseAction(split[0]);
+                            try {
+                                repCount = Integer.parseInt(split[1]);
+                                srv.submitJob(action, repCount);
+                                System.out.println("Submitted job " + action + " with " + repCount + " repetitions.");
+                            } catch (NumberFormatException ex) {
+                                log.log(Level.WARNING, "Illegal count of repetitions used - {0}", split[1]);
+                            }
+                        } else {
+                            System.out.println("Invalid input.");
+                        }
                     }
                 }
+            } else {
+                srv.waitForJobs();
             }
         }
     }

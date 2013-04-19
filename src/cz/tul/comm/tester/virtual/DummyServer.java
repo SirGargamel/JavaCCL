@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
 public class DummyServer {
 
     private final Server s;
-    private final ExecutorService exec;
+    private final ExecutorService exec;    
 
     public DummyServer() {
         s = Comm_Server.initNewServer();
@@ -24,7 +24,10 @@ public class DummyServer {
         final Work w = new Work(action, repetitionCount);
         final Job j = s.submitJob(w);
         exec.submit(new Waiter(j));
+    }
 
+    public void waitForJobs() {
+        s.getJobManager().waitForAllJobs();                
     }
 
     private static class Waiter implements Runnable {
@@ -36,8 +39,8 @@ public class DummyServer {
         }
 
         @Override
-        public void run() {            
-            final Object result = job.getResult(true);            
+        public void run() {
+            final Object result = job.getResult(true);
         }
     }
 }

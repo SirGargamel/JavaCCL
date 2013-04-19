@@ -4,9 +4,6 @@ import cz.tul.comm.messaging.job.Assignment;
 import static cz.tul.comm.tester.virtual.Action.CANCEL_AFTER_TIME;
 import static cz.tul.comm.tester.virtual.Action.CANCEL_BEFORE_TIME;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -41,52 +38,53 @@ public class Work implements Callable<Object>, Serializable {
     @Override
     public Object call() throws Exception {
         int repCount = repetitionCount;
-        boolean res;
         log.log(Level.CONFIG, "Computing assignment with id {0}", task.getId());
         switch (action) {
             case COMPUTE:
-                res = compute(repetitionCount);
+                compute(repetitionCount);
                 log.log(Level.CONFIG, "Client computed successfully {0} repetitions.", repetitionCount);
                 break;
             case CANCEL_AFTER_TIME:
-                res = compute(repetitionCount);
+                compute(repetitionCount);
                 task.cancel("Canceling after time.");
                 log.log(Level.CONFIG, "Client cancelled after {0} repetitions.", repetitionCount);
                 break;
             case CANCEL_BEFORE_TIME:
                 repCount = r.nextInt(repetitionCount);
-                res = compute(repCount);
+                compute(repCount);
                 task.cancel("Canceling before time.");
                 log.log(Level.CONFIG, "Client cancelled after {0} repetitions.", repCount);
                 break;
             case CRASH_AFTER_TIME:
-                res = compute(repetitionCount);
+                compute(repetitionCount);
                 closer.closeClient();
                 log.log(Level.CONFIG, "Client closed after {0} repetitions.", repetitionCount);
                 break;
             case CRASH_BEFORE_TIME:
                 repCount = r.nextInt(repetitionCount);
-                res = compute(repCount);
+                compute(repCount);
                 closer.closeClient();
                 log.log(Level.CONFIG, "Client closed after {0} repetitions.", repCount);
                 break;
             default:
-                res = true;
+                log.log(Level.CONFIG, "Illegal action - {0}", action);
                 break;
         }
-        
-        return action.toString().concat("-".concat(String.valueOf(repCount))).concat("-").concat(String.valueOf(res));
+
+        return buildResult(action, repCount);
     }
 
-    private boolean compute(final int repetitionCount) {        
+    private void compute(final int repetitionCount) {
         synchronized (this) {
             try {
                 this.wait(repetitionCount);
             } catch (InterruptedException ex) {
-                return false;
+                // nothing
             }
         }
+    }
 
-        return true;
+    public static String buildResult(final Action action, final int repCount) {
+        return action.toString().concat("-".concat(String.valueOf(repCount)));
     }
 }
