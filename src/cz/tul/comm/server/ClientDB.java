@@ -30,7 +30,8 @@ class ClientDB implements IClientManager, Observer, IDFilter {
 
     ClientDB() {
         clients = Collections.synchronizedSet(new HashSet<Communicator>());
-        allowedIDs = Collections.unmodifiableCollection(Collections.EMPTY_SET);
+        allowedIDs = Collections.emptySet();
+        allowedIDs =  Collections.unmodifiableCollection(allowedIDs);
     }
 
     @Override
@@ -108,7 +109,7 @@ class ClientDB implements IClientManager, Observer, IDFilter {
     public void registerHistory(final IHistoryManager hm) {
         this.hm = hm;
         log.fine("History registered.");
-    }           
+    }
 
     @Override
     public void update(Observable o, Object arg) {
@@ -116,7 +117,7 @@ class ClientDB implements IClientManager, Observer, IDFilter {
             prepareAllowedIDs();
         }
     }
-    
+
     private void prepareAllowedIDs() {
         Collection<UUID> ids = new HashSet<>();
         UUID id;
