@@ -4,6 +4,7 @@ import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.Status;
 import cz.tul.comm.messaging.Message;
+import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.server.ClientManager;
 import cz.tul.comm.server.DataStorage;
 import cz.tul.comm.socket.ListenerRegistrator;
@@ -14,13 +15,17 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -37,6 +42,7 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
     private static final int WAIT_TIME = 1_000;
     private static final int MAX_CLIENT_NA_TIME = 5_000;
     private static final int MAX_JOB_ASSIGN_TIME = 5_000;
+    private static final int JOB_CANCEL_WAIT_TIME = 2_000;
     private final ClientManager clientManager;
     private DataStorage dataStorage;
     private final ListenerRegistrator listenerRegistrator;
@@ -47,6 +53,7 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
     private final Map<ServerSideJob, Calendar> assignTime;
     private final Collection<Job> allJobs;
     private final Collection<Job> allJobsOuter;
+    private final Map<UUID, List<JobAction>> jobHistory;
     private boolean run;
 
     /**
@@ -65,6 +72,7 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
         jobQueue = new ConcurrentLinkedDeque<>();
         allJobs = new LinkedList<>();
         allJobsOuter = Collections.unmodifiableCollection(allJobs);
+        jobHistory = new HashMap<>();
 
         run = true;
     }
@@ -125,6 +133,7 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
         for (List<ServerSideJob> l : jobsWaitingAssignment.values()) {
             for (ServerSideJob ssj : l) {
                 ssj.cancelJob();
+                storeJobAction(ssj.getId(), null, JobMessageHeaders.JOB_CANCEL);
             }
         }
         jobsWaitingAssignment.clear();
@@ -132,6 +141,7 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
         for (List<ServerSideJob> l : jobComputing.values()) {
             for (ServerSideJob ssj : l) {
                 ssj.cancelJob();
+                storeJobAction(ssj.getId(), null, JobMessageHeaders.JOB_CANCEL);
             }
         }
         jobComputing.clear();
@@ -167,22 +177,105 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
     private void assignJobs() {
         ServerSideJob job;
         final Collection<Communicator> clients = clientManager.getClients();
-        for (Communicator comm : clients) {
-            if (jobQueue.isEmpty()) {
-                break;
+        final Collection<ServerSideJob> putBack = new LinkedList<>();
+        Communicator comm;
+        while (!jobQueue.isEmpty() && isAnyClientFree(clients)) {
+            job = jobQueue.poll();
+            comm = pickClient(job.getId(), clients);
+            if (comm != null) {
+                log.log(Level.CONFIG, "Job with ID {0} assigned to client with ID {1}.", new Object[]{job.getId(), comm.getId()});
+                assignJob(job, comm);
+            } else {
+                putBack.add(job);
             }
-            if (!isClientOnline(comm)
-                    || jobsWaitingAssignment.get(comm) != null
-                    || jobComputing.get(comm) != null) {
-                // no connection or client has assigned unconfirmed job pending 
-                // or client is computing
+        }
+
+        for (ServerSideJob ssj : putBack) {
+            jobQueue.addFirst(ssj);
+        }
+    }
+
+    private boolean isAnyClientFree(final Collection<Communicator> clients) {
+        for (Communicator comm : clients) {
+            if (isClientFree(comm)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isClientFree(final Communicator comm) {
+        return isClientOnline(comm)
+                && jobsWaitingAssignment.get(comm) == null
+                && jobComputing.get(comm) == null;
+    }
+
+    private Communicator pickClient(final UUID jobId, final Collection<Communicator> clients) {
+        final Collection<Communicator> candidates = new LinkedList<>();
+        // pick online only
+        for (Communicator comm : clients) {
+            if (isClientFree(comm)) {
+                candidates.add(comm);
+            }
+        }
+        // 1st round - no actions with job before
+        List<JobAction> actionList = jobHistory.get(jobId);
+        for (Communicator comm : candidates) {
+            if (isCommPresent(actionList, comm)) {
                 continue;
             }
+            return comm;
+        }
+        // 2nd round - longest tim from last cancel
+        Calendar cal;
+        final SortedMap<Calendar, Communicator> cancelTimes = new TreeMap<>();
+        for (Communicator comm : candidates) {
+            cal = lastCancelTime(actionList, comm);
+            if (cal != null) {
+                cancelTimes.put(cal, comm);
+            } else {
+                log.warning("NULL calendar for last cancel time.");
+            }
+        }
+        if (!cancelTimes.isEmpty()) {
+            cal = cancelTimes.firstKey();
+            if ((Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - cal.getTimeInMillis()) > JOB_CANCEL_WAIT_TIME) {
+                return cancelTimes.get(cal);
+            } else {
+                log.log(Level.FINE, "No communicator assigned for job {0}, too soon after last job cancel", jobId);
+                return null;
+            }
+        } else {
+            log.log(Level.FINE, "No communicator assigned for job {0}, no aviable found.", jobId);
+            return null;
+        }
+    }
 
-            // new assignment
-            job = jobQueue.poll();
-            log.log(Level.CONFIG, "Job with ID {0} assigned to client with ID {1}.", new Object[]{job.getId(), comm.getId()});
-            assignJob(job, comm);
+    private boolean isCommPresent(final List<JobAction> actionList, final Communicator comm) {
+        if (actionList == null) {
+            return false;
+        }
+        
+        for (JobAction ja : actionList) {
+            if (ja.getOwner() == comm) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Calendar lastCancelTime(final List<JobAction> actionList, final Communicator comm) {
+        List<Calendar> cancelTimes = new ArrayList<>();
+        for (JobAction ja : actionList) {
+            if (ja.getOwner() == comm && ja.getMsgHeader().equals(JobMessageHeaders.JOB_CANCEL)) {
+                cancelTimes.add(ja.getActionTime());
+            }
+        }
+        if (cancelTimes.size() > 0) {
+            Collections.sort(cancelTimes);
+            return cancelTimes.get(cancelTimes.size() - 1);
+        } else {
+            return null;
         }
     }
 
@@ -205,6 +298,7 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
         storeClientOnlineStatus(comm);
         job.setStatus(JobStatus.SENT);
         assignTime.put(job, Calendar.getInstance());
+        storeJobAction(job.getId(), comm, MessageHeaders.JOB);
         job.submitJob(comm);
     }
 
@@ -225,8 +319,10 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
             ssj.cancelJob();
             // check client, then resend or give to another
             comm = ssj.getComm();
+            storeJobAction(ssj.getId(), comm, JobMessageHeaders.JOB_CANCEL);
             if (isClientOnline(comm)) {
                 log.log(Level.CONFIG, "Job with id {0} has been sent again to client with id {1} for confirmation.", new Object[]{ssj.getId(), comm.getId()});
+                storeJobAction(ssj.getId(), comm, MessageHeaders.JOB);
                 ssj.submitJob(comm);
             } else {
                 log.log(Level.CONFIG, "Job with id {0} hasnt been accepted in time, so it was cancelled and returned to queue.", new Object[]{ssj.getId(), MAX_JOB_ASSIGN_TIME});
@@ -250,11 +346,12 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
                         final List<ServerSideJob> reassignedList = jobsWaitingAssignment.get(comm);
                         for (ServerSideJob reassigned : reassignedList) {
                             reassigned.cancelJob();
-                            jobsWaitingAssignment.remove(comm);
+                            storeJobAction(reassigned.getId(), comm, JobMessageHeaders.JOB_CANCEL);
                             if (!jobQueue.contains(reassigned)) {
-                                jobQueue.add(reassigned);
+                                jobQueue.addFirst(reassigned);
                             }
                         }
+                        jobsWaitingAssignment.remove(comm);
                     }
                 } else {
                     log.severe("No online time recorder for job communicator.");
@@ -304,6 +401,7 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
                                     }
                                     addJob(e.getKey(), ssj, jobComputing);
                                     log.log(Level.FINE, "Job with ID {0} has been accepted.", id);
+                                    storeJobAction(ssj.getId(), e.getKey(), JobMessageHeaders.JOB_ACCEPT);
                                     break loop;
                                 }
                             }
@@ -328,6 +426,7 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
                                     }
                                     jobQueue.addFirst(ssj);
                                     log.log(Level.CONFIG, "Job with ID {0} has been cancelled.", id);
+                                    storeJobAction(ssj.getId(), e.getKey(), JobMessageHeaders.JOB_CANCEL);
                                     wakeUp();
                                     break loop;
                                 }
@@ -352,6 +451,7 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
                                         itEntry.remove();
                                     }
                                     log.log(Level.CONFIG, "Job with ID {0} has been computed succefully.", id);
+                                    storeJobAction(ssj.getId(), e.getKey(), JobMessageHeaders.JOB_RESULT);
                                     wakeUp();
                                     break loop;
                                 }
@@ -368,6 +468,15 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
         synchronized (this) {
             this.notify();
         }
+    }
+
+    private void storeJobAction(final UUID jobId, final Communicator owner, final String action) {
+        List<JobAction> l = jobHistory.get(jobId);
+        if (l == null) {
+            l = new LinkedList<>();
+            jobHistory.put(jobId, l);
+        }
+        l.add(new JobAction(jobId, owner, action));
     }
 
     private static void addJob(final Communicator comm, final ServerSideJob job, final Map<Communicator, List<ServerSideJob>> dataMap) {
