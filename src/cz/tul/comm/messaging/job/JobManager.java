@@ -9,12 +9,15 @@ import cz.tul.comm.server.IDataStorage;
 import cz.tul.comm.socket.IListenerRegistrator;
 import cz.tul.comm.socket.queue.IIdentifiable;
 import cz.tul.comm.socket.queue.IListener;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -29,7 +32,7 @@ import java.util.logging.Logger;
  * @author Petr Ječmen
  */
 public class JobManager extends Thread implements IService, IListener {
-    
+
     private static final Logger log = Logger.getLogger(JobManager.class.getName());
     private static final int WAIT_TIME = 1_000;
     private static final int MAX_CLIENT_NA_TIME = 5_000;
@@ -38,8 +41,8 @@ public class JobManager extends Thread implements IService, IListener {
     private IDataStorage dataStorage;
     private final IListenerRegistrator listenerRegistrator;
     private final Deque<ServerSideJob> jobQueue;
-    private final Map<Communicator, ServerSideJob> jobsWaitingAssignment;
-    private final Map<Communicator, ServerSideJob> jobComputing;
+    private final Map<Communicator, List<ServerSideJob>> jobsWaitingAssignment;
+    private final Map<Communicator, List<ServerSideJob>> jobComputing;
     private final Map<Communicator, Calendar> lastTimeOnline;
     private final Map<ServerSideJob, Calendar> assignTime;
     private final Collection<Job> allJobs;
@@ -62,7 +65,7 @@ public class JobManager extends Thread implements IService, IListener {
         jobQueue = new ConcurrentLinkedDeque<>();
         allJobs = new LinkedList<>();
         allJobsOuter = Collections.unmodifiableCollection(allJobs);
-        
+
         run = true;
     }
 
@@ -85,13 +88,13 @@ public class JobManager extends Thread implements IService, IListener {
         final ServerSideJob result = new ServerSideJob(task, listenerRegistrator, dataStorage);
         jobQueue.add(result);
         allJobs.add(result);
-        
+
         log.log(Level.CONFIG, "Job with ID {0} submitted.", result.getId());
         wakeUp();
-        
+
         return result;
     }
-    
+
     public void waitForAllJobs() {
         while (!jobQueue.isEmpty() && !jobsWaitingAssignment.isEmpty()) {
             synchronized (this) {
@@ -103,28 +106,32 @@ public class JobManager extends Thread implements IService, IListener {
             }
         }
     }
-    
+
     public void stopAllJobs() {
         jobQueue.clear();
-        
-        for (ServerSideJob ssj : jobsWaitingAssignment.values()) {
-            ssj.cancelJob();
+
+        for (List<ServerSideJob> l : jobsWaitingAssignment.values()) {
+            for (ServerSideJob ssj : l) {
+                ssj.cancelJob();
+            }
         }
         jobsWaitingAssignment.clear();
-        
-        for (ServerSideJob ssj : jobsWaitingAssignment.values()) {
-            ssj.cancelJob();
+
+        for (List<ServerSideJob> l : jobComputing.values()) {
+            for (ServerSideJob ssj : l) {
+                ssj.cancelJob();
+            }
         }
         jobComputing.clear();
-        
+
         lastTimeOnline.clear();
         assignTime.clear();
     }
-    
+
     public Collection<Job> getAllJobs() {
         return allJobsOuter;
     }
-    
+
     @Override
     public void run() {
         log.fine("JobManager has been started.");
@@ -143,7 +150,7 @@ public class JobManager extends Thread implements IService, IListener {
             }
         }
     }
-    
+
     private void assignJobs() {
         ServerSideJob job;
         final Collection<Communicator> clients = clientManager.getClients();
@@ -162,10 +169,10 @@ public class JobManager extends Thread implements IService, IListener {
             // new assignment
             job = jobQueue.poll();
             log.log(Level.CONFIG, "Job with ID {0} assigned to client with ID {1}.", new Object[]{job.getId(), comm.getId()});
-            assignJob(job, comm);            
+            assignJob(job, comm);
         }
     }
-    
+
     private boolean isClientOnline(final Communicator comm) {
         final Status s = comm.getStatus();
         final boolean result = s.equals(Status.ONLINE) || s.equals(Status.REACHABLE) || s.equals(Status.BUSY);
@@ -174,24 +181,24 @@ public class JobManager extends Thread implements IService, IListener {
         }
         return result;
     }
-    
+
     private void storeClientOnlineStatus(final Communicator comm) {
         lastTimeOnline.put(comm, Calendar.getInstance());
     }
-    
+
     private void assignJob(final ServerSideJob job, final Communicator comm) {
         listenerRegistrator.addIdListener(job.getId(), this, true);
-        jobsWaitingAssignment.put(comm, job);        
-        storeClientOnlineStatus(comm);        
+        addJob(comm, job, jobsWaitingAssignment);
+        storeClientOnlineStatus(comm);
         job.setStatus(JobStatus.SENT);
         assignTime.put(job, Calendar.getInstance());
         job.submitJob(comm);
     }
-    
+
     private void checkAssignedJobs() {
         final long time = Calendar.getInstance().getTimeInMillis();
         final Set<ServerSideJob> reassign = new HashSet<>();
-        
+
         long dif;
         for (Entry<ServerSideJob, Calendar> e : assignTime.entrySet()) {
             dif = time - e.getValue().getTimeInMillis();
@@ -199,7 +206,7 @@ public class JobManager extends Thread implements IService, IListener {
                 reassign.add(e.getKey());
             }
         }
-        
+
         Communicator comm;
         for (ServerSideJob ssj : reassign) {
             ssj.cancelJob();
@@ -217,7 +224,7 @@ public class JobManager extends Thread implements IService, IListener {
             }
         }
     }
-    
+
     private void checkClientStatuses() {
         for (Communicator comm : jobsWaitingAssignment.keySet()) {
             if (!isClientOnline(comm)) {
@@ -226,12 +233,14 @@ public class JobManager extends Thread implements IService, IListener {
                 if (lastOnline != null) {
                     final long dif = actualTime.getTimeInMillis() - lastOnline.getTimeInMillis();
                     if (dif > MAX_CLIENT_NA_TIME) {
-                        log.log(Level.CONFIG, "Client with id {0} is not reachable, its task has been cancelled and returned to queue.", comm.getId());                        
-                        final ServerSideJob reassigned = jobsWaitingAssignment.get(comm);                        
-                        reassigned.cancelJob();
-                        jobsWaitingAssignment.remove(comm);                        
-                        if (!jobQueue.contains(reassigned)) {
-                            jobQueue.add(reassigned);
+                        log.log(Level.CONFIG, "Client with id {0} is not reachable, its task has been cancelled and returned to queue.", comm.getId());
+                        final List<ServerSideJob> reassignedList = jobsWaitingAssignment.get(comm);
+                        for (ServerSideJob reassigned : reassignedList) {
+                            reassigned.cancelJob();
+                            jobsWaitingAssignment.remove(comm);
+                            if (!jobQueue.contains(reassigned)) {
+                                jobQueue.add(reassigned);
+                            }
                         }
                     }
                 } else {
@@ -240,77 +249,120 @@ public class JobManager extends Thread implements IService, IListener {
             }
         }
     }
-    
+
     @Override
     public void stopService() {
         run = false;
         stopAllJobs();
-        
+
         synchronized (this) {
             this.notify();
         }
-        
+
         log.fine("JobManager has been stopped.");
     }
-    
+
     @Override
     public void receiveData(final IIdentifiable data) {
         if (data instanceof Message) {
             final Message m = (Message) data;
             final UUID id = m.getId();
-            ServerSideJob ssj = null;
-            
+            ServerSideJob ssj;
+            Entry<Communicator, List<ServerSideJob>> e;
+            List<ServerSideJob> list;
+            Iterator<ServerSideJob> itJob;
+            Iterator<Entry<Communicator, List<ServerSideJob>>> itEntry;
+
             switch (m.getHeader()) {
                 case JobMessageHeaders.JOB_ACCEPT:
-                    for (Entry<Communicator, ServerSideJob> e : jobsWaitingAssignment.entrySet()) {
-                        if (e.getValue().getId().equals(id)) {
-                            ssj = e.getValue();
-                            jobsWaitingAssignment.remove(e.getKey());
-                            jobComputing.put(e.getKey(), ssj);
-                            log.log(Level.FINE, "Job with ID {0} has been accepted.", id);
-                            break;
+                    loop:
+                    {
+                        itEntry = jobsWaitingAssignment.entrySet().iterator();
+                        while (itEntry.hasNext()) {
+                            e = itEntry.next();
+                            list = e.getValue();
+                            itJob = list.iterator();
+                            while (itJob.hasNext()) {
+                                ssj = itJob.next();
+                                if (ssj.getId().equals(id)) {
+                                    itJob.remove();
+                                    if (list.isEmpty()) {
+                                        itEntry.remove();
+                                    }
+                                    addJob(e.getKey(), ssj, jobComputing);
+                                    log.log(Level.FINE, "Job with ID {0} has been accepted.", id);
+                                    break loop;
+                                }
+                            }
                         }
-                    }
-                    if (ssj == null) {
                         log.log(Level.WARNING, "JobAccept received for illegal UUID - {0}", id);
                     }
                     break;
                 case JobMessageHeaders.JOB_CANCEL:
-                    for (Entry<Communicator, ServerSideJob> e : jobComputing.entrySet()) {
-                        if (e.getValue().getId().equals(id)) {
-                            ssj = e.getValue();
-                            jobComputing.remove(e.getKey());
-                            jobQueue.addFirst(ssj);
-                            log.log(Level.CONFIG, "Job with ID {0} has been cancelled.", id);
-                            wakeUp();
-                            break;
+                    loop:
+                    {
+                        itEntry = jobComputing.entrySet().iterator();
+                        while (itEntry.hasNext()) {
+                            e = itEntry.next();
+                            list = e.getValue();
+                            itJob = list.iterator();
+                            while (itJob.hasNext()) {
+                                ssj = itJob.next();
+                                if (ssj.getId().equals(id)) {
+                                    itJob.remove();
+                                    if (list.isEmpty()) {
+                                        itEntry.remove();
+                                    }
+                                    jobQueue.addFirst(ssj);
+                                    log.log(Level.CONFIG, "Job with ID {0} has been cancelled.", id);
+                                    wakeUp();
+                                    break loop;
+                                }
+                            }
                         }
-                    }
-                    if (ssj == null) {
                         log.log(Level.WARNING, "JobCancel received for illegal UUID - {0}", id);
                     }
                     break;
                 case JobMessageHeaders.JOB_RESULT:
-                    for (Entry<Communicator, ServerSideJob> e : jobComputing.entrySet()) {
-                        if (e.getValue().getId().equals(id)) {
-                            ssj = e.getValue();
-                            jobComputing.remove(e.getKey());
-                            log.log(Level.CONFIG, "Job with ID {0} has been computed succefully.", id);
-                            wakeUp();
-                            break;
+                    loop:
+                    {
+                        itEntry = jobComputing.entrySet().iterator();
+                        while (itEntry.hasNext()) {
+                            e = itEntry.next();
+                            list = e.getValue();
+                            itJob = list.iterator();
+                            while (itJob.hasNext()) {
+                                ssj = itJob.next();
+                                if (ssj.getId().equals(id)) {
+                                    itJob.remove();
+                                    if (list.isEmpty()) {
+                                        itEntry.remove();
+                                    }
+                                    log.log(Level.CONFIG, "Job with ID {0} has been computed succefully.", id);
+                                    wakeUp();
+                                    break loop;
+                                }
+                            }
                         }
-                    }
-                    if (ssj == null) {
                         log.log(Level.WARNING, "JobResult received for illegal UUID - {0}", id);
                     }
                     break;
             }
         }
     }
-    
+
     private void wakeUp() {
         synchronized (this) {
             this.notify();
         }
+    }
+
+    private static void addJob(final Communicator comm, final ServerSideJob job, final Map<Communicator, List<ServerSideJob>> dataMap) {
+        List<ServerSideJob> l = dataMap.get(comm);
+        if (l == null) {
+            l = new ArrayList<>(1);
+            dataMap.put(comm, l);
+        }
+        l.add(job);
     }
 }
