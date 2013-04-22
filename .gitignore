@@ -9,3 +9,5 @@
 /systemLog.xml
 !/src/cz/tul/comm/tester/virtual/
 /src/cz/tul/comm/tester/Misc.java
+# system logs
+systemLog.xml*
