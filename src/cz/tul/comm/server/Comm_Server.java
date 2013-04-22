@@ -81,8 +81,10 @@ public final class Comm_Server implements IService, Server {
         } else {
             clientStatusDaemon = null;
         }
+        
+        jobManager = new JobManager(clients, serverSocket);
 
-        getListenerRegistrator().addMessageObserver(new SystemMessagesHandler(clients));
+        getListenerRegistrator().addMessageObserver(new SystemMessagesHandler(clients, jobManager));
 
         if (ComponentSwitches.useClientDiscovery) {
             try {
@@ -90,9 +92,7 @@ public final class Comm_Server implements IService, Server {
             } catch (SocketException ex) {
                 log.log(Level.WARNING, "Failed to create ClientDiscoveryDaemon", ex);
             }
-        }
-
-        jobManager = new JobManager(clients, serverSocket);
+        }        
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override

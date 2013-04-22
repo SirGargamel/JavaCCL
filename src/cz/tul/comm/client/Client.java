@@ -2,8 +2,8 @@ package cz.tul.comm.client;
 
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
-import cz.tul.comm.communicator.Status;
 import cz.tul.comm.history.IHistoryManager;
+import cz.tul.comm.messaging.job.Assignment;
 import cz.tul.comm.messaging.job.IAssignmentListener;
 import cz.tul.comm.socket.IListenerRegistrator;
 import java.net.InetAddress;
@@ -52,5 +52,7 @@ public interface Client extends IService {
      * @param data data for sending
      * @return true for successfull data sending
      */
-    boolean sendData(final Object data);
+    boolean sendDataToServer(final Object data);
+    
+    void requestAssignment();
 }

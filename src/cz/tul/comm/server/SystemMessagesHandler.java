@@ -4,6 +4,7 @@ import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
+import cz.tul.comm.messaging.job.JobRequestManager;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.UUID;
@@ -16,17 +17,28 @@ import java.util.logging.Logger;
  * @author Petr Ječmen
  */
 public class SystemMessagesHandler implements Observer {
-
+    
     private static final Logger log = Logger.getLogger(SystemMessagesHandler.class.getName());
     private final IClientManager clientManager;
+    private final JobRequestManager jobRequestManager;
 
     /**
      * @param clientManager client manager
      */
-    public SystemMessagesHandler(IClientManager clientManager) {
-        this.clientManager = clientManager;
+    public SystemMessagesHandler(IClientManager clientManager, JobRequestManager jobRequestManager) {
+        if (clientManager != null) {
+            this.clientManager = clientManager;
+        } else {
+            throw new NullPointerException("NULL client manager not allowed.");
+        }
+        if (jobRequestManager != null) {
+            this.jobRequestManager = jobRequestManager;
+        } else {
+            throw new NullPointerException("NULL job request manager not allowed.");
+        }
+        
     }
-
+    
     @Override
     public void update(Observable o, Object arg) {
         if (arg instanceof DataPacket) {
@@ -61,6 +73,17 @@ public class SystemMessagesHandler implements Observer {
                         } else {
                             log.log(Level.WARNING, "Invalid client id received - {0}", id.toString());
                         }
+                        break;
+                    case MessageHeaders.JOB_REQUEST:
+                        // TODO
+                        final UUID clientId = ipData.getClientID();
+                        final Communicator comm = clientManager.getClient(clientId);
+                        if (comm != null) {
+                            jobRequestManager.requestJob(comm);
+                        } else {
+                            log.warning("Client without id requested a job.");
+                        }
+                        
                         break;
                     default:
                         // nonsystem message, no action

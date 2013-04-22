@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class JobManager extends Thread implements IService, IListener {
+public class JobManager extends Thread implements IService, IListener, JobRequestManager {
 
     private static final Logger log = Logger.getLogger(JobManager.class.getName());
     private static final int WAIT_TIME = 1_000;
@@ -93,6 +93,15 @@ public class JobManager extends Thread implements IService, IListener {
         wakeUp();
 
         return result;
+    }
+
+    @Override
+    public void requestJob(final Communicator comm) {
+        if (isClientOnline(comm)) {
+            final ServerSideJob ssj = jobQueue.poll();
+            log.log(Level.CONFIG, "Job with ID {0} assigned to client with ID {1} after request.", new Object[]{ssj.getId(), comm.getId()});
+            assignJob(ssj, comm);
+        }
     }
 
     public void waitForAllJobs() {

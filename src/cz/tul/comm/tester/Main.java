@@ -191,7 +191,7 @@ public class Main {
                     final Message m = (Message) data;
                     if (m.getHeader().equals("fromServer")) {
                         System.out.println("Data received - " + data.toString());
-                        c.sendData(mIn);
+                        c.sendDataToServer(mIn);
                     }
                 }
             }

@@ -78,7 +78,7 @@ public class Comm_Client implements IService, IServerInterface, Client, IDFilter
     private ServerDiscoveryDaemon sdd;
 
     private Comm_Client(final int port) throws IOException {
-        history = new History();                
+        history = new History();
 
         if (ComponentSwitches.useClientDiscovery) {
             try {
@@ -94,10 +94,10 @@ public class Comm_Client implements IService, IServerInterface, Client, IDFilter
                 stopService();
             }
         }));
-        
+
         serverSocket = ServerSocket.createServerSocket(port, this);
         serverSocket.registerHistory(history);
-        
+
         status = Status.ONLINE;
         csm = new ClientSystemMessaging(this);
         serverSocket.addMessageObserver(csm);
@@ -135,7 +135,7 @@ public class Comm_Client implements IService, IServerInterface, Client, IDFilter
     @Override
     public void deregisterFromServer() {
         final Message m = new Message(MessageHeaders.LOGOUT, comm.getId());
-        sendData(m);
+        sendDataToServer(m);
         comm = null;
     }
 
@@ -158,7 +158,7 @@ public class Comm_Client implements IService, IServerInterface, Client, IDFilter
      * @return true for successfull data sending
      */
     @Override
-    public boolean sendData(final Object data) {
+    public boolean sendDataToServer(final Object data) {
         log.log(Level.INFO, "Sending data to server - {0}", data.toString());
         if (comm == null) {
             throw new NullPointerException("No server communicator set");
@@ -218,7 +218,7 @@ public class Comm_Client implements IService, IServerInterface, Client, IDFilter
         return comm;
     }
 
-    private void start() {        
+    private void start() {
         if (ComponentSwitches.useSettings) {
             if (!ClientSettings.deserialize(this)) {
                 log.warning("Error loading client settings.");
@@ -254,6 +254,11 @@ public class Comm_Client implements IService, IServerInterface, Client, IDFilter
             return true;
         } else {
             return comm.getId().equals(id);
-        }                
+        }
+    }
+
+    @Override
+    public void requestAssignment() {
+        final Message m = new Message(MessageHeaders.JOB_REQUEST, null);
     }
 }
