@@ -4,7 +4,6 @@ import cz.tul.comm.ComponentSwitches;
 import cz.tul.comm.Constants;
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
-import cz.tul.comm.communicator.Status;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.history.sorting.DefaultSorter;
@@ -72,8 +71,7 @@ public class Comm_Client implements IService, ServerInterface, Client, IDFilter 
     private final ServerSocket serverSocket;
     private final HistoryManager history;
     private AssignmentListener assignmentListener;
-    private Communicator comm;
-    private Status status;
+    private Communicator comm;    
     private final ClientSystemMessaging csm;
     private ServerDiscoveryDaemon sdd;
 
@@ -97,8 +95,7 @@ public class Comm_Client implements IService, ServerInterface, Client, IDFilter 
 
         serverSocket = ServerSocket.createServerSocket(port, this);
         serverSocket.registerHistory(history);
-
-        status = Status.ONLINE;
+        
         csm = new ClientSystemMessaging(this);
         serverSocket.addMessageObserver(csm);
     }
