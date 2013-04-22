@@ -1,6 +1,6 @@
 package cz.tul.comm.messaging;
 
-import cz.tul.comm.socket.queue.IIdentifiable;
+import cz.tul.comm.socket.queue.Identifiable;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
@@ -10,7 +10,7 @@ import java.util.UUID;
  *
  * @author Petr Ječmen
  */
-public class Message implements Serializable, IIdentifiable {
+public class Message implements Serializable, Identifiable {
 
     private static final long serialVersionUID = 1L;
     private final UUID id;

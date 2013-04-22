@@ -3,7 +3,7 @@ package cz.tul.comm.tester.virtual;
 import cz.tul.comm.client.Client;
 import cz.tul.comm.client.Comm_Client;
 import cz.tul.comm.messaging.job.Assignment;
-import cz.tul.comm.messaging.job.IAssignmentListener;
+import cz.tul.comm.messaging.job.AssignmentListener;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class DummyClient implements IAssignmentListener, IDummy {
+public class DummyClient implements AssignmentListener, IDummy {
 
     private static final Logger log = Logger.getLogger(DummyClient.class.getName());
     private final Client c;

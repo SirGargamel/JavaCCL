@@ -19,7 +19,7 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(ServerDiscoveryDaemon.class.getName());
     private final DatagramSocket s;
-    private final IServerInterface sr;
+    private final ServerInterface sr;
     private boolean run;
 
     /**
@@ -27,7 +27,7 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
      * @param sr interface for settings new server settings
      * @throws SocketException thrown when client could not be created
      */
-    public ServerDiscoveryDaemon(final IServerInterface sr) throws SocketException {
+    public ServerDiscoveryDaemon(final ServerInterface sr) throws SocketException {
         this.sr = sr;
         s = new DatagramSocket(Constants.DEFAULT_PORT);
         s.setBroadcast(true);

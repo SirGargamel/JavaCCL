@@ -4,11 +4,11 @@ import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.Status;
 import cz.tul.comm.messaging.Message;
-import cz.tul.comm.server.IClientManager;
-import cz.tul.comm.server.IDataStorage;
-import cz.tul.comm.socket.IListenerRegistrator;
-import cz.tul.comm.socket.queue.IIdentifiable;
-import cz.tul.comm.socket.queue.IListener;
+import cz.tul.comm.server.ClientManager;
+import cz.tul.comm.server.DataStorage;
+import cz.tul.comm.socket.ListenerRegistrator;
+import cz.tul.comm.socket.queue.Identifiable;
+import cz.tul.comm.socket.queue.Listener;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -31,15 +31,15 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class JobManagerImpl extends Thread implements IService, IListener, JobRequestManager, JobManager {
+public class JobManagerImpl extends Thread implements IService, Listener, JobRequestManager, JobManager {
 
     private static final Logger log = Logger.getLogger(JobManagerImpl.class.getName());
     private static final int WAIT_TIME = 1_000;
     private static final int MAX_CLIENT_NA_TIME = 5_000;
     private static final int MAX_JOB_ASSIGN_TIME = 5_000;
-    private final IClientManager clientManager;
-    private IDataStorage dataStorage;
-    private final IListenerRegistrator listenerRegistrator;
+    private final ClientManager clientManager;
+    private DataStorage dataStorage;
+    private final ListenerRegistrator listenerRegistrator;
     private final Deque<ServerSideJob> jobQueue;
     private final Map<Communicator, List<ServerSideJob>> jobsWaitingAssignment;
     private final Map<Communicator, List<ServerSideJob>> jobComputing;
@@ -55,7 +55,7 @@ public class JobManagerImpl extends Thread implements IService, IListener, JobRe
      * @param clientManager client manager
      * @param listenerRegistrator listener registrator
      */
-    public JobManagerImpl(final IClientManager clientManager, final IListenerRegistrator listenerRegistrator) {
+    public JobManagerImpl(final ClientManager clientManager, final ListenerRegistrator listenerRegistrator) {
         this.clientManager = clientManager;
         this.listenerRegistrator = listenerRegistrator;
         jobsWaitingAssignment = new ConcurrentHashMap<>();
@@ -74,7 +74,7 @@ public class JobManagerImpl extends Thread implements IService, IListener, JobRe
      *
      * @param dataStorage class handling data requests
      */
-    public void setDataStorage(IDataStorage dataStorage) {
+    public void setDataStorage(DataStorage dataStorage) {
         this.dataStorage = dataStorage;
     }
 
@@ -276,7 +276,7 @@ public class JobManagerImpl extends Thread implements IService, IListener, JobRe
     }
 
     @Override
-    public void receiveData(final IIdentifiable data) {
+    public void receiveData(final Identifiable data) {
         if (data instanceof Message) {
             final Message m = (Message) data;
             final UUID id = m.getId();

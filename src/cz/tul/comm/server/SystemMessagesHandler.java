@@ -19,13 +19,13 @@ import java.util.logging.Logger;
 public class SystemMessagesHandler implements Observer {
     
     private static final Logger log = Logger.getLogger(SystemMessagesHandler.class.getName());
-    private final IClientManager clientManager;
+    private final ClientManager clientManager;
     private final JobRequestManager jobRequestManager;
 
     /**
      * @param clientManager client manager
      */
-    public SystemMessagesHandler(IClientManager clientManager, JobRequestManager jobRequestManager) {
+    public SystemMessagesHandler(ClientManager clientManager, JobRequestManager jobRequestManager) {
         if (clientManager != null) {
             this.clientManager = clientManager;
         } else {

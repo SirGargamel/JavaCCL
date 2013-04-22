@@ -5,7 +5,7 @@ package cz.tul.comm.socket.queue;
  *
  * @author Gargamel
  */
-public interface IIdentifiable {
+public interface Identifiable {
 
     /**
      * @return ID characterizing data or communication

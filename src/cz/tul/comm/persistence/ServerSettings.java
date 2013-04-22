@@ -1,7 +1,7 @@
 package cz.tul.comm.persistence;
 
 import cz.tul.comm.communicator.Communicator;
-import cz.tul.comm.server.IClientManager;
+import cz.tul.comm.server.ClientManager;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -31,7 +31,7 @@ public class ServerSettings implements Serializable {
      * @param clientManager interface for managing clients
      * @return true for successfull load
      */
-    public static boolean deserialize(final IClientManager clientManager) {
+    public static boolean deserialize(final ClientManager clientManager) {
         log.log(Level.CONFIG, "Deserializing server settings.");
         boolean result = true;
 
@@ -75,7 +75,7 @@ public class ServerSettings implements Serializable {
      * @param clientManager interface for managing clients
      * @return true for successfull save
      */
-    public static boolean serialize(final IClientManager clientManager) {
+    public static boolean serialize(final ClientManager clientManager) {
         log.log(Level.CONFIG, "Serializing server settings.");
         final SimpleXMLFile xml = new SimpleXMLFile();
 

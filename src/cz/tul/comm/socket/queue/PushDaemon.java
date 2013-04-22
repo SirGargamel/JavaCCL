@@ -18,23 +18,23 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-class PushDaemon<O extends IIdentifiable> extends Thread implements IService {
+class PushDaemon<O extends Identifiable> extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(PushDaemon.class.getName());
     private static final int TIME_WAIT = 1_000;
-    private final Collection<Map<IListener, Queue<O>>> data;
-    private final Map<IListener, List<Object>> receivers;
+    private final Collection<Map<Listener, Queue<O>>> data;
+    private final Map<Listener, List<Object>> receivers;
     private final ExecutorService exec;
     private boolean run;
 
-    PushDaemon(final Collection<Map<IListener, Queue<O>>> data) {
+    PushDaemon(final Collection<Map<Listener, Queue<O>>> data) {
         this.data = data;
         receivers = new HashMap<>();
         exec = Executors.newCachedThreadPool();
         run = true;
     }
 
-    void addPushReceiver(final IListener receiver, final Object id) {
+    void addPushReceiver(final Listener receiver, final Object id) {
         List<Object> l = receivers.get(receiver);
         if (l == null) {
             l = new ArrayList<>();
@@ -45,7 +45,7 @@ class PushDaemon<O extends IIdentifiable> extends Thread implements IService {
         log.log(Level.FINE, "New push receiver for id {0} registered.", id.toString());
     }
 
-    void removePushReceiver(final IListener receiver, final Object id) {
+    void removePushReceiver(final Listener receiver, final Object id) {
         if (id == null) {
             receivers.remove(receiver);
             log.log(Level.FINE, "Push receiver {1} deregistered.", receiver.toString());
@@ -62,10 +62,10 @@ class PushDaemon<O extends IIdentifiable> extends Thread implements IService {
     public void run() {
         Queue<O> q;
         Queue<O> tmp = new LinkedList<>();
-        IIdentifiable object;
+        Identifiable object;
         while (run) {
-            for (Map<IListener, Queue<O>> m : data) {
-                for (IListener l : m.keySet()) {
+            for (Map<Listener, Queue<O>> m : data) {
+                for (Listener l : m.keySet()) {
                     if (receivers.containsKey(l)) {
                         tmp.clear();
                         q = m.get(l);
@@ -107,10 +107,10 @@ class PushDaemon<O extends IIdentifiable> extends Thread implements IService {
 
     private static class Notifier implements Runnable {
 
-        private final IListener listener;
-        private final IIdentifiable data;
+        private final Listener listener;
+        private final Identifiable data;
 
-        Notifier(IListener listener, IIdentifiable data) {
+        Notifier(Listener listener, Identifiable data) {
             this.listener = listener;
             this.data = data;
         }

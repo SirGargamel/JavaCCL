@@ -1,10 +1,10 @@
 package cz.tul.comm.socket;
 
 import cz.tul.comm.communicator.DataPacket;
-import cz.tul.comm.history.IHistoryManager;
+import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
-import cz.tul.comm.socket.queue.IIdentifiable;
+import cz.tul.comm.socket.queue.Identifiable;
 import cz.tul.comm.socket.queue.ObjectQueue;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -27,8 +27,8 @@ class SocketReader extends Observable implements Runnable {
     private final Socket socket;
     private final IDFilter idFilter;
     private final ObjectQueue<DataPacket> dataStorageClient;
-    private final ObjectQueue<IIdentifiable> dataStorageId;
-    private IHistoryManager hm;
+    private final ObjectQueue<Identifiable> dataStorageId;
+    private HistoryManager hm;
 
     /**
      * Create reader, which can read data from socket, tell sender outcome of
@@ -42,7 +42,7 @@ class SocketReader extends Observable implements Runnable {
             final Socket socket,
             final IDFilter idFilter,
             final ObjectQueue<DataPacket> dataStorageIP,
-            final ObjectQueue<IIdentifiable> dataStorageId) {
+            final ObjectQueue<Identifiable> dataStorageId) {
         if (socket != null) {
             this.socket = socket;
         } else {
@@ -66,7 +66,7 @@ class SocketReader extends Observable implements Runnable {
      *
      * @param hm instance of history manager
      */
-    public void registerHistory(final IHistoryManager hm) {
+    public void registerHistory(final HistoryManager hm) {
         this.hm = hm;
         log.fine("History registered.");
     }
@@ -120,8 +120,8 @@ class SocketReader extends Observable implements Runnable {
             setChanged();
             this.notifyObservers(dp);
 
-            if (data instanceof IIdentifiable) {
-                dataStorageId.storeData((IIdentifiable) data);
+            if (data instanceof Identifiable) {
+                dataStorageId.storeData((Identifiable) data);
             }
             dataStorageClient.storeData(dp);
         } else if (o instanceof Message) {

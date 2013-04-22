@@ -1,6 +1,6 @@
 package cz.tul.comm.communicator;
 
-import cz.tul.comm.history.IHistoryManager;
+import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
 import java.io.IOException;
@@ -56,7 +56,7 @@ public class Communicator extends Observable {
     private UUID id;
     private Calendar lastStatusUpdateTime;
     private Status status;
-    private IHistoryManager hm;
+    private HistoryManager hm;
 
     /**
      * New instance of communicator for sending data to given IP and port
@@ -86,7 +86,7 @@ public class Communicator extends Observable {
      *
      * @param hm instance of history manager
      */
-    public void registerHistory(final IHistoryManager hm) {
+    public void registerHistory(final HistoryManager hm) {
         this.hm = hm;
         log.fine("History registered.");
     }

@@ -2,9 +2,9 @@ package cz.tul.comm.socket;
 
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.DataPacket;
-import cz.tul.comm.history.IHistoryManager;
-import cz.tul.comm.socket.queue.IIdentifiable;
-import cz.tul.comm.socket.queue.IListener;
+import cz.tul.comm.history.HistoryManager;
+import cz.tul.comm.socket.queue.Identifiable;
+import cz.tul.comm.socket.queue.Listener;
 import cz.tul.comm.socket.queue.ObjectQueue;
 import java.io.IOException;
 import java.net.Socket;
@@ -26,7 +26,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class ServerSocket extends Thread implements IService, IListenerRegistrator {
+public class ServerSocket extends Thread implements IService, ListenerRegistrator {
 
     private static final Logger log = Logger.getLogger(ServerSocket.class.getName());
 
@@ -47,9 +47,9 @@ public class ServerSocket extends Thread implements IService, IListenerRegistrat
     private final IDFilter idFilter;
     private final ExecutorService exec;
     private final ObjectQueue<DataPacket> dataStorageClient;
-    private final ObjectQueue<IIdentifiable> dataStorageId;
+    private final ObjectQueue<Identifiable> dataStorageId;
     private final Set<Observer> dataListeners;    
-    private IHistoryManager hm;
+    private HistoryManager hm;
     private boolean run;
 
     private ServerSocket(final int port, final IDFilter idFilter) throws IOException {
@@ -63,13 +63,13 @@ public class ServerSocket extends Thread implements IService, IListenerRegistrat
     }
 
     @Override
-    public Queue<DataPacket> addClientListener(final UUID clientId, final IListener dataListener, final boolean wantsPushNotifications) {
+    public Queue<DataPacket> addClientListener(final UUID clientId, final Listener dataListener, final boolean wantsPushNotifications) {
         log.log(Level.FINE, "Added new listener {0} for ID {1}", new Object[]{dataListener.toString(), clientId});
         return dataStorageClient.registerListener(clientId, dataListener, wantsPushNotifications);
     }
 
     @Override
-    public void removeClientListener(final UUID clientId, final IListener dataListener) {
+    public void removeClientListener(final UUID clientId, final Listener dataListener) {
         if (clientId != null) {
             dataStorageClient.deregisterListener(clientId, dataListener);
             log.log(Level.FINE, "Removed listener {0} for ID {1}", new Object[]{dataListener.toString(), clientId});
@@ -80,13 +80,13 @@ public class ServerSocket extends Thread implements IService, IListenerRegistrat
     }
 
     @Override
-    public Queue<IIdentifiable> addIdListener(final Object id, final IListener idListener, final boolean wantsPushNotifications) {
+    public Queue<Identifiable> addIdListener(final Object id, final Listener idListener, final boolean wantsPushNotifications) {
         log.log(Level.FINE, "Added new listener {0} for ID {1}", new Object[]{idListener.toString(), id.toString()});
         return dataStorageId.registerListener(id, idListener, wantsPushNotifications);
     }
 
     @Override
-    public void removeIdListener(Object id, IListener idListener) {
+    public void removeIdListener(Object id, Listener idListener) {
         if (id != null) {
             log.log(Level.FINE, "Removed listener {0} for ID {1}", new Object[]{idListener.toString(), id.toString()});
             dataStorageId.deregisterListener(id, idListener);
@@ -142,7 +142,7 @@ public class ServerSocket extends Thread implements IService, IListenerRegistrat
      *
      * @param hm instance of history manager
      */
-    public void registerHistory(final IHistoryManager hm) {
+    public void registerHistory(final HistoryManager hm) {
         this.hm = hm;
         log.fine("History registered.");
     }

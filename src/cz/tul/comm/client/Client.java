@@ -2,10 +2,10 @@ package cz.tul.comm.client;
 
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
-import cz.tul.comm.history.IHistoryManager;
+import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.job.Assignment;
-import cz.tul.comm.messaging.job.IAssignmentListener;
-import cz.tul.comm.socket.IListenerRegistrator;
+import cz.tul.comm.messaging.job.AssignmentListener;
+import cz.tul.comm.socket.ListenerRegistrator;
 import java.net.InetAddress;
 
 /**
@@ -19,7 +19,7 @@ public interface Client extends IService {
      *
      * @param assignmentListener class hnadling assignment computation
      */
-    void assignAssignmentListener(IAssignmentListener assignmentListener);
+    void assignAssignmentListener(AssignmentListener assignmentListener);
 
     void deregisterFromServer();
 
@@ -33,12 +33,12 @@ public interface Client extends IService {
     /**
      * @return history manager for this client
      */
-    IHistoryManager getHistory();
+    HistoryManager getHistory();
 
     /**
      * @return interface for listener registration
      */
-    IListenerRegistrator getListenerRegistrator();
+    ListenerRegistrator getListenerRegistrator();
 
     Communicator getServerComm();
 

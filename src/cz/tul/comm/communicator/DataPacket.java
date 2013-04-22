@@ -1,7 +1,7 @@
 package cz.tul.comm.communicator;
 
 import cz.tul.comm.socket.ServerSocket;
-import cz.tul.comm.socket.queue.IIdentifiable;
+import cz.tul.comm.socket.queue.Identifiable;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.UUID;
@@ -12,7 +12,7 @@ import java.util.UUID;
  *
  * @author Petr Ječmen
  */
-public class DataPacket implements Serializable, IIdentifiable {
+public class DataPacket implements Serializable, Identifiable {
 
     private final UUID clientID;
     private final Object data;

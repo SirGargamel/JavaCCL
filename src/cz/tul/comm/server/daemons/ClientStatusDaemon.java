@@ -2,7 +2,7 @@ package cz.tul.comm.server.daemons;
 
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
-import cz.tul.comm.server.IClientManager;
+import cz.tul.comm.server.ClientManager;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,7 +17,7 @@ public class ClientStatusDaemon extends Thread implements IService {
     private static final Logger log = Logger.getLogger(ClientStatusDaemon.class.getName());
     private static final int DELAY = 5_000;  
     private boolean run;
-    private final IClientManager clientManager;
+    private final ClientManager clientManager;
 
     /**
      *
@@ -25,7 +25,7 @@ public class ClientStatusDaemon extends Thread implements IService {
      * @param listenerRegistrator listener registrator for easy response
      * obtaining
      */
-    public ClientStatusDaemon(final IClientManager clientManager) {
+    public ClientStatusDaemon(final ClientManager clientManager) {
         if (clientManager == null) {
             throw new IllegalArgumentException("NULL arguments not allowed");
         }

@@ -5,26 +5,26 @@ import cz.tul.comm.Constants;
 import cz.tul.comm.Utils;
 import cz.tul.comm.client.Client;
 import cz.tul.comm.client.Comm_Client;
-import cz.tul.comm.client.IServerInterface;
+import cz.tul.comm.client.ServerInterface;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.history.History;
-import cz.tul.comm.history.IHistoryManager;
+import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.history.sorting.IPSorter;
 import cz.tul.comm.history.sorting.InOutSorter;
 import cz.tul.comm.history.sorting.TimeSorter;
 import cz.tul.comm.messaging.BasicConversator;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.job.Assignment;
-import cz.tul.comm.messaging.job.IAssignmentListener;
+import cz.tul.comm.messaging.job.AssignmentListener;
 import cz.tul.comm.messaging.job.Job;
 import cz.tul.comm.persistence.ClientSettings;
 import cz.tul.comm.persistence.ServerSettings;
 import cz.tul.comm.server.Comm_Server;
-import cz.tul.comm.server.IClientManager;
-import cz.tul.comm.server.IDataStorage;
+import cz.tul.comm.server.ClientManager;
+import cz.tul.comm.server.DataStorage;
 import cz.tul.comm.server.Server;
-import cz.tul.comm.socket.queue.IIdentifiable;
-import cz.tul.comm.socket.queue.IListener;
+import cz.tul.comm.socket.queue.Identifiable;
+import cz.tul.comm.socket.queue.Listener;
 import cz.tul.comm.tester.virtual.Action;
 import cz.tul.comm.tester.virtual.DummyClient;
 import cz.tul.comm.tester.virtual.DummyServer;
@@ -103,7 +103,7 @@ public class Main {
     }
 
     static void historyTest() throws UnknownHostException, InterruptedException {
-        IHistoryManager hm = new History();
+        HistoryManager hm = new History();
 
         Message m1 = new Message("h1", "d1");
         Message m2 = new Message("h2", "d2");
@@ -184,9 +184,9 @@ public class Main {
         final Message mIn = new Message(id, "fromClient", null);
 
         c.registerToServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
-        c.getListenerRegistrator().addIdListener(id, new IListener() {
+        c.getListenerRegistrator().addIdListener(id, new Listener() {
             @Override
-            public void receiveData(IIdentifiable data) {
+            public void receiveData(Identifiable data) {
                 if (data instanceof Message) {
                     final Message m = (Message) data;
                     if (m.getHeader().equals("fromServer")) {
@@ -208,7 +208,7 @@ public class Main {
         final Object task = "jobAssignment";
         final Object result = "jobResult";
 
-        IDataStorage ds = new IDataStorage() {
+        DataStorage ds = new DataStorage() {
             @Override
             public Object requestData(Object dataId) {
                 return dataId;
@@ -217,7 +217,7 @@ public class Main {
         s.assignDataStorage(ds);
         System.out.println("Data storage created and assigned to server.");
 
-        c.assignAssignmentListener(new IAssignmentListener() {
+        c.assignAssignmentListener(new AssignmentListener() {
             @Override
             public void receiveTask(Assignment task) {
                 System.out.println("Received task - " + task.getTask().toString());
@@ -258,7 +258,7 @@ public class Main {
     }
 
     static void settingsTest() {
-        IClientManager cl = new IClientManager() {
+        ClientManager cl = new ClientManager() {
             @Override
             public Communicator registerClient(InetAddress adress, int port) {
                 System.out.println("Registering client " + adress + ":" + port);
@@ -293,7 +293,7 @@ public class Main {
         ServerSettings.serialize(cl);
         ServerSettings.deserialize(cl);
 
-        IServerInterface si = new IServerInterface() {
+        ServerInterface si = new ServerInterface() {
             @Override
             public boolean registerToServer(InetAddress address, int port) {
                 System.out.println("Registering server " + address + ":" + port);

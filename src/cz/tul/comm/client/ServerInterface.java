@@ -9,7 +9,7 @@ import java.net.InetAddress;
  *
  * @author Petr Ječmen
  */
-public interface IServerInterface {
+public interface ServerInterface {
 
     /**
      * @param address server IP

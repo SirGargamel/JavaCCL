@@ -1,7 +1,7 @@
 package cz.tul.comm.server;
 
 import cz.tul.comm.communicator.Communicator;
-import cz.tul.comm.history.IHistoryManager;
+import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.socket.IDFilter;
 import java.net.InetAddress;
 import java.util.Collection;
@@ -21,12 +21,12 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-class ClientDB implements IClientManager, Observer, IDFilter {
+class ClientDB implements ClientManager, Observer, IDFilter {
 
     private static final Logger log = Logger.getLogger(Communicator.class.getName());
     private final Set<Communicator> clients;
     private Collection<UUID> allowedIDs;
-    private IHistoryManager hm;
+    private HistoryManager hm;
 
     ClientDB() {
         clients = Collections.synchronizedSet(new HashSet<Communicator>());
@@ -106,7 +106,7 @@ class ClientDB implements IClientManager, Observer, IDFilter {
      *
      * @param hm instance of history manager
      */
-    public void registerHistory(final IHistoryManager hm) {
+    public void registerHistory(final HistoryManager hm) {
         this.hm = hm;
         log.fine("History registered.");
     }

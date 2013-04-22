@@ -2,10 +2,10 @@ package cz.tul.comm.server;
 
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
-import cz.tul.comm.history.IHistoryManager;
+import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.job.Job;
 import cz.tul.comm.messaging.job.JobManager;
-import cz.tul.comm.socket.IListenerRegistrator;
+import cz.tul.comm.socket.ListenerRegistrator;
 import java.net.InetAddress;
 import java.util.UUID;
 
@@ -18,7 +18,7 @@ public interface Server extends IService {
     /**
      * @param dataStorage class hnadling data requests
      */
-    void assignDataStorage(final IDataStorage dataStorage);
+    void assignDataStorage(final DataStorage dataStorage);
 
     /**
      * Export history as is to XML file.
@@ -40,19 +40,19 @@ public interface Server extends IService {
      *
      * @return
      */
-    IClientManager getClientManager();
+    ClientManager getClientManager();
 
     /**
      * @return history manager for this client
      */
-    IHistoryManager getHistory();
+    HistoryManager getHistory();
 
     /**
      * Interface for registering new data listeners.
      *
      * @return
      */
-    IListenerRegistrator getListenerRegistrator();
+    ListenerRegistrator getListenerRegistrator();
     
     JobManager getJobManager();
 

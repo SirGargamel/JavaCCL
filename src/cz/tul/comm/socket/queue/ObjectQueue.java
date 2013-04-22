@@ -14,13 +14,13 @@ import java.util.logging.Logger;
  * Queue for listeners to receive data from socket.
  *
  * @param <O> Data type of stored data, data must be identifiable via {!link
- * IIdentifiable} interface.
+ * Identifiable} interface.
  * @author Petr Ječmen
  */
-public class ObjectQueue<O extends IIdentifiable> implements IService {
+public class ObjectQueue<O extends Identifiable> implements IService {
 
     private static final Logger log = Logger.getLogger(ObjectQueue.class.getName());
-    private final Map<Object, Map<IListener, Queue<O>>> data;
+    private final Map<Object, Map<Listener, Queue<O>>> data;
     private final PushDaemon<O> pushDaemon;
 
     /**
@@ -36,10 +36,10 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
      * @param owner queue owner
      * @return data queue for given owner with data with given id
      */
-    public Queue<O> getDataQueue(final Object id, final IListener owner) {
+    public Queue<O> getDataQueue(final Object id, final Listener owner) {
         Queue<O> result = null;
 
-        Map<IListener, Queue<O>> m = data.get(id);
+        Map<Listener, Queue<O>> m = data.get(id);
         if (m != null) {
             result = m.get(owner);
         }
@@ -54,11 +54,11 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
      * arrival
      * @return data queue, which will be used for storing data with given ID
      */
-    public Queue<O> registerListener(final Object id, final IListener owner, final boolean wantsPush) {
+    public Queue<O> registerListener(final Object id, final Listener owner, final boolean wantsPush) {
         Queue<O> result = new ConcurrentLinkedQueue<>();
 
         if (id != null) {
-            Map<IListener, Queue<O>> m = data.get(id);
+            Map<Listener, Queue<O>> m = data.get(id);
             if (m == null) {
                 m = new ConcurrentHashMap<>();
                 data.put(id, m);
@@ -82,8 +82,8 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
      * @param id data ID
      * @param owner listener
      */
-    public void deregisterListener(final Object id, final IListener owner) {
-        Map<IListener, Queue<O>> m = data.get(id);
+    public void deregisterListener(final Object id, final Listener owner) {
+        Map<Listener, Queue<O>> m = data.get(id);
         if (m != null) {
             m.remove(owner);
         }
@@ -96,8 +96,8 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
      *
      * @param owner listener
      */
-    public void deregisterListener(final IListener owner) {
-        for (Map<IListener, Queue<O>> m : data.values()) {
+    public void deregisterListener(final Listener owner) {
+        for (Map<Listener, Queue<O>> m : data.values()) {
             m.remove(owner);
         }
         pushDaemon.removePushReceiver(owner, null);
@@ -111,7 +111,7 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
      */
     public void storeData(final O data) {
         if (data != null && data.getId() != null) {
-            final Map<IListener, Queue<O>> m = this.data.get(data.getId());
+            final Map<Listener, Queue<O>> m = this.data.get(data.getId());
             if (m != null) {
                 for (Queue<O> q : m.values()) {
                     q.add(data);
@@ -130,7 +130,7 @@ public class ObjectQueue<O extends IIdentifiable> implements IService {
         }
     }
 
-    private Collection<Map<IListener, Queue<O>>> getDataQueues() {
+    private Collection<Map<Listener, Queue<O>>> getDataQueues() {
         return Collections.unmodifiableCollection(data.values());
     }
 

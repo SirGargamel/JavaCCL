@@ -1,6 +1,6 @@
 package cz.tul.comm.history;
 
-import cz.tul.comm.history.export.IExportUnit;
+import cz.tul.comm.history.export.ExportUnit;
 import cz.tul.comm.history.sorting.HistorySorter;
 import java.io.File;
 import java.net.InetAddress;
@@ -10,7 +10,7 @@ import java.net.InetAddress;
  *
  * @author Petr Ječmen
  */
-public interface IHistoryManager {
+public interface HistoryManager {
 
     /**
      * Export sorted history to XML file.
@@ -40,9 +40,9 @@ public interface IHistoryManager {
     void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted);
 
     /**
-     * Register new {@link IExportUnit}.
+     * Register new {@link ExportUnit}.
      *
      * @param eu new export unit
      */
-    void registerExporter(final IExportUnit eu);
+    void registerExporter(final ExportUnit eu);
 }

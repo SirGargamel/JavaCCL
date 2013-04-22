@@ -3,10 +3,10 @@ package cz.tul.comm.messaging.job;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
-import cz.tul.comm.server.IDataStorage;
-import cz.tul.comm.socket.IListenerRegistrator;
-import cz.tul.comm.socket.queue.IIdentifiable;
-import cz.tul.comm.socket.queue.IListener;
+import cz.tul.comm.server.DataStorage;
+import cz.tul.comm.socket.ListenerRegistrator;
+import cz.tul.comm.socket.queue.Identifiable;
+import cz.tul.comm.socket.queue.Listener;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,18 +15,18 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class ServerSideJob implements Job, IListener {
+public class ServerSideJob implements Job, Listener {
 
     private static final Logger log = Logger.getLogger(ServerSideJob.class.getName());
     private Communicator comm;
-    private final IListenerRegistrator listenerRegistrator;
-    private final IDataStorage dataStorage;
+    private final ListenerRegistrator listenerRegistrator;
+    private final DataStorage dataStorage;
     private final Object task;
     private final UUID jobId;
     private Object result;
     private JobStatus jobStatus;
 
-    ServerSideJob(final Object task, final IListenerRegistrator listenerRegistrator, IDataStorage dataStorage) {
+    ServerSideJob(final Object task, final ListenerRegistrator listenerRegistrator, DataStorage dataStorage) {
         this.task = task;
         jobStatus = JobStatus.SUBMITTED;
         jobId = UUID.randomUUID();
@@ -99,7 +99,7 @@ public class ServerSideJob implements Job, IListener {
     }
 
     @Override
-    public void receiveData(IIdentifiable data) {
+    public void receiveData(Identifiable data) {
         if (data instanceof Message) {
             final Message m = (Message) data;
             switch (m.getHeader()) {

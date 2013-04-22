@@ -15,7 +15,7 @@ import org.w3c.dom.Node;
  *
  * @author Petr Ječmen
  */
-public class ExportMessage implements IExportUnit {
+public class ExportMessage implements ExportUnit {
 
     private static final Logger log = Logger.getLogger(ExportMessage.class.getName());
 

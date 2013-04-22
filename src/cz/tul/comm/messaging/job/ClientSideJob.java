@@ -3,9 +3,9 @@ package cz.tul.comm.messaging.job;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.messaging.BasicConversator;
 import cz.tul.comm.messaging.Message;
-import cz.tul.comm.socket.IListenerRegistrator;
-import cz.tul.comm.socket.queue.IIdentifiable;
-import cz.tul.comm.socket.queue.IListener;
+import cz.tul.comm.socket.ListenerRegistrator;
+import cz.tul.comm.socket.queue.Identifiable;
+import cz.tul.comm.socket.queue.Listener;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,12 +14,12 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class ClientSideJob implements Assignment, IListener {
+public class ClientSideJob implements Assignment, Listener {
 
     private static final Logger log = Logger.getLogger(ClientSideJob.class.getName());
     private final Object task;
-    private final IListenerRegistrator listenerRegistrator;
-    private final IAssignmentListener taskListener;
+    private final ListenerRegistrator listenerRegistrator;
+    private final AssignmentListener taskListener;
     private final Communicator comm;
     private final UUID jobId;
     private boolean isDone;
@@ -33,7 +33,7 @@ public class ClientSideJob implements Assignment, IListener {
      * @param listenerRegistrator
      * @param taskListener
      */
-    public ClientSideJob(final Object task, final UUID jobId, final Communicator comm, final IListenerRegistrator listenerRegistrator, final IAssignmentListener taskListener) {
+    public ClientSideJob(final Object task, final UUID jobId, final Communicator comm, final ListenerRegistrator listenerRegistrator, final AssignmentListener taskListener) {
         this.task = task;
         this.comm = comm;
         this.jobId = jobId;
@@ -89,7 +89,7 @@ public class ClientSideJob implements Assignment, IListener {
     }
 
     @Override
-    public void receiveData(IIdentifiable data) {
+    public void receiveData(Identifiable data) {
         if (data instanceof Message) {
             final Message m = (Message) data;
             switch (m.getHeader()) {

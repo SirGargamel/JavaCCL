@@ -1,9 +1,9 @@
 package cz.tul.comm.messaging;
 
 import cz.tul.comm.communicator.Communicator;
-import cz.tul.comm.socket.IListenerRegistrator;
-import cz.tul.comm.socket.queue.IIdentifiable;
-import cz.tul.comm.socket.queue.IListener;
+import cz.tul.comm.socket.ListenerRegistrator;
+import cz.tul.comm.socket.queue.Identifiable;
+import cz.tul.comm.socket.queue.Listener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,12 +11,12 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class BasicConversator implements IListener {
+public class BasicConversator implements Listener {
 
     private static final Logger log = Logger.getLogger(BasicConversator.class.getName());
     private final Communicator target;
-    private final IListenerRegistrator listener;
-    private IIdentifiable receivedData;
+    private final ListenerRegistrator listener;
+    private Identifiable receivedData;
 
     /**
      * Prepare new instance of converstaor.
@@ -24,7 +24,7 @@ public class BasicConversator implements IListener {
      * @param target communication target
      * @param listener class, which is receiving messages
      */
-    public BasicConversator(final Communicator target, final IListenerRegistrator listener) {
+    public BasicConversator(final Communicator target, final ListenerRegistrator listener) {
         this.target = target;
         this.listener = listener;
     }
@@ -35,7 +35,7 @@ public class BasicConversator implements IListener {
      * @param dataToSend data for sending
      * @return response from target
      */
-    public IIdentifiable sendAndReceiveData(final IIdentifiable dataToSend) {
+    public Identifiable sendAndReceiveData(final Identifiable dataToSend) {
         receivedData = null;
 
         final Object id = dataToSend.getId();
@@ -60,7 +60,7 @@ public class BasicConversator implements IListener {
     }
 
     @Override
-    public void receiveData(IIdentifiable data) {
+    public void receiveData(Identifiable data) {
         receivedData = data;
         synchronized (this) {
             this.notify();

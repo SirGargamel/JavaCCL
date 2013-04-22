@@ -2,7 +2,7 @@ package cz.tul.comm.server.daemons;
 
 import cz.tul.comm.Constants;
 import cz.tul.comm.IService;
-import cz.tul.comm.server.IClientManager;
+import cz.tul.comm.server.ClientManager;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -24,7 +24,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(ClientDiscoveryDaemon.class.getName());
     private static final int DELAY = 20_000;
-    private final IClientManager cm;
+    private final ClientManager cm;
     private final DatagramSocket s;
     private boolean run;
 
@@ -32,7 +32,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
      * @param clientManager client manager for new client registration
      * @throws SocketException thrown when daemon could not be created
      */
-    public ClientDiscoveryDaemon(final IClientManager clientManager) throws SocketException {
+    public ClientDiscoveryDaemon(final ClientManager clientManager) throws SocketException {
         run = true;
         cm = clientManager;
         s = new DatagramSocket(Constants.DEFAULT_PORT);

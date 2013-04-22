@@ -5,12 +5,12 @@ package cz.tul.comm.socket.queue;
  *
  * @author Petr Ječmen
  */
-public interface IListener {
+public interface Listener {
 
     /**
      * Notification for listener that data with registered id has been received.
      *
      * @param data received data
      */
-    void receiveData(final IIdentifiable data);
+    void receiveData(final Identifiable data);
 }

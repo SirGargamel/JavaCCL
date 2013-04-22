@@ -15,7 +15,7 @@ import org.w3c.dom.Element;
 public abstract class Exporter {
 
     private static final Logger log = Logger.getLogger(Exporter.class.getName());
-    private static final Map<Class<?>, IExportUnit> exporters;
+    private static final Map<Class<?>, ExportUnit> exporters;
 
     static {
         exporters = new HashMap<>();
@@ -51,7 +51,7 @@ public abstract class Exporter {
      *
      * @param eu new exporter class
      */
-    public static void registerExporterUnit(final IExportUnit eu) {
+    public static void registerExporterUnit(final ExportUnit eu) {
         exporters.put(eu.getExportedClass(), eu);
         log.log(Level.FINE, "New exporter for class {0} registered.", eu.getExportedClass().getName());
     }

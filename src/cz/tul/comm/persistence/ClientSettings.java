@@ -1,7 +1,7 @@
 package cz.tul.comm.persistence;
 
 import cz.tul.comm.Constants;
-import cz.tul.comm.client.IServerInterface;
+import cz.tul.comm.client.ServerInterface;
 import cz.tul.comm.communicator.Communicator;
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +32,7 @@ public class ClientSettings {
      * @param reg server parameters registrator
      * @return true for successfull deserialization
      */
-    public static boolean deserialize(final IServerInterface reg) {
+    public static boolean deserialize(final ServerInterface reg) {
         log.log(Level.CONFIG, "Deserializing client settings.");
         boolean result = true;
 

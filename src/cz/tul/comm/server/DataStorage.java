@@ -5,7 +5,7 @@ package cz.tul.comm.server;
  *
  * @author Petr Ječmen
  */
-public interface IDataStorage {
+public interface DataStorage {
 
     /**
      * Retrieve data with given identificator from some data storage.

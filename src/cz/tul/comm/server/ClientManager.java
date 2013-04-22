@@ -10,7 +10,7 @@ import java.util.UUID;
  *
  * @author Petr Ječmen
  */
-public interface IClientManager {
+public interface ClientManager {
 
     /**
      * Register a new client.

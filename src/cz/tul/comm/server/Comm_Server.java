@@ -5,14 +5,14 @@ import cz.tul.comm.Constants;
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.history.History;
-import cz.tul.comm.history.IHistoryManager;
+import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.job.Job;
 import cz.tul.comm.messaging.job.JobManager;
 import cz.tul.comm.messaging.job.JobManagerImpl;
 import cz.tul.comm.persistence.ServerSettings;
 import cz.tul.comm.server.daemons.ClientDiscoveryDaemon;
 import cz.tul.comm.server.daemons.ClientStatusDaemon;
-import cz.tul.comm.socket.IListenerRegistrator;
+import cz.tul.comm.socket.ListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
 import java.io.IOException;
@@ -64,7 +64,7 @@ public final class Comm_Server implements IService, Server {
     }
     private final ClientDB clients;
     private final ServerSocket serverSocket;
-    private final IHistoryManager history;
+    private final HistoryManager history;
     private final ClientStatusDaemon clientStatusDaemon;
     private final JobManagerImpl jobManager;
     private ClientDiscoveryDaemon cdd;
@@ -140,7 +140,7 @@ public final class Comm_Server implements IService, Server {
      * @return history manager for this client
      */
     @Override
-    public IHistoryManager getHistory() {
+    public HistoryManager getHistory() {
         return history;
     }
 
@@ -149,7 +149,7 @@ public final class Comm_Server implements IService, Server {
      * @return
      */
     @Override
-    public IClientManager getClientManager() {
+    public ClientManager getClientManager() {
         return clients;
     }
 
@@ -159,7 +159,7 @@ public final class Comm_Server implements IService, Server {
      * @return
      */
     @Override
-    public IListenerRegistrator getListenerRegistrator() {
+    public ListenerRegistrator getListenerRegistrator() {
         return serverSocket;
     }
 
@@ -172,7 +172,7 @@ public final class Comm_Server implements IService, Server {
      * @param dataStorage class hnadling data requests
      */
     @Override
-    public void assignDataStorage(final IDataStorage dataStorage) {
+    public void assignDataStorage(final DataStorage dataStorage) {
         jobManager.setDataStorage(dataStorage);
     }
 

@@ -1,7 +1,7 @@
 package cz.tul.comm.history;
 
 import cz.tul.comm.history.export.Exporter;
-import cz.tul.comm.history.export.IExportUnit;
+import cz.tul.comm.history.export.ExportUnit;
 import cz.tul.comm.history.sorting.DefaultSorter;
 import cz.tul.comm.history.sorting.HistorySorter;
 import java.io.File;
@@ -31,7 +31,7 @@ import org.w3c.dom.Element;
  *
  * @author Gargamel
  */
-public class History implements IHistoryManager {
+public class History implements HistoryManager {
 
     private static final Logger log = Logger.getLogger(History.class.getName());
 
@@ -119,7 +119,7 @@ public class History implements IHistoryManager {
     }
 
     @Override
-    public void registerExporter(final IExportUnit eu) {
+    public void registerExporter(final ExportUnit eu) {
         Exporter.registerExporterUnit(eu);
         log.log(Level.FINE, "New export unit registered - {0}", eu.getClass().getCanonicalName());
     }

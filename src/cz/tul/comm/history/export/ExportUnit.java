@@ -9,7 +9,7 @@ import org.w3c.dom.Element;
  *
  * @author Petr Ječmen
  */
-public interface IExportUnit {
+public interface ExportUnit {
 
     /**
      * Create XML representation of given object, IXMLExporter can help with

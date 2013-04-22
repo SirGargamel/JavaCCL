@@ -6,15 +6,15 @@ import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.Status;
 import cz.tul.comm.history.History;
-import cz.tul.comm.history.IHistoryManager;
+import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.history.sorting.DefaultSorter;
 import cz.tul.comm.messaging.BasicConversator;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
-import cz.tul.comm.messaging.job.IAssignmentListener;
+import cz.tul.comm.messaging.job.AssignmentListener;
 import cz.tul.comm.persistence.ClientSettings;
 import cz.tul.comm.socket.IDFilter;
-import cz.tul.comm.socket.IListenerRegistrator;
+import cz.tul.comm.socket.ListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class Comm_Client implements IService, IServerInterface, Client, IDFilter {
+public class Comm_Client implements IService, ServerInterface, Client, IDFilter {
 
     private static final Logger log = Logger.getLogger(Comm_Client.class.getName());
     /**
@@ -70,8 +70,8 @@ public class Comm_Client implements IService, IServerInterface, Client, IDFilter
         return c;
     }
     private final ServerSocket serverSocket;
-    private final IHistoryManager history;
-    private IAssignmentListener assignmentListener;
+    private final HistoryManager history;
+    private AssignmentListener assignmentListener;
     private Communicator comm;
     private Status status;
     private final ClientSystemMessaging csm;
@@ -187,7 +187,7 @@ public class Comm_Client implements IService, IServerInterface, Client, IDFilter
      * @return history manager for this client
      */
     @Override
-    public IHistoryManager getHistory() {
+    public HistoryManager getHistory() {
         return history;
     }
 
@@ -195,7 +195,7 @@ public class Comm_Client implements IService, IServerInterface, Client, IDFilter
      * @return interface for listener registration
      */
     @Override
-    public IListenerRegistrator getListenerRegistrator() {
+    public ListenerRegistrator getListenerRegistrator() {
         return serverSocket;
     }
 
@@ -205,11 +205,11 @@ public class Comm_Client implements IService, IServerInterface, Client, IDFilter
      * @param assignmentListener class hnadling assignment computation
      */
     @Override
-    public void assignAssignmentListener(IAssignmentListener assignmentListener) {
+    public void assignAssignmentListener(AssignmentListener assignmentListener) {
         this.assignmentListener = assignmentListener;
     }
 
-    IAssignmentListener getAssignmentListener() {
+    AssignmentListener getAssignmentListener() {
         return assignmentListener;
     }
 
