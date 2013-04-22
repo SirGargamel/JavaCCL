@@ -43,6 +43,15 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
     private static final int MAX_CLIENT_NA_TIME = 5_000;
     private static final int MAX_JOB_ASSIGN_TIME = 5_000;
     private static final int JOB_CANCEL_WAIT_TIME = 2_000;
+
+    private static void addJob(final Communicator comm, final ServerSideJob job, final Map<Communicator, List<ServerSideJob>> dataMap) {
+        List<ServerSideJob> l = dataMap.get(comm);
+        if (l == null) {
+            l = new ArrayList<>(1);
+            dataMap.put(comm, l);
+        }
+        l.add(job);
+    }
     private final ClientManager clientManager;
     private DataStorage dataStorage;
     private final ListenerRegistrator listenerRegistrator;
@@ -477,14 +486,5 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
             jobHistory.put(jobId, l);
         }
         l.add(new JobAction(jobId, owner, action));
-    }
-
-    private static void addJob(final Communicator comm, final ServerSideJob job, final Map<Communicator, List<ServerSideJob>> dataMap) {
-        List<ServerSideJob> l = dataMap.get(comm);
-        if (l == null) {
-            l = new ArrayList<>(1);
-            dataMap.put(comm, l);
-        }
-        l.add(job);
     }
 }

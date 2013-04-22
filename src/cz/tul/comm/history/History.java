@@ -1,7 +1,7 @@
 package cz.tul.comm.history;
 
-import cz.tul.comm.history.export.Exporter;
 import cz.tul.comm.history.export.ExportUnit;
+import cz.tul.comm.history.export.Exporter;
 import cz.tul.comm.history.sorting.DefaultSorter;
 import cz.tul.comm.history.sorting.HistorySorter;
 import java.io.File;

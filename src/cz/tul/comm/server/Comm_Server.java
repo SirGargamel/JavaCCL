@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public final class Comm_Server implements IService, Server {
+public class Comm_Server implements IService, Server {
 
     private static final Logger log = Logger.getLogger(Comm_Server.class.getName());
 

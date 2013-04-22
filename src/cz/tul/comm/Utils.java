@@ -37,4 +37,7 @@ public class Utils {
             log.log(Level.SEVERE, "Error preparing file logger.", ex);
         }
     }
+
+    private Utils() {
+    }
 }

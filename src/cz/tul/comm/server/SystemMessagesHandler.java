@@ -2,9 +2,9 @@ package cz.tul.comm.server;
 
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.DataPacket;
+import cz.tul.comm.job.JobRequestManager;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
-import cz.tul.comm.job.JobRequestManager;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.UUID;

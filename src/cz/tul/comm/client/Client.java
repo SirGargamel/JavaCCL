@@ -3,7 +3,6 @@ package cz.tul.comm.client;
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.history.HistoryManager;
-import cz.tul.comm.job.Assignment;
 import cz.tul.comm.job.AssignmentListener;
 import cz.tul.comm.socket.ListenerRegistrator;
 import java.net.InetAddress;

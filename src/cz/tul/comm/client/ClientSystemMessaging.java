@@ -1,10 +1,10 @@
 package cz.tul.comm.client;
 
 import cz.tul.comm.communicator.DataPacket;
-import cz.tul.comm.messaging.Message;
-import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.job.ClientSideJob;
 import cz.tul.comm.job.JobTask;
+import cz.tul.comm.messaging.Message;
+import cz.tul.comm.messaging.MessageHeaders;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;

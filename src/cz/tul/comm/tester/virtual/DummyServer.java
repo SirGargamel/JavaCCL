@@ -34,7 +34,7 @@ public class DummyServer {
 
         private final Job job;
 
-        public Waiter(Job job) {
+        Waiter(Job job) {
             this.job = job;
         }
 

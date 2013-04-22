@@ -17,6 +17,10 @@ public class Work implements Callable<Object>, Serializable {
 
     private static final Logger log = Logger.getLogger(Work.class.getName());
     private static final Random r = new Random();
+
+    public static String buildResult(final Action action, final int repCount) {
+        return action.toString().concat("-".concat(String.valueOf(repCount)));
+    }
     private final Action action;
     private final int repetitionCount;
     private Assignment task;
@@ -82,9 +86,5 @@ public class Work implements Callable<Object>, Serializable {
                 // nothing
             }
         }
-    }
-
-    public static String buildResult(final Action action, final int repCount) {
-        return action.toString().concat("-".concat(String.valueOf(repCount)));
     }
 }
