@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package cz.tul.comm.socket.queue;
 
 import cz.tul.comm.messaging.Message;
@@ -9,10 +5,10 @@ import java.util.Queue;
 import java.util.UUID;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -47,16 +43,16 @@ public class ObjectQueueTest {
 
         final ObjectQueue queue = new ObjectQueue();
 
-        final IListener l1 = new Listener();
-        final IListener l2 = new Listener();
+        final Listener l1 = new ListenerImpl();
+        final Listener l2 = new ListenerImpl();
 
         final UUID id1 = UUID.randomUUID();
         final UUID id2 = UUID.randomUUID();
         final UUID id3 = UUID.randomUUID();
 
-        final Queue<IIdentifiable> q1 = queue.registerListener(id1, l1, false);
-        final Queue<IIdentifiable> q2 = queue.registerListener(id2, l1, false);
-        final Queue<IIdentifiable> q3 = queue.registerListener(id2, l2, false);
+        final Queue<Identifiable> q1 = queue.registerListener(id1, l1, false);
+        final Queue<Identifiable> q2 = queue.registerListener(id2, l1, false);
+        final Queue<Identifiable> q3 = queue.registerListener(id2, l2, false);
         assertNotSame(q2, q3);
         queue.registerListener(id3, l2, false);
 
@@ -77,10 +73,10 @@ public class ObjectQueueTest {
         assertEquals(1, queue.getDataQueue(id3, l2).size());
     }
 
-    private static class Listener implements IListener {
+    private static class ListenerImpl implements Listener {
 
         @Override
-        public void receiveData(IIdentifiable data) {
+        public void receiveData(Identifiable data) {
         }
     }
 }

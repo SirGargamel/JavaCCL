@@ -25,8 +25,8 @@ public class PushDaemonTest {
     public void testPushDaemon() {
         final ObjectQueue<Message> q = new ObjectQueue<>();
 
-        final Listener l1 = new Listener();
-        final Listener l2 = new Listener();
+        final ListenerImpl l1 = new ListenerImpl();
+        final ListenerImpl l2 = new ListenerImpl();
 
         final UUID id = UUID.randomUUID();
         final UUID id2 = UUID.randomUUID();
@@ -69,12 +69,12 @@ public class PushDaemonTest {
         assertEquals(3, l2.getCounter());        
     }
 
-    private static class Listener implements IListener {
+    private static class ListenerImpl implements Listener {
 
         private int counter;
 
         @Override
-        public void receiveData(IIdentifiable data) {
+        public void receiveData(Identifiable data) {
             counter++;
         }
 

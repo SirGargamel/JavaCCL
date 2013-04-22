@@ -18,7 +18,7 @@ import org.junit.Test;
  * @author Petr Ječmen
  */
 public class CommunicatorTest {
-    
+
     private static final int TIMEOUT = 1_000;
     private static ServerSocket ss;
 
@@ -28,11 +28,11 @@ public class CommunicatorTest {
     }
 
     @AfterClass
-    public static void tearDownClass() {        
+    public static void tearDownClass() {
         ss.stopService();
     }
 
-        public CommunicatorTest() {
+    public CommunicatorTest() {
     }
 
     /**
@@ -42,12 +42,12 @@ public class CommunicatorTest {
     public void testCommunicator() {
 
         final InetAddress ip = InetAddress.getLoopbackAddress();
-        
+
         Communicator instance = Communicator.initNewCommunicator(ip, -1);
         assertNull(instance);
-        
+
         instance = Communicator.initNewCommunicator(ip, Constants.DEFAULT_PORT);
-        assertEquals(ip, instance.getAddress());               
+        assertEquals(ip, instance.getAddress());
 
         final boolean result = instance.sendData("test", TIMEOUT);
         assertTrue("Target could not receive data", result);

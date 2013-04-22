@@ -31,7 +31,7 @@ public class SerializationUtilsTest {
         }
     }
 
-        public SerializationUtilsTest() {
+    public SerializationUtilsTest() {
     }
 
     /**

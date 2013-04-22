@@ -4,8 +4,8 @@ import cz.tul.comm.Constants;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.messaging.Message;
-import cz.tul.comm.socket.queue.IIdentifiable;
-import cz.tul.comm.socket.queue.IListener;
+import cz.tul.comm.socket.queue.Identifiable;
+import cz.tul.comm.socket.queue.Listener;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Queue;
@@ -28,14 +28,14 @@ public class ServerSocketTest {
     @Test
     public void testServerSocket() {
 
-        final IListener owner1 = new IListener() {
+        final Listener owner1 = new Listener() {
             @Override
-            public void receiveData(IIdentifiable data) {
+            public void receiveData(Identifiable data) {
             }
         };
-        final IListener owner2 = new IListener() {
+        final Listener owner2 = new Listener() {
             @Override
-            public void receiveData(IIdentifiable data) {
+            public void receiveData(Identifiable data) {
             }
         };
 
@@ -46,9 +46,9 @@ public class ServerSocketTest {
             fail("Failed to initialize ServerSocket");
         }
 
-        if (instance != null) {            
+        if (instance != null) {
             UUID msgId = UUID.randomUUID();
-            final Queue<IIdentifiable> queueMsg = instance.addIdListener(msgId, owner1, false);
+            final Queue<Identifiable> queueMsg = instance.addIdListener(msgId, owner1, false);
             assertNotNull(queueMsg);
 
             final Communicator c = Communicator.initNewCommunicator(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
@@ -73,7 +73,7 @@ public class ServerSocketTest {
             assertEquals(3, counter);
 
             assertEquals(1, queueMsg.size());
-            final IIdentifiable m2 = queueMsg.poll();
+            final Identifiable m2 = queueMsg.poll();
             assertEquals(m, m2);
         } else {
             fail("Failed to initialize ServerSocket");
