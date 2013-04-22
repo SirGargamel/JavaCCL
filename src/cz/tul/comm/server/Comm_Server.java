@@ -8,6 +8,7 @@ import cz.tul.comm.history.History;
 import cz.tul.comm.history.IHistoryManager;
 import cz.tul.comm.messaging.job.Job;
 import cz.tul.comm.messaging.job.JobManager;
+import cz.tul.comm.messaging.job.JobManagerImpl;
 import cz.tul.comm.persistence.ServerSettings;
 import cz.tul.comm.server.daemons.ClientDiscoveryDaemon;
 import cz.tul.comm.server.daemons.ClientStatusDaemon;
@@ -65,7 +66,7 @@ public final class Comm_Server implements IService, Server {
     private final ServerSocket serverSocket;
     private final IHistoryManager history;
     private final ClientStatusDaemon clientStatusDaemon;
-    private final JobManager jobManager;
+    private final JobManagerImpl jobManager;
     private ClientDiscoveryDaemon cdd;
 
     private Comm_Server(final int port) throws IOException {
@@ -82,7 +83,7 @@ public final class Comm_Server implements IService, Server {
             clientStatusDaemon = null;
         }
         
-        jobManager = new JobManager(clients, serverSocket);
+        jobManager = new JobManagerImpl(clients, serverSocket);
 
         getListenerRegistrator().addMessageObserver(new SystemMessagesHandler(clients, jobManager));
 
