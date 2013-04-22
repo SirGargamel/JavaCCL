@@ -1,4 +1,4 @@
-package cz.tul.comm.messaging.job;
+package cz.tul.comm.job;
 
 /**
  * Interface for classes hnadling computation of assignments.

@@ -1,6 +1,6 @@
 package cz.tul.comm.tester.virtual;
 
-import cz.tul.comm.messaging.job.Job;
+import cz.tul.comm.job.Job;
 import cz.tul.comm.server.Comm_Server;
 import cz.tul.comm.server.Server;
 import java.util.concurrent.ExecutorService;

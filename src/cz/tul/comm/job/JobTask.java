@@ -1,4 +1,4 @@
-package cz.tul.comm.messaging.job;
+package cz.tul.comm.job;
 
 import java.io.Serializable;
 import java.util.UUID;

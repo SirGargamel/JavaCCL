@@ -1,4 +1,4 @@
-package cz.tul.comm.messaging.job;
+package cz.tul.comm.job;
 
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;

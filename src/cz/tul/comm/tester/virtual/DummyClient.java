@@ -2,8 +2,8 @@ package cz.tul.comm.tester.virtual;
 
 import cz.tul.comm.client.Client;
 import cz.tul.comm.client.Comm_Client;
-import cz.tul.comm.messaging.job.Assignment;
-import cz.tul.comm.messaging.job.AssignmentListener;
+import cz.tul.comm.job.Assignment;
+import cz.tul.comm.job.AssignmentListener;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

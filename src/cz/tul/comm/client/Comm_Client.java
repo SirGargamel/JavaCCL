@@ -11,7 +11,7 @@ import cz.tul.comm.history.sorting.DefaultSorter;
 import cz.tul.comm.messaging.BasicConversator;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
-import cz.tul.comm.messaging.job.AssignmentListener;
+import cz.tul.comm.job.AssignmentListener;
 import cz.tul.comm.persistence.ClientSettings;
 import cz.tul.comm.socket.IDFilter;
 import cz.tul.comm.socket.ListenerRegistrator;

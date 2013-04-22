@@ -1,6 +1,6 @@
 package cz.tul.comm.tester.virtual;
 
-import cz.tul.comm.messaging.job.Assignment;
+import cz.tul.comm.job.Assignment;
 import static cz.tul.comm.tester.virtual.Action.CANCEL_AFTER_TIME;
 import static cz.tul.comm.tester.virtual.Action.CANCEL_BEFORE_TIME;
 import java.io.Serializable;
