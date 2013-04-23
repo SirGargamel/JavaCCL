@@ -16,20 +16,26 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class DummyClient implements AssignmentListener, IDummy {
+public class DummyClient implements AssignmentListener {
 
     private static final Logger log = Logger.getLogger(DummyClient.class.getName());
     private final Client c;
     private Assignment currentTask;
     private Future currentFuture;
     private final ExecutorService exec;
+    private double errorChance, fatalChance;
 
     /**
      *
      */
-    public DummyClient() {
-        c = Comm_Client.initNewClient();        
+    private DummyClient(final double errorChance, final double fatalChance) {
+        c = Comm_Client.initNewClient();
         exec = Executors.newCachedThreadPool();
+        this.errorChance = errorChance;
+        this.fatalChance = fatalChance;
+    }
+
+    private void init() {
         c.assignAssignmentListener(this);
     }
 
@@ -39,27 +45,44 @@ public class DummyClient implements AssignmentListener, IDummy {
             currentTask = null;
             currentFuture = null;
         }
-        
+
         if (currentTask != null) {
             log.config("Client is already computing.");
             task.cancel("Already computing.");
         } else {
             log.config("Received work, starting computation.");
+
             currentTask = task;
             final Object work = currentTask.getTask();
             if (work instanceof Work) {
                 final Work w = (Work) work;
-                
-                w.setCloser(this);
-                w.setTask(currentTask);
-                
-                currentFuture = exec.submit(w);                
+                currentFuture = exec.submit(w);
 
-                try {
-                    final Object result = currentFuture.get();
-                    task.submitResult(result);
-                } catch (InterruptedException | ExecutionException ex) {
-                    log.log(Level.WARNING, "Error computing result.\n{0}", ex.getLocalizedMessage());
+                final double chance = Math.random();
+                if (chance > (1 - fatalChance)) {
+                    synchronized (this) {
+                        try {
+                            this.wait((long) (Math.random() * w.getRepetitionCount()));
+                        } catch (InterruptedException ex) {
+                            log.warning("Waiting for client close has been interrupted.");
+                        }
+                    }
+                    c.stopService();
+                } else if (chance > (1 - (fatalChance + errorChance))) {
+                    synchronized (this) {
+                        try {
+                            this.wait((long) (Math.random() * w.getRepetitionCount()));
+                        } catch (InterruptedException ex) {
+                            log.warning("Waiting for client cancelation has been interrupted.");
+                        }
+                    }
+                    task.cancel("Client error.");
+                } else {
+                    try {
+                        task.submitResult(currentFuture.get());
+                    } catch (InterruptedException | ExecutionException ex) {
+                        log.log(Level.WARNING, "Error computing result.\n{0}", ex.getLocalizedMessage());
+                    }
                 }
             }
         }
@@ -75,8 +98,10 @@ public class DummyClient implements AssignmentListener, IDummy {
         }
     }
 
-    @Override
-    public void closeClient() {
-        c.stopService();
+    public static DummyClient newInstance(final double errorChance, final double fatalChance) {
+        DummyClient result = new DummyClient(errorChance, fatalChance);
+        result.init();
+        log.log(Level.CONFIG, "New DummyClient created with chances {0}, {1}.", new Object[]{errorChance, fatalChance});
+        return result;
     }
 }

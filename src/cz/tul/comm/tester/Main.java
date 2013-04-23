@@ -25,14 +25,12 @@ import cz.tul.comm.server.DataStorage;
 import cz.tul.comm.server.Server;
 import cz.tul.comm.socket.queue.Identifiable;
 import cz.tul.comm.socket.queue.Listener;
-import cz.tul.comm.tester.virtual.Action;
 import cz.tul.comm.tester.virtual.DummyClient;
 import cz.tul.comm.tester.virtual.DummyServer;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
@@ -48,6 +46,8 @@ import java.util.logging.Logger;
 public class Main {
 
     private static final Logger log = Logger.getLogger(Main.class.getName());
+    private static final double CLIENT_ERROR_CHANCE_MAX = 0.1;
+    private static final double CLIENT_FATAL_CHANCE_MAX = 0.05;
     private static Server s;
     private static Client c;
 
@@ -326,11 +326,10 @@ public class Main {
         boolean interactiveMode = false;
         DummyServer srv = null;
         int repCount;
-        Action action;
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
                 case "-c":
-                    final DummyClient dc = new DummyClient();
+                    final DummyClient dc = DummyClient.newInstance(CLIENT_ERROR_CHANCE_MAX * Math.random(), CLIENT_FATAL_CHANCE_MAX * Math.random());
                     break;
                 case "-s":
                     srv = new DummyServer();
@@ -338,25 +337,19 @@ public class Main {
                 case "-i":
                     interactiveMode = true;
                     break;
-                case "-a":
-                    action = parseAction(args[i + 1]);
-
-                    if (action != null) {
-                        try {
-                            repCount = Integer.parseInt(args[i + 2]);
-                            if (srv != null) {
-                                srv.submitJob(action, repCount);
-                            } else {
-                                log.warning("Server not initialized yet, commands must be after -s modifier.");
-                            }
-                        } catch (NumberFormatException ex) {
-                            log.log(Level.WARNING, "Illegal count of repetitions used - {0}", args[i + 2]);
+                case "-j":
+                    try {
+                        repCount = Integer.parseInt(args[i + 1]);
+                        if (srv != null) {
+                            srv.submitJob(repCount);
+                        } else {
+                            log.warning("Server not initialized yet, commands must be after -s modifier.");
                         }
-                    } else {
-                        log.warning("Allowed actions are C, CAT, CBT, CRAT and CRBT.");
+                    } catch (NumberFormatException ex) {
+                        log.log(Level.WARNING, "Illegal count of repetitions used - {0}", args[i + 1]);
                     }
 
-                    i += 2;
+                    i++;
                     break;
             }
         }
@@ -364,8 +357,7 @@ public class Main {
         if (srv != null) {
             if (interactiveMode) {
                 System.out.println("Starting interactive mode.");
-                System.out.println("Input commands as \"action repetitionCount\" (for example C 1000 for thousand basic computations).");
-                System.out.println("Aviable actions are {C | CAT | CBT | CRAT | CRBT}.");
+                System.out.println("Input repetition counts separated by spaces.");                
 
                 String line;
                 Scanner in = new Scanner(System.in);
@@ -377,17 +369,14 @@ public class Main {
                         run = false;
                     } else {
                         split = line.split(" ");
-                        if (split.length == 2) {
-                            action = parseAction(split[0]);
+                        for (int i = 0; i < split.length; i++) {
                             try {
-                                repCount = Integer.parseInt(split[1]);
-                                srv.submitJob(action, repCount);
-                                System.out.println("Submitted job " + action + " with " + repCount + " repetitions.");
+                                repCount = Integer.parseInt(split[i]);
+                                srv.submitJob(repCount);
+                                System.out.println("Submitted job with " + repCount + " repetitions.");
                             } catch (NumberFormatException ex) {
-                                log.log(Level.WARNING, "Illegal count of repetitions used - {0}", split[1]);
+                                log.log(Level.WARNING, "Illegal count of repetitions used - {0}", split[i]);
                             }
-                        } else {
-                            System.out.println("Invalid input.");
                         }
                     }
                 }
@@ -395,27 +384,5 @@ public class Main {
                 srv.waitForJobs();
             }
         }
-    }
-
-    private static Action parseAction(final String cmd) {
-        Action result = null;
-        switch (cmd.toLowerCase(Locale.getDefault())) {
-            case "c":
-                result = Action.COMPUTE;
-                break;
-            case "cat":
-                result = Action.CANCEL_AFTER_TIME;
-                break;
-            case "cbt":
-                result = Action.CANCEL_BEFORE_TIME;
-                break;
-            case "crat":
-                result = Action.CRASH_AFTER_TIME;
-                break;
-            case "crbt":
-                result = Action.CRASH_BEFORE_TIME;
-                break;
-        }
-        return result;
     }
 }
