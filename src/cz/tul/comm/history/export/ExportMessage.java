@@ -19,7 +19,7 @@ public class ExportMessage implements ExportUnit {
 
     private static final Logger log = Logger.getLogger(ExportMessage.class.getName());
 
-        private static void appendStringDataToNode(final Node n, final Document d, final String name, final String data) {
+    private static void appendStringDataToNode(final Node n, final Document d, final String name, final String data) {
         final Element e = d.createElement(name);
         e.appendChild(d.createTextNode(data));
         n.appendChild(e);

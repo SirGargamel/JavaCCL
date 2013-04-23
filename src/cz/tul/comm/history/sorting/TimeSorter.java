@@ -1,6 +1,6 @@
 package cz.tul.comm.history.sorting;
 
-import cz.tul.comm.history.Record;
+import cz.tul.comm.history.HistoryRecord;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,19 +20,19 @@ public class TimeSorter extends HistorySorter {
     private static final Logger log = Logger.getLogger(TimeSorter.class.getName());
 
     @Override
-    public List<Element> sortHistory(final Collection<Record> records, final Document doc) {
+    public List<Element> sortHistory(final Collection<HistoryRecord> records, final Document doc) {
         log.fine("Sorting nodes by time.");
 
-        final List<Record> sortedList = new ArrayList<>(records);
-        Collections.sort(sortedList, new Comparator<Record>() {
+        final List<HistoryRecord> sortedList = new ArrayList<>(records);
+        Collections.sort(sortedList, new Comparator<HistoryRecord>() {
             @Override
-            public int compare(Record o1, Record o2) {
+            public int compare(HistoryRecord o1, HistoryRecord o2) {
                 return o1.getTime().compareTo(o2.getTime());
             }
         });
 
         final List<Element> result = new ArrayList<>(records.size());
-        for (Record r : sortedList) {
+        for (HistoryRecord r : sortedList) {
             result.add(convertRecordToXML(r, doc));
         }
 

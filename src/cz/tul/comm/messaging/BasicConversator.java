@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Class offering basic conversation scheme request-reply with blocking method.
  * @author Petr Ječmen
  */
 public class BasicConversator implements Listener {

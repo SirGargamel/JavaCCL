@@ -42,5 +42,8 @@ public interface Assignment {
      */
     UUID getId();
     
+    /**     
+     * @return true if computation has been completed.
+     */
     boolean isDone();
 }

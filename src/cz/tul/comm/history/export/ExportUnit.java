@@ -4,8 +4,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * Create XML representation of given data. Should return null for nonparsable
- * data.
+ * Interface defining claases creating XML representation of given data. Export
+ * should return null for nonparsable data.
  *
  * @author Petr Ječmen
  */

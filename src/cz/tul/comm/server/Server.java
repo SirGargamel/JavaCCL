@@ -10,35 +10,39 @@ import java.net.InetAddress;
 import java.util.UUID;
 
 /**
+ * Interface of server part.
  *
  * @author Petr Ječmen
  */
 public interface Server extends IService {
 
     /**
-     * @param dataStorage class hnadling data requests
+     * @param dataStorage class handling data requests
      */
     void assignDataStorage(final DataStorage dataStorage);
 
     /**
-     * Export history as is to XML file.
+     * Export history as is to XML file at library location.
      *
      * @return true for successfull export.
      */
     boolean exportHistory();
 
     /**
-     *
-     * @param address
-     * @return
+     * @param address clients IP
+     * @return client at given IP
      */
     Communicator getClient(final InetAddress address);
-    
-    Communicator getClient(final UUID id);
 
     /**
      *
-     * @return
+     * @param id clients ID
+     * @return client with given ID
+     */
+    Communicator getClient(final UUID id);
+
+    /**
+     * @return interface for managing clients
      */
     ClientManager getClientManager();
 
@@ -47,13 +51,14 @@ public interface Server extends IService {
      */
     HistoryManager getHistory();
 
-    /**
-     * Interface for registering new data listeners.
-     *
-     * @return
+    /**     
+     * @return Interface for managing listeners.
      */
     ListenerRegistrator getListenerRegistrator();
-    
+
+    /**     
+     * @return interface for job management
+     */
     JobManager getJobManager();
 
     /**
@@ -71,5 +76,4 @@ public interface Server extends IService {
      * @return interface for job control and result obtaining
      */
     Job submitJob(final Object task);
-    
 }

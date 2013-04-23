@@ -98,6 +98,12 @@ public class DummyClient implements AssignmentListener {
         }
     }
 
+    /**
+     *
+     * @param errorChance
+     * @param fatalChance
+     * @return
+     */
     public static DummyClient newInstance(final double errorChance, final double fatalChance) {
         DummyClient result = new DummyClient(errorChance, fatalChance);
         result.init();

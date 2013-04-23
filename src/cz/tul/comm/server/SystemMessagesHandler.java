@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Observer handling system messages and its effect.
+ * Observer handling system messages and its effects.
  *
  * @author Petr Ječmen
  */
@@ -24,6 +24,7 @@ public class SystemMessagesHandler implements Observer {
 
     /**
      * @param clientManager client manager
+     * @param jobRequestManager interface for asking for extra jobs
      */
     public SystemMessagesHandler(ClientManager clientManager, JobRequestManager jobRequestManager) {
         if (clientManager != null) {

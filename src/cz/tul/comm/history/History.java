@@ -54,14 +54,14 @@ public class History implements HistoryManager {
 
         transformer.transform(source, output);
     }
-    private final Set<Record> records;
+    private final Set<HistoryRecord> records;
     private final InetAddress localHost;
 
     /**
      * New instance of History conainer.
      */
     public History() {
-        records = Collections.synchronizedSet(new HashSet<Record>());
+        records = Collections.synchronizedSet(new HashSet<HistoryRecord>());
 
         InetAddress local;
         try {
@@ -75,7 +75,7 @@ public class History implements HistoryManager {
 
     @Override
     public void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted) {
-        final Record r = new Record(localHost, ipDestination, data, accepted);
+        final HistoryRecord r = new HistoryRecord(localHost, ipDestination, data, accepted);
         records.add(r);
         log.log(Level.FINE, "Sent message stored to history - {0}", r);
 
@@ -83,7 +83,7 @@ public class History implements HistoryManager {
 
     @Override
     public void logMessageReceived(final InetAddress ipSource, final Object data, final boolean accepted) {
-        final Record r = new Record(ipSource, localHost, data, accepted);
+        final HistoryRecord r = new HistoryRecord(ipSource, localHost, data, accepted);
         records.add(r);
         log.log(Level.FINE, "Received message stored to history - {0}", r);
     }

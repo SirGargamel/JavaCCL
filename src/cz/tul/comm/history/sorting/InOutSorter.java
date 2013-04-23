@@ -1,6 +1,6 @@
 package cz.tul.comm.history.sorting;
 
-import cz.tul.comm.history.Record;
+import cz.tul.comm.history.HistoryRecord;
 import static cz.tul.comm.history.sorting.HistorySorter.convertRecordToXML;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -20,10 +20,10 @@ import org.w3c.dom.Element;
  */
 public class InOutSorter extends HistorySorter {
 
-    private static final Logger log = Logger.getLogger(InOutSorter.class.getName());        
+    private static final Logger log = Logger.getLogger(InOutSorter.class.getName());
 
     @Override
-    public List<Element> sortHistory(final Collection<Record> records, final Document doc) {
+    public List<Element> sortHistory(final Collection<HistoryRecord> records, final Document doc) {
         log.fine("Sorting nodes by direction (In | Out).");
 
         final List<Element> result = new ArrayList<>(2);
@@ -39,7 +39,7 @@ public class InOutSorter extends HistorySorter {
         }
 
         Element e;
-        for (Record r : records) {
+        for (HistoryRecord r : records) {
             e = convertRecordToXML(r, doc);
             if (r.getIpSource().equals(localHost)) {
                 groupIn.appendChild(e);

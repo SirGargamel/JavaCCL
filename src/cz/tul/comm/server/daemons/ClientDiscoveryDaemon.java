@@ -16,7 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Daemon tryning to discover new clients on local network.
+ * Daemon tryning to discover new clients on local network using UDP broadcast.
  *
  * @author Petr Ječmen
  */
@@ -58,12 +58,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
         }
     }
 
-    /**
-     *
-     * @throws SocketException
-     * @throws IOException
-     */
-    public void discoverClients() throws SocketException, IOException {
+    private void discoverClients() throws SocketException, IOException {
         // Find the clients using UDP broadcast                                        
         byte[] sendData = Constants.DISCOVERY_QUESTION.getBytes();
 
@@ -97,11 +92,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
         }
     }
 
-    /**
-     *
-     * @throws IOException
-     */
-    public void listenForResponse() throws IOException {
+    private void listenForResponse() throws IOException {
         final long endTime = System.currentTimeMillis() + DELAY;
         //Wait for a response
         byte[] recvBuf = new byte[15_000];

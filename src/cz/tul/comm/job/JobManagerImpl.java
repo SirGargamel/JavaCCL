@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Class managing job assignment and management.
  *
  * @author Petr Ječmen
  */
@@ -66,7 +67,7 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
     private boolean run;
 
     /**
-     * Prepare new instance of JobManagerImpl.
+     * Prepare new instance.
      *
      * @param clientManager client manager
      * @param listenerRegistrator listener registrator
@@ -95,12 +96,6 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
         this.dataStorage = dataStorage;
     }
 
-    /**
-     * Submit job for computation
-     *
-     * @param task jobs task
-     * @return interface for job control
-     */
     @Override
     public Job submitJob(final Object task) {
         final ServerSideJob result = new ServerSideJob(task, listenerRegistrator, dataStorage);
@@ -264,7 +259,7 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
         if (actionList == null) {
             return false;
         }
-        
+
         for (JobAction ja : actionList) {
             if (ja.getOwner() == comm) {
                 return true;
@@ -276,7 +271,7 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
     private Calendar lastCancelTime(final List<JobAction> actionList, final Communicator comm) {
         List<Calendar> cancelTimes = new ArrayList<>();
         for (JobAction ja : actionList) {
-            if (ja.getOwner() == comm && ja.getMsgHeader().equals(JobMessageHeaders.JOB_CANCEL)) {
+            if (ja.getOwner() == comm && ja.getActionDescription().equals(JobMessageHeaders.JOB_CANCEL)) {
                 cancelTimes.add(ja.getActionTime());
             }
         }
@@ -290,7 +285,7 @@ public class JobManagerImpl extends Thread implements IService, Listener, JobReq
 
     private boolean isClientOnline(final Communicator comm) {
         final Status s = comm.getStatus();
-        final boolean result = s.equals(Status.ONLINE) || s.equals(Status.REACHABLE) || s.equals(Status.BUSY);
+        final boolean result = s.equals(Status.ONLINE) || s.equals(Status.REACHABLE);
         if (result) {
             storeClientOnlineStatus(comm);
         }

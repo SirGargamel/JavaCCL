@@ -16,10 +16,18 @@ public class Work implements Callable<Object>, Serializable {
     private final int repetitionCount;
     private UUID jobId;
 
+    /**
+     *
+     * @param repetitionCount
+     */
     public Work(int repetitionCount) {
         this.repetitionCount = repetitionCount;
     }
 
+    /**
+     *
+     * @param jobId
+     */
     public void setJobId(final UUID jobId) {
         this.jobId = jobId;
     }
@@ -42,10 +50,18 @@ public class Work implements Callable<Object>, Serializable {
         }
     }
     
+    /**
+     *
+     * @return
+     */
     public String buildResult() {
         return "-".concat(String.valueOf(repetitionCount));
     }
 
+    /**
+     *
+     * @return
+     */
     public int getRepetitionCount() {
         return repetitionCount;
     }

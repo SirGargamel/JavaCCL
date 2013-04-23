@@ -1,6 +1,6 @@
 package cz.tul.comm.history.sorting;
 
-import cz.tul.comm.history.Record;
+import cz.tul.comm.history.HistoryRecord;
 import cz.tul.comm.history.export.Exporter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -20,14 +20,21 @@ import org.w3c.dom.NodeList;
  * @author Petr Ječmen
  */
 public abstract class HistorySorter {
-    
+
     private static final String TIME_PATTERN = "yyyy-MM-dd H:m:s:S z";
     private static final DateFormat df = new SimpleDateFormat(TIME_PATTERN);
 
-    protected static Element convertRecordToXML(final Record r, final Document doc) {
+    /**
+     * Convert history record to a XML representation, data are exported using
+     * aviable export units.
+     *
+     * @param r record for export
+     * @param doc target XML document
+     * @return XML representation as element
+     */
+    protected static Element convertRecordToXML(final HistoryRecord r, final Document doc) {
         final Element result = doc.createElement("Record");
 
-        // TODO convert Record
         appendStringDataToNode(result, doc, "IPSource", r.getIpSource().getHostAddress());
         appendStringDataToNode(result, doc, "IPDestination", r.getIpDestination().getHostAddress());
         appendStringDataToNode(result, doc, "Time", df.format(r.getTime()));
@@ -43,15 +50,15 @@ public abstract class HistorySorter {
         e.appendChild(d.createTextNode(data));
         n.appendChild(e);
     }
-    
+
     /**
      * Sort child {@link Element}s and sort them according to given parameter.
      *
-     * @param rootElement element containing data for sorting
+     * @param records
      * @param doc target XML document
      * @return New History element, in which all children are sorted.
      */
-    public abstract List<Element> sortHistory(final Collection<Record> records, final Document doc);
+    public abstract List<Element> sortHistory(final Collection<HistoryRecord> records, final Document doc);
 
     /**
      * Take {@link SortedMap} filled with data and export it to XML document.
@@ -83,9 +90,16 @@ public abstract class HistorySorter {
         }
         return result;
     }
-    
+
+    /**
+     * Extra value of subnode with given nade
+     *
+     * @param element source lement
+     * @param nodeName target node name
+     * @return extracted value (or null if node with given name does not exist)
+     */
     protected String extractValue(final Node element, final String nodeName) {
-        String result = "";
+        String result = null;
 
         if (element instanceof Element) {
             final Element e = (Element) element;
@@ -94,7 +108,7 @@ public abstract class HistorySorter {
                 Node n = nl.item(0);
                 if (n instanceof Element) {
                     final Element eInner = (Element) n;
-                    result = eInner.getTextContent();                    
+                    result = eInner.getTextContent();
                 }
             }
         }

@@ -12,6 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Server side of job computation.
  *
  * @author Petr Ječmen
  */
@@ -36,6 +37,7 @@ public class ServerSideJob implements Job, Listener {
 
     /**
      * Assign job to some client and send task to him.
+     *
      * @param comm Client communicator
      */
     public void submitJob(final Communicator comm) {
@@ -45,7 +47,7 @@ public class ServerSideJob implements Job, Listener {
         final JobTask jt = new JobTask(jobId, task);
         final Message m = new Message(jobId, MessageHeaders.JOB, jt);
         jobStatus = JobStatus.SENT;
-        sendMessage(m);        
+        sendMessage(m);
     }
 
     @Override
@@ -54,7 +56,7 @@ public class ServerSideJob implements Job, Listener {
     }
 
     @Override
-    public Object getResult(final boolean blockingGet) {        
+    public Object getResult(final boolean blockingGet) {
         if (blockingGet) {
             while (result == null) {
                 synchronized (this) {
@@ -79,6 +81,9 @@ public class ServerSideJob implements Job, Listener {
         log.log(Level.CONFIG, "Job with ID {0} has been cancelled by server.", jobId);
     }
 
+    /**     
+     * @param jobStatus new job status
+     */
     public void setStatus(JobStatus jobStatus) {
         this.jobStatus = jobStatus;
     }
@@ -105,7 +110,7 @@ public class ServerSideJob implements Job, Listener {
             switch (m.getHeader()) {
                 case JobMessageHeaders.JOB_RESULT:
                     jobStatus = JobStatus.COMPUTED;
-                    result = m.getData();                    
+                    result = m.getData();
                     listenerRegistrator.removeIdListener(jobId, this);
                     log.log(Level.CONFIG, "Result for job with ID {0} has been received.", jobId);
                     synchronized (this) {
@@ -154,7 +159,7 @@ public class ServerSideJob implements Job, Listener {
     public UUID getId() {
         return jobId;
     }
-    
+
     Communicator getComm() {
         return comm;
     }

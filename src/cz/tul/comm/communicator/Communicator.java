@@ -76,7 +76,7 @@ public class Communicator extends Observable {
 
         lastStatusUpdateTime = Calendar.getInstance();
         status = Status.NA;
-        
+
         setChanged();
         notifyObservers();
     }
@@ -199,13 +199,12 @@ public class Communicator extends Observable {
     public void setStatus(final Status newStatus) {
         status = newStatus;
         lastStatusUpdateTime = Calendar.getInstance();
-        
+
         setChanged();
         notifyObservers(status);
     }
 
     /**
-     *
      * @return time of last status update
      */
     public Calendar getLastStatusUpdate() {

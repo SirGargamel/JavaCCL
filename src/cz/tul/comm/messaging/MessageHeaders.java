@@ -24,5 +24,8 @@ public interface MessageHeaders {
      * job assignment
      */
     String JOB = "job";
+    /**
+     * request extra job from server.
+     */
     String JOB_REQUEST = "jobRequest";
 }

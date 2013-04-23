@@ -9,7 +9,7 @@ import java.util.UUID;
  */
 public interface Job {
 
-    /**     
+    /**
      * @return jobs task
      */
     Object getTask();
@@ -47,7 +47,6 @@ public interface Job {
     boolean isCanceled();
 
     /**
-     *
      * @return jobs ID
      */
     UUID getId();

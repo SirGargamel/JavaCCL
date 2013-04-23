@@ -23,12 +23,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Class enclosing server-client communication. Handles custom data sending to
+ * Class enclosing server-to-client communication. Handles custom data sending to
  * given client, whole job computation and client status monitoring.
  *
  * @author Petr Ječmen
  */
-public class Comm_Server implements IService, Server {
+public final class Comm_Server implements IService, Server {
 
     private static final Logger log = Logger.getLogger(Comm_Server.class.getName());
 
@@ -48,8 +48,9 @@ public class Comm_Server implements IService, Server {
     }
 
     /**
+     * Create and initialize new instance of server on default port.
      *
-     * @return
+     * @return new instance of Comm_Server
      */
     public static Server initNewServer() {
         Server s = null;
@@ -82,7 +83,7 @@ public class Comm_Server implements IService, Server {
         } else {
             clientStatusDaemon = null;
         }
-        
+
         jobManager = new JobManagerImpl(clients, serverSocket);
 
         getListenerRegistrator().addMessageObserver(new SystemMessagesHandler(clients, jobManager));
@@ -93,7 +94,7 @@ public class Comm_Server implements IService, Server {
             } catch (SocketException ex) {
                 log.log(Level.WARNING, "Failed to create ClientDiscoveryDaemon", ex);
             }
-        }        
+        }
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -103,61 +104,33 @@ public class Comm_Server implements IService, Server {
         }));
     }
 
-    /**
-     * Register new client communicationg on given IP and on default port.
-     *
-     * @param adress client IP
-     * @return
-     */
     @Override
     public Communicator registerClient(final InetAddress adress) {
         log.log(Level.INFO, "Registering new client on IP{0} on default port", adress);
         return clients.registerClient(adress, Constants.DEFAULT_PORT);
     }
 
-    /**
-     *
-     * @param address
-     * @return
-     */
     @Override
     public Communicator getClient(final InetAddress address) {
         return clients.getClient(address, Constants.DEFAULT_PORT);
     }
 
-    /**
-     * Export history as is to XML file.
-     *
-     * @return true for successfull export.
-     */
     @Override
     public boolean exportHistory() {
         log.info("Exporting history.");
         return history.export(new File(""), null);
     }
 
-    /**
-     * @return history manager for this client
-     */
     @Override
     public HistoryManager getHistory() {
         return history;
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public ClientManager getClientManager() {
         return clients;
     }
 
-    /**
-     * Interface for registering new data listeners.
-     *
-     * @return
-     */
     @Override
     public ListenerRegistrator getListenerRegistrator() {
         return serverSocket;
@@ -168,20 +141,11 @@ public class Comm_Server implements IService, Server {
         return jobManager;
     }
 
-    /**
-     * @param dataStorage class hnadling data requests
-     */
     @Override
     public void assignDataStorage(final DataStorage dataStorage) {
         jobManager.setDataStorage(dataStorage);
     }
 
-    /**
-     * Submit new job for computation
-     *
-     * @param task jobs task
-     * @return interface for job control and result obtaining
-     */
     @Override
     public Job submitJob(final Object task) {
         return jobManager.submitJob(task);

@@ -7,7 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Utilities.
  * @author Petr Ječmen
  */
 public class Utils {
@@ -15,6 +15,10 @@ public class Utils {
     private static final Logger log = Logger.getLogger(Utils.class.getName());
     private static final String LOG_FILE_NAME = "systemLog.xml";
 
+    /**
+     * Set level of main logger (and its children)
+     * @param level new Logger level
+     */
     public static void adjustMainLoggerLevel(final Level level) {
         Logger l = log.getParent();
         l.setLevel(level);
@@ -23,6 +27,9 @@ public class Utils {
         }
     }
 
+    /**
+     * initialize file logging
+     */
     public static void prepareFileLogger() {
         try {
             Logger l = log.getParent();

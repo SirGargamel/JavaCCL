@@ -1,6 +1,6 @@
 package cz.tul.comm.history.sorting;
 
-import cz.tul.comm.history.Record;
+import cz.tul.comm.history.HistoryRecord;
 import cz.tul.comm.messaging.Message;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,17 +24,17 @@ public class JobSorter extends HistorySorter {
     private static final Logger log = Logger.getLogger(JobSorter.class.getName());
 
     @Override
-    public List<Element> sortHistory(final Collection<Record> records, final Document doc) {
+    public List<Element> sortHistory(final Collection<HistoryRecord> records, final Document doc) {
         log.fine("Grouping nodes into jobs.");
 
         // group Nodex by UUID
         // and search for job tasks
-        final Map<UUID, List<Record>> idGroups = new HashMap<>();
+        final Map<UUID, List<HistoryRecord>> idGroups = new HashMap<>();
         final Set<UUID> jobIds = new HashSet<>();
-        List<Record> l;
+        List<HistoryRecord> l;
         Message m;
         Object o;
-        for (Record r : records) {
+        for (HistoryRecord r : records) {
             o = r.getData();
             if (o instanceof Message) {
                 m = (Message) o;
@@ -54,7 +54,7 @@ public class JobSorter extends HistorySorter {
             group.setAttribute("UUID", id.toString());
 
             l = idGroups.get(id);
-            for (Record r : l) {
+            for (HistoryRecord r : l) {
                 group.appendChild(convertRecordToXML(r, doc));
             }
 

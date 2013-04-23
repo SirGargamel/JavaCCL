@@ -15,11 +15,18 @@ public class DummyServer {
     private final Server s;
     private final ExecutorService exec;    
 
+    /**
+     *
+     */
     public DummyServer() {
         s = Comm_Server.initNewServer();
         exec = Executors.newCachedThreadPool();
     }
 
+    /**
+     *
+     * @param repetitionCount
+     */
     public void submitJob(final int repetitionCount) {
         final Work w = new Work(repetitionCount);
         final Job j = s.submitJob(w);
@@ -27,6 +34,9 @@ public class DummyServer {
         exec.submit(new Waiter(j, w));
     }
 
+    /**
+     *
+     */
     public void waitForJobs() {
         s.getJobManager().waitForAllJobs();                
     }

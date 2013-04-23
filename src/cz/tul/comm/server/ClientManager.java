@@ -22,6 +22,8 @@ public interface ClientManager {
     Communicator registerClient(final InetAddress adress, final int port);
 
     /**
+     * Deregister client with given id.
+     *
      * @param id client UUID
      */
     void deregisterClient(final UUID id);

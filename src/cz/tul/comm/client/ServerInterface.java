@@ -14,6 +14,7 @@ public interface ServerInterface {
     /**
      * @param address server IP
      * @param port server port
+     * @return true for successfull registration 
      */
     boolean registerToServer(final InetAddress address, final int port);
 

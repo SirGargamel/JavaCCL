@@ -32,15 +32,12 @@ import java.util.logging.Logger;
 public class Comm_Client implements IService, ServerInterface, Client, IDFilter {
 
     private static final Logger log = Logger.getLogger(Comm_Client.class.getName());
-    /**
-     * Default port on which will client listen.
-     */
     private static final int TIMEOUT = 1_000;
 
     /**
-     * Create and initialize new instance of client.
+     * Create and initialize new instance of client at given port.
      *
-     * @param port
+     * @param port target listening port
      * @return new Client instance
      */
     public static Client initNewClient(final int port) {
@@ -71,7 +68,7 @@ public class Comm_Client implements IService, ServerInterface, Client, IDFilter 
     private final ServerSocket serverSocket;
     private final HistoryManager history;
     private AssignmentListener assignmentListener;
-    private Communicator comm;    
+    private Communicator comm;
     private final ClientSystemMessaging csm;
     private ServerDiscoveryDaemon sdd;
 
@@ -95,7 +92,7 @@ public class Comm_Client implements IService, ServerInterface, Client, IDFilter 
 
         serverSocket = ServerSocket.createServerSocket(port, this);
         serverSocket.registerHistory(history);
-        
+
         csm = new ClientSystemMessaging(this);
         serverSocket.addMessageObserver(csm);
     }
@@ -148,12 +145,6 @@ public class Comm_Client implements IService, ServerInterface, Client, IDFilter 
         return serverStatus;
     }
 
-    /**
-     * Send data to server.
-     *
-     * @param data data for sending
-     * @return true for successfull data sending
-     */
     @Override
     public boolean sendDataToServer(final Object data) {
         log.log(Level.INFO, "Sending data to server - {0}", data.toString());
@@ -169,38 +160,22 @@ public class Comm_Client implements IService, ServerInterface, Client, IDFilter 
         }
     }
 
-    /**
-     * Export history as is to XML file.
-     *
-     * @return true for successfull export.
-     */
     @Override
     public boolean exportHistory() {
         log.info("Exporting histry to default location with no sorting.");
         return history.export(new File(""), new DefaultSorter());
     }
 
-    /**
-     * @return history manager for this client
-     */
     @Override
     public HistoryManager getHistory() {
         return history;
     }
 
-    /**
-     * @return interface for listener registration
-     */
     @Override
     public ListenerRegistrator getListenerRegistrator() {
         return serverSocket;
     }
 
-    /**
-     * Atach interface, that will handle assignment computation.
-     *
-     * @param assignmentListener class hnadling assignment computation
-     */
     @Override
     public void assignAssignmentListener(AssignmentListener assignmentListener) {
         this.assignmentListener = assignmentListener;

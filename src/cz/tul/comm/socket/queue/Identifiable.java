@@ -8,7 +8,7 @@ package cz.tul.comm.socket.queue;
 public interface Identifiable {
 
     /**
-     * @return ID characterizing data or communication
+     * @return ID characterizing object.
      */
     Object getId();
 }

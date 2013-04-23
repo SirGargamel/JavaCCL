@@ -10,7 +10,7 @@ import java.util.Date;
  *
  * @author Petr Ječmen
  */
-public class Record {
+public class HistoryRecord {
 
     private final InetAddress ipSource;
     private final InetAddress ipDestination;
@@ -18,7 +18,7 @@ public class Record {
     private final Date time;
     private final boolean accepted;
 
-    Record(final InetAddress ipSource, final InetAddress ipDestination, Object data, final boolean accepted) {
+    HistoryRecord(final InetAddress ipSource, final InetAddress ipDestination, Object data, final boolean accepted) {
         this.ipSource = ipSource;
         this.ipDestination = ipDestination;
         this.data = data;
@@ -27,30 +27,45 @@ public class Record {
         time = new Date();
     }
 
+    /**
+     * @return ip of sender
+     */
     public InetAddress getIpSource() {
         return ipSource;
     }
 
+    /**
+     * @return ip of target
+     */
     public InetAddress getIpDestination() {
         return ipDestination;
     }
 
+    /**
+     * @return sent data
+     */
     public Object getData() {
         return data;
     }
 
+    /**
+     * @return time of logging
+     */
     public Date getTime() {
         return time;
     }
 
+    /**
+     * @return true if target confirmed data receive (read and conversion)
+     */
     public boolean wasAccepted() {
         return accepted;
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        
+
         sb.append("From ");
         sb.append(ipSource.getHostAddress());
         sb.append(" to ");
@@ -61,7 +76,7 @@ public class Record {
         sb.append(data.toString());
         sb.append(". Was accepted - ");
         sb.append(accepted);
-        
+
         return sb.toString();
     }
 }

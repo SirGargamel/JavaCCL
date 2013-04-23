@@ -20,10 +20,8 @@ public class ClientStatusDaemon extends Thread implements IService {
     private final ClientManager clientManager;
 
     /**
-     *
+     * New instance.
      * @param clientManager client manager
-     * @param listenerRegistrator listener registrator for easy response
-     * obtaining
      */
     public ClientStatusDaemon(final ClientManager clientManager) {
         if (clientManager == null) {

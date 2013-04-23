@@ -11,7 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Client side of job compuatation. Handles client operations.
  * @author Petr Ječmen
  */
 public class ClientSideJob implements Assignment, Listener {
@@ -27,11 +27,11 @@ public class ClientSideJob implements Assignment, Listener {
     /**
      * Create new instance.
      *
-     * @param task
-     * @param jobId
-     * @param comm
-     * @param listenerRegistrator
-     * @param taskListener
+     * @param task task for computation
+     * @param jobId jobs ID
+     * @param comm server communicator
+     * @param listenerRegistrator listener registrator
+     * @param taskListener task listener for job cancelation
      */
     public ClientSideJob(final Object task, final UUID jobId, final Communicator comm, final ListenerRegistrator listenerRegistrator, final AssignmentListener taskListener) {
         this.task = task;

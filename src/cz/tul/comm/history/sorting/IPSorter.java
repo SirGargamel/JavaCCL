@@ -1,6 +1,6 @@
 package cz.tul.comm.history.sorting;
 
-import cz.tul.comm.history.Record;
+import cz.tul.comm.history.HistoryRecord;
 import static cz.tul.comm.history.sorting.HistorySorter.convertRecordToXML;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -62,22 +62,22 @@ public class IPSorter extends HistorySorter {
     }
 
     @Override
-    public List<Element> sortHistory(final Collection<Record> records, final Document doc) {
+    public List<Element> sortHistory(final Collection<HistoryRecord> records, final Document doc) {
         log.fine("Sorting nodes by time.");
 
-        final List<Record> sortedList = new ArrayList<>(records);
-        final Comparator<Record> comp;
+        final List<HistoryRecord> sortedList = new ArrayList<>(records);
+        final Comparator<HistoryRecord> comp;
         if (byDestination) {
-            comp = new Comparator<Record>() {
+            comp = new Comparator<HistoryRecord>() {
                 @Override
-                public int compare(Record o1, Record o2) {
+                public int compare(HistoryRecord o1, HistoryRecord o2) {
                     return compareIp(o1.getIpDestination(), o2.getIpDestination());
                 }
             };
         } else {
-            comp = new Comparator<Record>() {
+            comp = new Comparator<HistoryRecord>() {
                 @Override
-                public int compare(Record o1, Record o2) {
+                public int compare(HistoryRecord o1, HistoryRecord o2) {
                     return compareIp(o1.getIpSource(), o2.getIpSource());
                 }
             };
@@ -86,7 +86,7 @@ public class IPSorter extends HistorySorter {
         Collections.sort(sortedList, comp);
 
         final List<Element> result = new ArrayList<>(records.size());
-        for (Record r : sortedList) {
+        for (HistoryRecord r : sortedList) {
             result.add(convertRecordToXML(r, doc));
         }
 

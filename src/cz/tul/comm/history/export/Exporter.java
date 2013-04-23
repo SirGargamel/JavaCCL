@@ -24,7 +24,8 @@ public abstract class Exporter {
     }
 
     /**
-     * Create XML representation of given object
+     * Create XML representation of given object using registered exporter
+     * units.
      *
      * @param data object for export
      * @param doc target XML document
