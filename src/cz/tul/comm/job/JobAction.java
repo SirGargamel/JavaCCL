@@ -14,7 +14,7 @@ public class JobAction {
 
     private final UUID jobId;
     private final Calendar actionTime;
-    private final Communicator owner;
+    private final UUID ownerId;
     private final String actionDescription;
 
     /**     
@@ -22,9 +22,9 @@ public class JobAction {
      * @param owner job owner
      * @param msgHeader action description
      */
-    public JobAction(UUID jobId, Communicator owner, String msgHeader) {
+    public JobAction(final UUID jobId, final UUID ownerId, final String msgHeader) {
         this.jobId = jobId;
-        this.owner = owner;
+        this.ownerId = ownerId;
         this.actionDescription = msgHeader;
         this.actionTime = Calendar.getInstance(Locale.getDefault());
     }
@@ -46,8 +46,8 @@ public class JobAction {
     /**
      * @return jobs owner
      */
-    public Communicator getOwner() {
-        return owner;
+    public UUID getOwnerId() {
+        return ownerId;
     }
 
     /**
