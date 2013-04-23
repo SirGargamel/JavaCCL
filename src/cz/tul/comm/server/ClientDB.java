@@ -1,6 +1,7 @@
 package cz.tul.comm.server;
 
 import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.communicator.CommunicatorImpl;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.socket.IDFilter;
 import java.net.InetAddress;
@@ -23,7 +24,7 @@ import java.util.logging.Logger;
  */
 class ClientDB implements ClientManager, Observer, IDFilter {
 
-    private static final Logger log = Logger.getLogger(Communicator.class.getName());
+    private static final Logger log = Logger.getLogger(ClientDB.class.getName());
     private final Set<Communicator> clients;
     private Collection<UUID> allowedIDs;
     private HistoryManager hm;
@@ -31,7 +32,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
     ClientDB() {
         clients = Collections.synchronizedSet(new HashSet<Communicator>());
         allowedIDs = Collections.emptySet();
-        allowedIDs =  Collections.unmodifiableCollection(allowedIDs);
+        allowedIDs = Collections.unmodifiableCollection(allowedIDs);
     }
 
     @Override
@@ -39,10 +40,11 @@ class ClientDB implements ClientManager, Observer, IDFilter {
         Communicator cc = getClient(address, port);
         if (cc == null) {
             try {
-                cc = Communicator.initNewCommunicator(address, port);
+                CommunicatorImpl ccI = CommunicatorImpl.initNewCommunicator(address, port);
                 if (cc != null) {
-                    cc.registerHistory(hm);
-                    cc.addObserver(this);
+                    ccI.registerHistory(hm);
+                    ccI.addObserver(this);
+                    cc = ccI;
                     clients.add(cc);
                     log.log(Level.CONFIG, "New client with IP {0} on port {1} registered", new Object[]{address.getHostAddress(), port});
                 }
@@ -113,7 +115,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
 
     @Override
     public void update(Observable o, Object arg) {
-        if (o instanceof Communicator && arg instanceof UUID) {
+        if (o instanceof CommunicatorImpl && arg instanceof UUID) {
             prepareAllowedIDs();
         }
     }

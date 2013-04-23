@@ -5,7 +5,7 @@
 package cz.tul.comm.socket;
 
 import cz.tul.comm.Constants;
-import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.communicator.CommunicatorImpl;
 import java.io.IOException;
 import java.net.InetAddress;
 import org.junit.AfterClass;
@@ -36,17 +36,17 @@ public class CommunicatorTest {
     }
 
     /**
-     * Test of getAddress method, of class Communicator.
+     * Test of getAddress method, of class CommunicatorImpl.
      */
     @Test
     public void testCommunicator() {
 
         final InetAddress ip = InetAddress.getLoopbackAddress();
 
-        Communicator instance = Communicator.initNewCommunicator(ip, -1);
+        CommunicatorImpl instance = CommunicatorImpl.initNewCommunicator(ip, -1);
         assertNull(instance);
 
-        instance = Communicator.initNewCommunicator(ip, Constants.DEFAULT_PORT);
+        instance = CommunicatorImpl.initNewCommunicator(ip, Constants.DEFAULT_PORT);
         assertEquals(ip, instance.getAddress());
 
         final boolean result = instance.sendData("test", TIMEOUT);

@@ -1,7 +1,7 @@
 package cz.tul.comm.client;
 
 import cz.tul.comm.IService;
-import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.communicator.CommunicatorImpl;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.job.AssignmentListener;
 import cz.tul.comm.socket.ListenerRegistrator;
@@ -44,9 +44,9 @@ public interface Client extends IService {
     ListenerRegistrator getListenerRegistrator();
 
     /**
-     * @return Communicator object connected to server.
+     * @return CommunicatorImpl object connected to server.
      */
-    Communicator getServerComm();
+    CommunicatorImpl getServerComm();
 
     /**
      * @return true if server could be contacted and responds

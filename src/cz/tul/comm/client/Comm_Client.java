@@ -3,7 +3,7 @@ package cz.tul.comm.client;
 import cz.tul.comm.ComponentSwitches;
 import cz.tul.comm.Constants;
 import cz.tul.comm.IService;
-import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.communicator.CommunicatorImpl;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.history.sorting.DefaultSorter;
@@ -68,7 +68,7 @@ public class Comm_Client implements IService, ServerInterface, Client, IDFilter 
     private final ServerSocket serverSocket;
     private final HistoryManager history;
     private AssignmentListener assignmentListener;
-    private Communicator comm;
+    private CommunicatorImpl comm;
     private final ClientSystemMessaging csm;
     private ServerDiscoveryDaemon sdd;
 
@@ -101,7 +101,7 @@ public class Comm_Client implements IService, ServerInterface, Client, IDFilter 
     public boolean registerToServer(final InetAddress address, final int port) {
         log.log(Level.CONFIG, "Registering new server IP and port - {0}:{1}", new Object[]{address.getHostAddress(), port});
         boolean result = false;
-        comm = Communicator.initNewCommunicator(address, port);
+        comm = CommunicatorImpl.initNewCommunicator(address, port);
         if (isServerUp()) {
             final Message login = new Message(MessageHeaders.LOGIN, serverSocket.getPort());
             BasicConversator bs = new BasicConversator(comm, serverSocket);
@@ -186,7 +186,7 @@ public class Comm_Client implements IService, ServerInterface, Client, IDFilter 
     }
 
     @Override
-    public Communicator getServerComm() {
+    public CommunicatorImpl getServerComm() {
         return comm;
     }
 

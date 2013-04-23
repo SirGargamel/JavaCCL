@@ -7,6 +7,7 @@ import cz.tul.comm.client.Client;
 import cz.tul.comm.client.Comm_Client;
 import cz.tul.comm.client.ServerInterface;
 import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.communicator.CommunicatorImpl;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.history.sorting.IPSorter;
@@ -284,8 +285,8 @@ public class Main {
             public Set<Communicator> getClients() {
                 final Set<Communicator> comms = new HashSet<>();
 
-                comms.add(Communicator.initNewCommunicator(InetAddress.getLoopbackAddress(), 50));
-                comms.add(Communicator.initNewCommunicator(InetAddress.getLoopbackAddress(), 51));
+                comms.add(CommunicatorImpl.initNewCommunicator(InetAddress.getLoopbackAddress(), 50));
+                comms.add(CommunicatorImpl.initNewCommunicator(InetAddress.getLoopbackAddress(), 51));
 
                 return comms;
             }
@@ -315,7 +316,7 @@ public class Main {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
         };
-        Communicator comm = Communicator.initNewCommunicator(InetAddress.getLoopbackAddress(), 52);
+        Communicator comm = CommunicatorImpl.initNewCommunicator(InetAddress.getLoopbackAddress(), 52);
         ClientSettings.serialize(comm);
         ClientSettings.deserialize(si);
     }

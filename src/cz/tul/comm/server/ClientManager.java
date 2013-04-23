@@ -1,6 +1,7 @@
 package cz.tul.comm.server;
 
 import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.communicator.CommunicatorImpl;
 import java.net.InetAddress;
 import java.util.Collection;
 import java.util.UUID;
@@ -17,7 +18,7 @@ public interface ClientManager {
      *
      * @param adress client IP
      * @param port client port
-     * @return {@link Communicator} for client communication
+     * @return {@link CommunicatorImpl} for client communication
      */
     Communicator registerClient(final InetAddress adress, final int port);
 
@@ -31,7 +32,7 @@ public interface ClientManager {
     /**
      * @param adress client IP
      * @param port client port
-     * @return {@link Communicator} for communication with given IP (if
+     * @return {@link CommunicatorImpl} for communication with given IP (if
      * registered)
      */
     Communicator getClient(final InetAddress adress, final int port);

@@ -1,6 +1,7 @@
 package cz.tul.comm.server;
 
 import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.communicator.CommunicatorImpl;
 import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.job.JobRequestManager;
 import cz.tul.comm.messaging.Message;
@@ -55,7 +56,9 @@ public class SystemMessagesHandler implements Observer {
                             port = Integer.parseInt(m.getData().toString());
                             UUID clientId = UUID.randomUUID();
                             Communicator c = clientManager.registerClient(ipData.getSourceIP(), port);
-                            c.setId(clientId);
+                            if (c instanceof CommunicatorImpl) {
+                                ((CommunicatorImpl) c).setId(clientId);
+                            }
                             c.sendData(new Message(m.getId(), header, clientId));
                             log.log(Level.CONFIG, "LOGIN received from {0}, assigning id {1}", new Object[]{ipData.getSourceIP().getHostAddress(), clientId});
                         } catch (NumberFormatException ex) {

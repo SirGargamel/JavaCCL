@@ -1,7 +1,7 @@
 package cz.tul.comm.socket;
 
 import cz.tul.comm.Constants;
-import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.communicator.CommunicatorImpl;
 import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.socket.queue.Identifiable;
@@ -51,7 +51,7 @@ public class ServerSocketTest {
             final Queue<Identifiable> queueMsg = instance.addIdListener(msgId, owner1, false);
             assertNotNull(queueMsg);
 
-            final Communicator c = Communicator.initNewCommunicator(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
+            final CommunicatorImpl c = CommunicatorImpl.initNewCommunicator(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
             c.setId(UUID.randomUUID());
             final Queue<DataPacket> queueData = instance.addClientListener(c.getId(), owner2, false);
             assertNotNull(queueData);
