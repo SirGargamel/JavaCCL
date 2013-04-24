@@ -90,7 +90,7 @@ public final class Comm_Server implements IService, Server {
 
         if (ComponentSwitches.useClientDiscovery) {
             try {
-                cdd = new ClientDiscoveryDaemon(clients);
+                cdd = new ClientDiscoveryDaemon(serverSocket.getPort());
             } catch (SocketException ex) {
                 log.log(Level.WARNING, "Failed to create ClientDiscoveryDaemon", ex);
             }

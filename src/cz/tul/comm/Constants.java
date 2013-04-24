@@ -14,13 +14,9 @@ public interface Constants {
     /**
      * data used as question for client discovery
      */
-    String DISCOVERY_QUESTION = "DISCOVER_CLIENT";
-    /**
-     * response for client discovery if client has been found.
-     */
-    String DISCOVERY_RESPONSE = "DISCOVER_REGISTRATION";    
+    String DISCOVERY_QUESTION = "DISCOVER_CLIENT";    
     /**
      * character splitting port number from rest of the response
      */
-    String DISCOVERY_RESPONSE_DELIMITER = ":";
+    String DISCOVERY_QUESTION_DELIMITER = ":";
 }

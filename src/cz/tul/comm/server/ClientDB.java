@@ -41,7 +41,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
         if (cc == null) {
             try {
                 CommunicatorImpl ccI = CommunicatorImpl.initNewCommunicator(address, port);
-                if (cc != null) {
+                if (ccI != null) {
                     ccI.registerHistory(hm);
                     ccI.addObserver(this);
                     cc = ccI;

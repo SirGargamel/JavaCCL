@@ -233,4 +233,9 @@ public class Comm_Client implements IService, ServerInterface, Client, IDFilter 
     public void requestAssignment() {
         final Message m = new Message(MessageHeaders.JOB_REQUEST, null);
     }
+
+    @Override
+    public int getLocalSocketPort() {
+        return serverSocket.getPort();
+    }
 }

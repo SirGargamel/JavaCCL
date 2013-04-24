@@ -38,36 +38,29 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
     @Override
     public void run() {
         while (run) {
-            if (!sr.isServerUp()) {
-                try {
+            if (!sr.isServerUp()) {                
+                try {                                        
                     //Receive a packet
                     byte[] recvBuf = new byte[15_000];
                     DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                     log.log(Level.FINE, "Starting listening for discovery packets");
                     s.receive(packet);
 
-                    //Packet received
-                    String message = new String(packet.getData()).trim();
+                    //Packet received                    
+                    log.log(Level.CONFIG, "Discovery packet received from {0}", new Object[]{packet.getAddress().getHostAddress()});
+                    String message = new String(packet.getData()).trim();                    
                     log.log(Level.CONFIG, "Discovery packet received from {0} - {1}", new Object[]{packet.getAddress().getHostAddress(), message});
 
                     //See if the packet holds the right message                    
-                    if (message.equals(Constants.DISCOVERY_QUESTION)) {
-                        final StringBuilder response = new StringBuilder();
-                        response.append(Constants.DISCOVERY_RESPONSE);
-                        response.append(Constants.DISCOVERY_RESPONSE_DELIMITER);
-                        response.append(sr.getServerComm().getPort());
-
-                        byte[] sendData = response.toString().getBytes();
-
-                        //Send a response
-                        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, packet.getAddress(), packet.getPort());
-                        s.send(sendPacket);
-
-                        sr.registerToServer(packet.getAddress(), Constants.DEFAULT_PORT);
-
-                        log.log(Level.CONFIG, "Sent response meesage to {0}", sendPacket.getAddress().getHostAddress());
+                    if (message.startsWith(Constants.DISCOVERY_QUESTION)) {
+                        final String portS = message.substring(Constants.DISCOVERY_QUESTION.length() + Constants.DISCOVERY_QUESTION_DELIMITER.length());
+                        try {
+                            final int port = Integer.valueOf(portS);
+                            sr.registerToServer(packet.getAddress(), port);
+                        } catch (NumberFormatException ex) {
+                            sr.registerToServer(packet.getAddress(), Constants.DEFAULT_PORT);
+                        }
                     }
-
                 } catch (SocketException ex) {
                     if (run == false) {
                         // everything is fine, wa wanted to interrupt socket receive method

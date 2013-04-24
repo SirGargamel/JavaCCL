@@ -2,7 +2,6 @@ package cz.tul.comm.server.daemons;
 
 import cz.tul.comm.Constants;
 import cz.tul.comm.IService;
-import cz.tul.comm.server.ClientManager;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -10,7 +9,6 @@ import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,20 +21,22 @@ import java.util.logging.Logger;
 public class ClientDiscoveryDaemon extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(ClientDiscoveryDaemon.class.getName());
-    private static final int DELAY = 20_000;
-    private final ClientManager cm;
-    private final DatagramSocket s;
+    private static final int DELAY = 10_000;
+    private final DatagramSocket s;    
+    private final byte[] message;
+    private final int messageLength;
     private boolean run;
 
     /**
      * @param clientManager client manager for new client registration
      * @throws SocketException thrown when daemon could not be created
      */
-    public ClientDiscoveryDaemon(final ClientManager clientManager) throws SocketException {
-        run = true;
-        cm = clientManager;
+    public ClientDiscoveryDaemon(final int serverSocketPort) throws SocketException {                
         s = new DatagramSocket(Constants.DEFAULT_PORT);
         s.setBroadcast(true);
+        message = Constants.DISCOVERY_QUESTION.concat(Constants.DISCOVERY_QUESTION_DELIMITER).concat(String.valueOf(serverSocketPort)).getBytes();
+        messageLength = message.length;
+        run = true;
     }
 
     @Override
@@ -50,20 +50,20 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
                 log.log(Level.WARNING, "Error writing to socket", ex);
             }
 
-            try {
-                listenForResponse();
-            } catch (IOException ex) {
-                log.log(Level.WARNING, "Error reading from socket", ex);
+            synchronized (this) {
+                try {
+                    this.wait(DELAY);
+                } catch (InterruptedException ex) {
+                    log.log(Level.WARNING, "Waiting of ClientDiscoveryDaemon has been interrupted.", ex);
+                }
             }
         }
     }
 
     private void discoverClients() throws SocketException, IOException {
-        // Find the clients using UDP broadcast                                        
-        byte[] sendData = Constants.DISCOVERY_QUESTION.getBytes();
-
+        // Find the clients using UDP broadcast                
         // Try the 255.255.255.255 first
-        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), Constants.DEFAULT_PORT);
+        DatagramPacket sendPacket = new DatagramPacket(message, messageLength, InetAddress.getByName("255.255.255.255"), Constants.DEFAULT_PORT);
         s.send(sendPacket);
         log.log(Level.FINE, "Discovery packet sent to: 255.255.255.255 (DEFAULT)");
 
@@ -83,47 +83,9 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
                 }
 
                 // Send the broadcast
-                sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, Constants.DEFAULT_PORT);
+                sendPacket = new DatagramPacket(message, messageLength, broadcast, Constants.DEFAULT_PORT);
                 s.send(sendPacket);
-
-
                 log.log(Level.FINE, "Discovery packet sent to: {0}; Interface: {1}", new Object[]{broadcast.getHostAddress(), networkInterface.getDisplayName()});
-            }
-        }
-    }
-
-    private void listenForResponse() throws IOException {
-        final long endTime = System.currentTimeMillis() + DELAY;
-        //Wait for a response
-        byte[] recvBuf = new byte[15_000];
-
-        while (System.currentTimeMillis() < endTime && !s.isClosed()) {
-            s.setSoTimeout((int) (endTime - System.currentTimeMillis()));
-
-            DatagramPacket receivePacket = new DatagramPacket(recvBuf, recvBuf.length);
-            try {
-                s.receive(receivePacket);
-                String message = new String(receivePacket.getData()).trim();
-
-
-                //Check if the response is login message
-                if (message.startsWith(Constants.DISCOVERY_RESPONSE)) {
-                    log.log(Level.FINE, "Received login response from {0} : {1}", new Object[]{receivePacket.getAddress().getHostAddress(), message});
-                    final String ports = message.replaceFirst(Constants.DISCOVERY_RESPONSE, "").replaceFirst(Constants.DISCOVERY_RESPONSE_DELIMITER, "");
-                    try {
-                        final int port = Integer.valueOf(ports);
-                        cm.registerClient(receivePacket.getAddress(), port);
-                    } catch (NumberFormatException ex) {
-                        log.log(Level.WARNING, "Response in wrong format - " + message, ex);
-                    }
-                } else {
-                    log.log(Level.FINE, "Broadcast response from {0} : {1}", new Object[]{receivePacket.getAddress().getHostAddress(), message});
-                }
-            } catch (SocketTimeoutException ex) {
-                // nothing bad happened
-                // delay time reached
-            } catch (SocketException ex) {
-                log.log(Level.WARNING, "Socket exception occured.", ex);
             }
         }
     }
