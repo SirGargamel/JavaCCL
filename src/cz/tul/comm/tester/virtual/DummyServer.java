@@ -1,7 +1,7 @@
 package cz.tul.comm.tester.virtual;
 
 import cz.tul.comm.job.Job;
-import cz.tul.comm.server.Comm_Server;
+import cz.tul.comm.server.ServerImpl;
 import cz.tul.comm.server.Server;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,7 +19,7 @@ public class DummyServer {
      *
      */
     public DummyServer() {
-        s = Comm_Server.initNewServer();
+        s = ServerImpl.initNewServer();
         exec = Executors.newCachedThreadPool();
     }
 

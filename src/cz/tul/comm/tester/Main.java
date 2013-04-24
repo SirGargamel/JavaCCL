@@ -21,7 +21,7 @@ import cz.tul.comm.messaging.Message;
 import cz.tul.comm.persistence.ClientSettings;
 import cz.tul.comm.persistence.ServerSettings;
 import cz.tul.comm.server.ClientManager;
-import cz.tul.comm.server.Comm_Server;
+import cz.tul.comm.server.ServerImpl;
 import cz.tul.comm.server.DataStorage;
 import cz.tul.comm.server.Server;
 import cz.tul.comm.socket.queue.Identifiable;
@@ -91,7 +91,7 @@ public class Main {
             h.setLevel(l);
         }
 
-        s = Comm_Server.initNewServer();
+        s = ServerImpl.initNewServer();
         c = ClientImpl.initNewClient(5_253);
         c.registerToServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
 
@@ -156,7 +156,7 @@ public class Main {
                         c = ClientImpl.initNewClient();
                         break;
                     case "-s":
-                        s = Comm_Server.initNewServer();
+                        s = ServerImpl.initNewServer();
                         break;
                     default:
                         break;

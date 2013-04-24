@@ -28,19 +28,19 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public final class Comm_Server implements IService, Server {
+public final class ServerImpl implements IService, Server {
 
-    private static final Logger log = Logger.getLogger(Comm_Server.class.getName());
+    private static final Logger log = Logger.getLogger(ServerImpl.class.getName());
 
     /**
      * Create and initialize new instance of server.
      *
      * @param port server port (muse be valid port nuber between 0 and 65535)
-     * @return new instance of Comm_Server
+     * @return new instance of ServerImpl
      * @throws IOException error opening socket on given port
      */
     public static Server initNewServer(final int port) throws IOException {
-        final Comm_Server result = new Comm_Server(port);
+        final ServerImpl result = new ServerImpl(port);
         result.start();
         log.log(Level.INFO, "New server created on port {0}", port);
 
@@ -50,7 +50,7 @@ public final class Comm_Server implements IService, Server {
     /**
      * Create and initialize new instance of server on default port.
      *
-     * @return new instance of Comm_Server
+     * @return new instance of ServerImpl
      */
     public static Server initNewServer() {
         Server s = null;
@@ -70,7 +70,7 @@ public final class Comm_Server implements IService, Server {
     private final JobManagerImpl jobManager;
     private ClientDiscoveryDaemon cdd;
 
-    private Comm_Server(final int port) throws IOException {
+    private ServerImpl(final int port) throws IOException {
         history = new History();
 
         clients = new ClientDB();
