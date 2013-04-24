@@ -1,6 +1,6 @@
 package cz.tul.comm.job;
 
-import cz.tul.comm.communicator.CommunicatorImpl;
+import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.messaging.BasicConversator;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.socket.ListenerRegistrator;
@@ -20,7 +20,7 @@ public class ClientSideJob implements Assignment, Listener {
     private final Object task;
     private final ListenerRegistrator listenerRegistrator;
     private final AssignmentListener taskListener;
-    private final CommunicatorImpl comm;
+    private final Communicator comm;
     private final UUID jobId;
     private boolean isDone;
 
@@ -33,7 +33,7 @@ public class ClientSideJob implements Assignment, Listener {
      * @param listenerRegistrator listener registrator
      * @param taskListener task listener for job cancelation
      */
-    public ClientSideJob(final Object task, final UUID jobId, final CommunicatorImpl comm, final ListenerRegistrator listenerRegistrator, final AssignmentListener taskListener) {
+    public ClientSideJob(final Object task, final UUID jobId, final Communicator comm, final ListenerRegistrator listenerRegistrator, final AssignmentListener taskListener) {
         this.task = task;
         this.comm = comm;
         this.jobId = jobId;

@@ -128,7 +128,7 @@ class SocketReader extends Observable implements Runnable {
             final Message m = (Message) o;
             switch (m.getHeader()) {
                 case (MessageHeaders.KEEP_ALIVE):
-                    // no further actions needed
+                    log.log(Level.FINE, "keepAlive received from {0}", ip.getHostAddress());                    
                     break;
                 default:
                     log.log(Level.WARNING, "Received Message with unidefined header - {0}", new Object[]{m.toString()});

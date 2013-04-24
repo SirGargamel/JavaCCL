@@ -2,7 +2,7 @@ package cz.tul.comm.tester.virtual;
 
 import cz.tul.comm.Constants;
 import cz.tul.comm.client.Client;
-import cz.tul.comm.client.Comm_Client;
+import cz.tul.comm.client.ClientImpl;
 import cz.tul.comm.job.Assignment;
 import cz.tul.comm.job.AssignmentListener;
 import java.net.InetAddress;
@@ -32,7 +32,7 @@ public class DummyClient implements AssignmentListener {
      *
      */
     private DummyClient(final double errorChance, final double fatalChance) {
-        c = Comm_Client.initNewClient();
+        c = ClientImpl.initNewClient();
         exec = Executors.newCachedThreadPool();
         this.errorChance = errorChance;
         this.fatalChance = fatalChance;

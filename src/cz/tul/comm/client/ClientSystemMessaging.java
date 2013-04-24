@@ -18,9 +18,9 @@ import java.util.logging.Logger;
 class ClientSystemMessaging implements Observer {
 
     private static final Logger log = Logger.getLogger(ClientSystemMessaging.class.getName());
-    private final Comm_Client parent;
+    private final ClientImpl parent;
 
-    ClientSystemMessaging(Comm_Client parent) {
+    ClientSystemMessaging(ClientImpl parent) {
         this.parent = parent;
     }
 

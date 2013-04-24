@@ -4,7 +4,7 @@ import cz.tul.comm.ComponentSwitches;
 import cz.tul.comm.Constants;
 import cz.tul.comm.Utils;
 import cz.tul.comm.client.Client;
-import cz.tul.comm.client.Comm_Client;
+import cz.tul.comm.client.ClientImpl;
 import cz.tul.comm.client.ServerInterface;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.CommunicatorImpl;
@@ -92,7 +92,7 @@ public class Main {
         }
 
         s = Comm_Server.initNewServer();
-        c = Comm_Client.initNewClient(5_253);
+        c = ClientImpl.initNewClient(5_253);
         c.registerToServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
 
         System.out.println("... Testing ...");
@@ -131,7 +131,7 @@ public class Main {
     static void systemMessageTest() throws InterruptedException {
         final int PORT = 5_254;
 
-        Client c2 = Comm_Client.initNewClient(PORT);
+        Client c2 = ClientImpl.initNewClient(PORT);
 
         s.getClientManager().registerClient(InetAddress.getLoopbackAddress(), PORT);
 
@@ -153,7 +153,7 @@ public class Main {
             for (String arg : args) {
                 switch (arg) {
                     case "-c":
-                        c = Comm_Client.initNewClient();
+                        c = ClientImpl.initNewClient();
                         break;
                     case "-s":
                         s = Comm_Server.initNewServer();

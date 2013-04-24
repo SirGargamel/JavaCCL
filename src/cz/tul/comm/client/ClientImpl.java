@@ -3,7 +3,9 @@ package cz.tul.comm.client;
 import cz.tul.comm.ComponentSwitches;
 import cz.tul.comm.Constants;
 import cz.tul.comm.IService;
+import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.CommunicatorImpl;
+import cz.tul.comm.communicator.Status;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.history.sorting.DefaultSorter;
@@ -29,9 +31,9 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class Comm_Client implements IService, ServerInterface, Client, IDFilter {
+public class ClientImpl implements IService, ServerInterface, Client, IDFilter {
 
-    private static final Logger log = Logger.getLogger(Comm_Client.class.getName());
+    private static final Logger log = Logger.getLogger(ClientImpl.class.getName());
     private static final int TIMEOUT = 1_000;
 
     /**
@@ -41,10 +43,10 @@ public class Comm_Client implements IService, ServerInterface, Client, IDFilter 
      * @return new Client instance
      */
     public static Client initNewClient(final int port) {
-        Comm_Client result = null;
+        ClientImpl result = null;
         try {
-            result = new Comm_Client(port);
-            result.start();
+            result = new ClientImpl();
+            result.start(port);
             log.log(Level.INFO, "New client created on port {0}", port);
         } catch (IOException ex) {
             log.log(Level.WARNING, "Failed to initialize client on port " + port, ex);
@@ -65,14 +67,14 @@ public class Comm_Client implements IService, ServerInterface, Client, IDFilter 
         }
         return c;
     }
-    private final ServerSocket serverSocket;
+    private ServerSocket serverSocket;
     private final HistoryManager history;
     private AssignmentListener assignmentListener;
     private CommunicatorImpl comm;
-    private final ClientSystemMessaging csm;
+    private ClientSystemMessaging csm;
     private ServerDiscoveryDaemon sdd;
 
-    private Comm_Client(final int port) throws IOException {
+    private ClientImpl() {
         history = new History();
 
         if (ComponentSwitches.useClientDiscovery) {
@@ -88,13 +90,7 @@ public class Comm_Client implements IService, ServerInterface, Client, IDFilter 
             public void run() {
                 stopService();
             }
-        }));
-
-        serverSocket = ServerSocket.createServerSocket(port, this);
-        serverSocket.registerHistory(history);
-
-        csm = new ClientSystemMessaging(this);
-        serverSocket.addMessageObserver(csm);
+        }));        
     }
 
     @Override
@@ -135,11 +131,12 @@ public class Comm_Client implements IService, ServerInterface, Client, IDFilter 
 
     @Override
     public boolean isServerUp() {
-        boolean serverStatus;
+        boolean serverStatus = false;
         if (comm != null) {
-            serverStatus = comm.sendData(new Message(MessageHeaders.KEEP_ALIVE, null), TIMEOUT);
-        } else {
-            serverStatus = false;
+            Status s = comm.getStatus();
+            if (s.equals(Status.ONLINE) || s.equals(Status.REACHABLE) || s.equals(Status.NOT_RESPONDING)) {
+                serverStatus = true;
+            }
         }
         log.log(Level.INFO, "Is server running - {0}", serverStatus);
         return serverStatus;
@@ -186,11 +183,17 @@ public class Comm_Client implements IService, ServerInterface, Client, IDFilter 
     }
 
     @Override
-    public CommunicatorImpl getServerComm() {
+    public Communicator getServerComm() {
         return comm;
     }
 
-    private void start() {
+    private void start(final int port) throws IOException {
+        serverSocket = ServerSocket.createServerSocket(port, this);
+        serverSocket.registerHistory(history);
+
+        csm = new ClientSystemMessaging(this);
+        serverSocket.addMessageObserver(csm);
+        
         if (ComponentSwitches.useSettings) {
             if (!ClientSettings.deserialize(this)) {
                 log.warning("Error loading client settings.");
