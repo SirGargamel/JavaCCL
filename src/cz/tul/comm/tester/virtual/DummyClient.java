@@ -1,9 +1,12 @@
 package cz.tul.comm.tester.virtual;
 
+import cz.tul.comm.Constants;
 import cz.tul.comm.client.Client;
 import cz.tul.comm.client.Comm_Client;
 import cz.tul.comm.job.Assignment;
 import cz.tul.comm.job.AssignmentListener;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,6 +40,14 @@ public class DummyClient implements AssignmentListener {
 
     private void init() {
         c.assignAssignmentListener(this);
+    }
+
+    public void connectToServer(final String address) {
+        try {
+            c.registerToServer(InetAddress.getByName(address), Constants.DEFAULT_PORT);
+        } catch (UnknownHostException ex) {
+            Logger.getLogger(DummyClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override

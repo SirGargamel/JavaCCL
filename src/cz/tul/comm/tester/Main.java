@@ -315,6 +315,11 @@ public class Main {
             public Communicator getServerComm() {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
+
+            @Override
+            public int getLocalSocketPort() {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
         };
         Communicator comm = CommunicatorImpl.initNewCommunicator(InetAddress.getLoopbackAddress(), 52);
         ClientSettings.serialize(comm);
@@ -326,11 +331,12 @@ public class Main {
 
         boolean interactiveMode = false;
         DummyServer srv = null;
+        DummyClient dc = null;
         int repCount;
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
                 case "-c":
-                    final DummyClient dc = DummyClient.newInstance(CLIENT_ERROR_CHANCE_MAX * Math.random(), CLIENT_FATAL_CHANCE_MAX * Math.random());
+                    dc = DummyClient.newInstance(CLIENT_ERROR_CHANCE_MAX * Math.random(), CLIENT_FATAL_CHANCE_MAX * Math.random());
                     break;
                 case "-s":
                     srv = new DummyServer();
@@ -352,13 +358,19 @@ public class Main {
 
                     i++;
                     break;
+                case "-cs":
+                    if (dc != null) {
+                        dc.connectToServer(args[i + 1]);
+                        i++;
+                    }
+                    break;
             }
         }
 
         if (srv != null) {
             if (interactiveMode) {
                 System.out.println("Starting interactive mode.");
-                System.out.println("Input repetition counts separated by spaces.");                
+                System.out.println("Input repetition counts separated by spaces.");
 
                 String line;
                 Scanner in = new Scanner(System.in);
