@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  * @author Petr Ječmen
  */
 public class SystemMessagesHandler implements Observer {
-    
+
     private static final Logger log = Logger.getLogger(SystemMessagesHandler.class.getName());
     private final ClientManager clientManager;
     private final JobRequestManager jobRequestManager;
@@ -38,9 +38,9 @@ public class SystemMessagesHandler implements Observer {
         } else {
             throw new NullPointerException("NULL job request manager not allowed.");
         }
-        
+
     }
-    
+
     @Override
     public void update(Observable o, Object arg) {
         if (arg instanceof DataPacket) {
@@ -56,15 +56,15 @@ public class SystemMessagesHandler implements Observer {
                             port = Integer.parseInt(m.getData().toString());
                             UUID clientId = UUID.randomUUID();
                             Communicator c = clientManager.registerClient(ipData.getSourceIP(), port);
-                            if (c instanceof CommunicatorImpl) {
-                                ((CommunicatorImpl) c).setId(clientId);
-                            }
                             if (c != null) {
+                                if (c instanceof CommunicatorImpl) {
+                                    ((CommunicatorImpl) c).setId(clientId);
+                                }
                                 c.sendData(new Message(m.getId(), header, clientId));
+                                log.log(Level.CONFIG, "LOGIN received from {0}, assigning id {1}", new Object[]{ipData.getSourceIP().getHostAddress(), clientId});
                             } else {
                                 log.warning("Error registering new client.");
-                            }
-                            log.log(Level.CONFIG, "LOGIN received from {0}, assigning id {1}", new Object[]{ipData.getSourceIP().getHostAddress(), clientId});
+                            }                            
                         } catch (NumberFormatException ex) {
                             log.log(Level.WARNING, "Illegal login data received from {0} - {1}",
                                     new Object[]{ipData.getSourceIP().getHostAddress(), m.getData().toString()});
@@ -91,7 +91,7 @@ public class SystemMessagesHandler implements Observer {
                         } else {
                             log.warning("Client without id requested a job.");
                         }
-                        
+
                         break;
                     default:
                         // nonsystem message, no action
