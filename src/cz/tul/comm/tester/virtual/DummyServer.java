@@ -3,6 +3,8 @@ package cz.tul.comm.tester.virtual;
 import cz.tul.comm.job.Job;
 import cz.tul.comm.server.ServerImpl;
 import cz.tul.comm.server.Server;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -39,6 +41,10 @@ public class DummyServer {
      */
     public void waitForJobs() {
         s.getJobManager().waitForAllJobs();                
+    }
+    
+    public void registerClient(final String address) throws UnknownHostException {
+        s.registerClient(InetAddress.getByName(address));
     }
 
     private static class Waiter implements Runnable {

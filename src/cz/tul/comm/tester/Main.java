@@ -326,7 +326,7 @@ public class Main {
         ClientSettings.deserialize(si);
     }
 
-    static void testWithDummies(String[] args) {
+    static void testWithDummies(String[] args) throws UnknownHostException {
         Utils.adjustMainLoggerLevel(Level.CONFIG);
 
         boolean interactiveMode = false;
@@ -358,16 +358,10 @@ public class Main {
 
                     i++;
                     break;
-                case "-cs":
-                    if (dc != null) {
-                        dc.connectToServer(args[i + 1]);
-                        i++;
-                    }
-                    break;
             }
         }
 
-        if (srv != null) {
+        if (srv != null || dc != null) {
             if (interactiveMode) {
                 System.out.println("Starting interactive mode.");
                 System.out.println("Input repetition counts separated by spaces.");
@@ -378,22 +372,40 @@ public class Main {
                 String[] split;
                 while (run) {
                     line = in.nextLine().trim().replaceAll("[ ]+", " ");
-                    if (line.equals("quit")) {
-                        run = false;
-                    } else {
-                        split = line.split(" ");
-                        for (int i = 0; i < split.length; i++) {
-                            try {
-                                repCount = Integer.parseInt(split[i]);
-                                srv.submitJob(repCount);
-                                System.out.println("Submitted job with " + repCount + " repetitions.");
-                            } catch (NumberFormatException ex) {
-                                log.log(Level.WARNING, "Illegal count of repetitions used - {0}", split[i]);
-                            }
+                    split = line.split(" ");
+                    if (split.length > 0) {
+                        switch (split[0]) {
+                            case "j":
+                                if (split.length > 1 && srv != null) {
+                                    try {
+                                        repCount = Integer.parseInt(split[1]);
+                                        srv.submitJob(repCount);
+                                    } catch (NumberFormatException ex) {
+                                        log.log(Level.WARNING, "Illegal count of repetitions used - {0}", split[1]);
+                                    }
+                                } else {
+                                    log.warning("Job needs repetition count as parameter.");
+                                }
+                                break;
+                            case "cs":
+                                if (split.length > 1 && dc != null) {
+                                    dc.connectToServer(split[1]);
+                                }
+                            case "ca":
+                                if (split.length > 1 && srv != null) {
+                                    srv.registerClient(split[1]);
+                                }
+                                break;
+                            case "c":
+                                dc = DummyClient.newInstance(CLIENT_ERROR_CHANCE_MAX * Math.random(), CLIENT_FATAL_CHANCE_MAX * Math.random());
+                                break;
+                            case "s":
+                                srv = new DummyServer();
+                                break;
                         }
                     }
                 }
-            } else {
+            } else if (srv != null) {
                 srv.waitForJobs();
             }
         }

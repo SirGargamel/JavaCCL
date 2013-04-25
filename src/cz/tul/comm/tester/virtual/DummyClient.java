@@ -44,6 +44,7 @@ public class DummyClient implements AssignmentListener {
 
     public void connectToServer(final String address) {
         try {
+            log.log(Level.INFO, "Loggin to server at IP {0}", address);
             c.registerToServer(InetAddress.getByName(address), Constants.DEFAULT_PORT);
         } catch (UnknownHostException ex) {
             Logger.getLogger(DummyClient.class.getName()).log(Level.SEVERE, null, ex);
