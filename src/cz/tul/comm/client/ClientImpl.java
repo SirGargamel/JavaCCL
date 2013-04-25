@@ -43,13 +43,14 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter {
      * @return new Client instance
      */
     public static Client initNewClient(final int port) {
-        ClientImpl result = null;
+        ClientImpl result;
         try {
             result = new ClientImpl();
             result.start(port);
             log.log(Level.INFO, "New client created on port {0}", port);
         } catch (IOException ex) {
             log.log(Level.WARNING, "Failed to initialize client on port " + port, ex);
+            result = null;
         }
 
         return result;
