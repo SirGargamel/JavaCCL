@@ -70,19 +70,22 @@ class PushDaemon<O extends Identifiable> extends Thread implements IService {
                         tmp.clear();
                         q = m.get(l);
 
-                        while (!q.isEmpty()) {
-                            object = q.poll();
-                            if (receivers.get(l).contains(object.getId())) {
-                                log.log(Level.FINE, "Pushing data {0} to {1}", new Object[]{object.getId().toString(), l.toString()});
-                                exec.execute(new Notifier(l, object));
-                            } else {                                
-                                tmp.add((O) object);
-                                log.log(Level.CONFIG, "Data {0} not pushed to {1} because he is not registered for pushing objects with this ID.", new Object[]{object.getId().toString(), l.toString()});
+                        if (q != null) {
+                            while (!q.isEmpty()) {
+                                object = q.poll();
+                                if (receivers.get(l).contains(object.getId())) {
+                                    log.log(Level.FINE, "Pushing data {0} to {1}", new Object[]{object.getId().toString(), l.toString()});
+                                    exec.execute(new Notifier(l, object));
+                                } else {
+                                    tmp.add((O) object);
+                                    log.log(Level.CONFIG, "Data {0} not pushed to {1} because he is not registered for pushing objects with this ID.", new Object[]{object.getId().toString(), l.toString()});
+                                }
                             }
-                        }
 
-                        // store back data that havent been pushed
-                        q.addAll(tmp);
+
+                            // store back data that havent been pushed
+                            q.addAll(tmp);
+                        }
                     }
                 }
             }
