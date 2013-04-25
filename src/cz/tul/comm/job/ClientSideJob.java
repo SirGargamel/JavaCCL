@@ -22,6 +22,7 @@ public class ClientSideJob implements Assignment, Listener {
     private final AssignmentListener taskListener;
     private final Communicator comm;
     private final UUID jobId;
+    private JobStatus jobStatus;
     private boolean isDone;
 
     /**
@@ -44,6 +45,7 @@ public class ClientSideJob implements Assignment, Listener {
         sendMessage(accept);
         
         isDone = false;
+        jobStatus = JobStatus.ASSIGNED;
     }
 
     private boolean sendMessage(final Message m) {
@@ -72,6 +74,7 @@ public class ClientSideJob implements Assignment, Listener {
     public boolean submitResult(Object result) {
         listenerRegistrator.removeIdListener(jobId, this);
         isDone = true;
+        jobStatus = JobStatus.COMPUTED;
         final Message m = new Message(jobId, JobMessageHeaders.JOB_RESULT, result);
         return sendMessage(m);
     }
@@ -83,6 +86,7 @@ public class ClientSideJob implements Assignment, Listener {
 
     @Override
     public void cancel(final String reason) {
+        jobStatus = JobStatus.CANCELED;
         final Message m = new Message(jobId, JobMessageHeaders.JOB_CANCEL, reason);
         sendMessage(m);
         listenerRegistrator.removeIdListener(jobId, this);
@@ -94,6 +98,7 @@ public class ClientSideJob implements Assignment, Listener {
             final Message m = (Message) data;
             switch (m.getHeader()) {
                 case JobMessageHeaders.JOB_CANCEL:
+                    jobStatus = JobStatus.CANCELED;
                     listenerRegistrator.removeIdListener(jobId, this);
                     taskListener.cancelTask(this);
                     log.log(Level.CONFIG, "Job has been cancelled by server.");
@@ -119,5 +124,9 @@ public class ClientSideJob implements Assignment, Listener {
     @Override
     public boolean isDone() {
         return isDone;
+    }
+
+    public JobStatus getStatus() {
+        return jobStatus;
     }
 }
