@@ -12,5 +12,5 @@ public interface Listener {
      *
      * @param data received data
      */
-    void receiveData(final Identifiable data);
+    Object receiveData(final Identifiable data);
 }

@@ -8,7 +8,7 @@ import cz.tul.comm.history.History;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.job.Job;
 import cz.tul.comm.job.JobManager;
-import cz.tul.comm.job.JobManagerImpl;
+import cz.tul.comm.job.ServerJobManagerImpl;
 import cz.tul.comm.persistence.ServerSettings;
 import cz.tul.comm.server.daemons.ClientDiscoveryDaemon;
 import cz.tul.comm.server.daemons.ClientStatusDaemon;
@@ -67,7 +67,7 @@ public final class ServerImpl implements IService, Server {
     private final ServerSocket serverSocket;
     private final HistoryManager history;
     private final ClientStatusDaemon clientStatusDaemon;
-    private final JobManagerImpl jobManager;
+    private final ServerJobManagerImpl jobManager;
     private ClientDiscoveryDaemon cdd;
 
     private ServerImpl(final int port) throws IOException {
@@ -84,9 +84,10 @@ public final class ServerImpl implements IService, Server {
             clientStatusDaemon = null;
         }
 
-        jobManager = new JobManagerImpl(clients, serverSocket);
+        jobManager = new ServerJobManagerImpl(clients, serverSocket);
+        getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jobManager, true);
 
-        getListenerRegistrator().addMessageObserver(new SystemMessagesHandler(clients, jobManager));
+        getListenerRegistrator().setIdListener(Constants.ID_SYS_MSG, new SystemMessagesHandler(clients), true);
 
         if (ComponentSwitches.useClientDiscovery) {
             try {

@@ -74,16 +74,16 @@ public class History implements HistoryManager {
     }
 
     @Override
-    public void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted) {
-        final HistoryRecord r = new HistoryRecord(localHost, ipDestination, data, accepted);
+    public void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted, final Object answer) {
+        final HistoryRecord r = new HistoryRecord(localHost, ipDestination, data, accepted, answer);
         records.add(r);
         log.log(Level.FINE, "Sent message stored to history - {0}", r);
 
     }
 
     @Override
-    public void logMessageReceived(final InetAddress ipSource, final Object data, final boolean accepted) {
-        final HistoryRecord r = new HistoryRecord(ipSource, localHost, data, accepted);
+    public void logMessageReceived(final InetAddress ipSource, final Object data, final boolean accepted, final Object answer) {
+        final HistoryRecord r = new HistoryRecord(ipSource, localHost, data, accepted, answer);
         records.add(r);
         log.log(Level.FINE, "Received message stored to history - {0}", r);
     }

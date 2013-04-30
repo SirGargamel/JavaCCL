@@ -18,11 +18,11 @@ public enum JobStatus {
     /**
      * client has confirmed job task
      */
-    ASSIGNED,
+    ACCEPTED,
     /**
      * client has finished computing and sent result back to server
      */
-    COMPUTED,
+    FINISHED,
     /**
      * job has been cancelled
      */

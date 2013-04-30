@@ -15,13 +15,15 @@ public class HistoryRecord {
     private final InetAddress ipSource;
     private final InetAddress ipDestination;
     private final Object data;
+    private final Object answer;
     private final Date time;
     private final boolean accepted;
 
-    HistoryRecord(final InetAddress ipSource, final InetAddress ipDestination, Object data, final boolean accepted) {
+    HistoryRecord(final InetAddress ipSource, final InetAddress ipDestination, final Object data, final boolean accepted, final Object answer) {
         this.ipSource = ipSource;
         this.ipDestination = ipDestination;
         this.data = data;
+        this.answer = answer;
         this.accepted = accepted;
 
         time = new Date();
@@ -46,6 +48,10 @@ public class HistoryRecord {
      */
     public Object getData() {
         return data;
+    }
+
+    public Object getAnswer() {
+        return answer;
     }
 
     /**

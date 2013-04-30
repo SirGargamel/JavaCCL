@@ -39,7 +39,7 @@ public class BasicConversator implements Listener {
         receivedData = null;
 
         final Object id = dataToSend.getId();
-        listener.addIdListener(id, this, true);
+        listener.setIdListener(id, this, true);
 
         log.log(Level.CONFIG, "Starting conversation with id {0} to {1} - [{2}]", new Object[]{id.toString(), target.getAddress().getHostAddress(), dataToSend.toString()});
         target.sendData(dataToSend);
@@ -54,17 +54,18 @@ public class BasicConversator implements Listener {
             }
         }        
 
-        listener.removeIdListener(id, this);
+        listener.removeIdListener(id);
         
         return receivedData;
     }
 
     @Override
-    public void receiveData(Identifiable data) {
+    public Object receiveData(Identifiable data) {
         receivedData = data;
         synchronized (this) {
             this.notify();
             log.log(Level.CONFIG, "Received reply for conversation with id {0} - [{1}]", new Object[]{data.getId(), data.toString()});
         }
+        return true;
     }
 }

@@ -19,7 +19,7 @@ public interface Client extends IService {
      *
      * @param assignmentListener class hnadling assignment computation
      */
-    void assignAssignmentListener(AssignmentListener assignmentListener);
+    void setAssignmentListener(AssignmentListener assignmentListener);
 
     /**
      * Deregister client from current server.
@@ -68,7 +68,7 @@ public interface Client extends IService {
      * @param data data for sending
      * @return true for successfull data sending
      */
-    boolean sendDataToServer(final Object data);
+    Object sendDataToServer(final Object data);
 
     /**
      * Request an extra job from server.

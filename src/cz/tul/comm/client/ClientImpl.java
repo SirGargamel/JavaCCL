@@ -10,7 +10,7 @@ import cz.tul.comm.history.History;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.history.sorting.DefaultSorter;
 import cz.tul.comm.job.AssignmentListener;
-import cz.tul.comm.messaging.BasicConversator;
+import cz.tul.comm.job.ClientJobManagerImpl;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.persistence.ClientSettings;
@@ -70,9 +70,9 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter {
     }
     private ServerSocket serverSocket;
     private final HistoryManager history;
-    private AssignmentListener assignmentListener;
     private CommunicatorImpl comm;
-    private ClientSystemMessaging csm;
+    private SystemMessageHandler csm;
+    private ClientJobManagerImpl jm;
     private ServerDiscoveryDaemon sdd;
 
     private ClientImpl() {
@@ -91,7 +91,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter {
             public void run() {
                 stopService();
             }
-        }));        
+        }));
     }
 
     @Override
@@ -100,20 +100,13 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter {
         boolean result = false;
         comm = CommunicatorImpl.initNewCommunicator(address, port);
         if (isServerUp()) {
-            final Message login = new Message(MessageHeaders.LOGIN, serverSocket.getPort());
-            BasicConversator bs = new BasicConversator(comm, serverSocket);
+            final Message login = new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGIN, serverSocket.getPort());
+            final Object id = comm.sendData(login);
 
-            final Object id = bs.sendAndReceiveData(login);
-            if (id instanceof Message) {
-                final Message m = (Message) id;
-                if (m.getHeader().equals(MessageHeaders.LOGIN)
-                        && m.getData() instanceof UUID) {
-                    comm.setId((UUID) m.getData());
-                    result = true;
-                    log.log(Level.INFO, "Client has been registered to new server, new ID has been received - {0}", comm.getId());
-                } else {
-                    log.log(Level.WARNING, "Invalid response received - {0}", m.toString());
-                }
+            if (id instanceof UUID) {
+                comm.setId((UUID) id);
+                result = true;
+                log.log(Level.INFO, "Client has been registered to new server, new ID has been received - {0}", comm.getId());
             } else {
                 log.log(Level.WARNING, "Invalid response received - {0}", id.toString());
             }
@@ -144,7 +137,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter {
     }
 
     @Override
-    public boolean sendDataToServer(final Object data) {
+    public Object sendDataToServer(final Object data) {
         log.log(Level.INFO, "Sending data to server - {0}", data.toString());
         if (comm == null) {
             throw new NullPointerException("No server communicator set");
@@ -175,12 +168,8 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter {
     }
 
     @Override
-    public void assignAssignmentListener(AssignmentListener assignmentListener) {
-        this.assignmentListener = assignmentListener;
-    }
-
-    AssignmentListener getAssignmentListener() {
-        return assignmentListener;
+    public void setAssignmentListener(AssignmentListener assignmentListener) {
+        jm.setAssignmentListener(assignmentListener);
     }
 
     @Override
@@ -192,9 +181,12 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter {
         serverSocket = ServerSocket.createServerSocket(port, this);
         serverSocket.registerHistory(history);
 
-        csm = new ClientSystemMessaging(this);
-        serverSocket.addMessageObserver(csm);
-        
+        csm = new SystemMessageHandler();
+        getListenerRegistrator().setIdListener(Constants.ID_SYS_MSG, csm, true);
+
+        jm = new ClientJobManagerImpl(this);
+        getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jm, true);
+
         if (ComponentSwitches.useSettings) {
             if (!ClientSettings.deserialize(this)) {
                 log.warning("Error loading client settings.");
@@ -235,7 +227,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter {
 
     @Override
     public void requestAssignment() {
-        final Message m = new Message(MessageHeaders.JOB_REQUEST, null);
+        jm.requestAssignment();
     }
 
     @Override

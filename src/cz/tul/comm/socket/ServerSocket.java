@@ -9,7 +9,9 @@ import cz.tul.comm.socket.queue.ObjectQueue;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Observer;
 import java.util.Queue;
 import java.util.Set;
@@ -34,9 +36,9 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
      * Prepare new ServerSocket.
      *
      * @param port listening port
-     * @param idFilter 
+     * @param idFilter
      * @return new instance of ServerSocket
-     * @throws IOException error creating socket on given port 
+     * @throws IOException error creating socket on given port
      */
     public static ServerSocket createServerSocket(final int port, final IDFilter idFilter) throws IOException {
         ServerSocket result = new ServerSocket(port, idFilter);
@@ -47,9 +49,11 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     private final java.net.ServerSocket socket;
     private final IDFilter idFilter;
     private final ExecutorService exec;
+    private final Map<UUID, Listener> listenersClient;
+    private final Map<Object, Listener> listenersId;
     private final ObjectQueue<DataPacket> dataStorageClient;
     private final ObjectQueue<Identifiable> dataStorageId;
-    private final Set<Observer> dataListeners;    
+    private final Set<Observer> dataListeners;
     private HistoryManager hm;
     private boolean run;
 
@@ -59,41 +63,54 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         exec = Executors.newCachedThreadPool();
         dataStorageClient = new ObjectQueue<>();
         dataStorageId = new ObjectQueue<>();
-        dataListeners = new HashSet<>();        
+        dataListeners = new HashSet<>();
         run = true;
+        listenersClient = new HashMap<>();
+        listenersId = new HashMap<>();
     }
 
     @Override
-    public Queue<DataPacket> addClientListener(final UUID clientId, final Listener dataListener, final boolean wantsPushNotifications) {
+    public Queue<DataPacket> setClientListener(final UUID clientId, final Listener dataListener, final boolean wantsPushNotifications) {
         log.log(Level.FINE, "Added new listener {0} for ID {1}", new Object[]{dataListener.toString(), clientId});
-        return dataStorageClient.registerListener(clientId, dataListener, wantsPushNotifications);
+        if (wantsPushNotifications) {
+            listenersClient.put(clientId, dataListener);
+            return null;
+        } else {
+            return dataStorageClient.setListener(clientId, dataListener);
+        }
+
     }
 
     @Override
-    public void removeClientListener(final UUID clientId, final Listener dataListener) {
+    public void removeClientListener(final UUID clientId) {
         if (clientId != null) {
-            dataStorageClient.deregisterListener(clientId, dataListener);
-            log.log(Level.FINE, "Removed listener {0} for ID {1}", new Object[]{dataListener.toString(), clientId});
+            dataStorageClient.removeListener(clientId);
+            listenersClient.remove(clientId);
+            log.log(Level.FINE, "Removed listener for ID {1}", new Object[]{clientId});
         } else {
-            log.log(Level.FINE, "Removed listener {0}", new Object[]{dataListener.toString()});
-            dataStorageClient.deregisterListener(dataListener);
+            log.log(Level.FINE, "NULL client id received for deregistration");
         }
     }
 
     @Override
-    public Queue<Identifiable> addIdListener(final Object id, final Listener idListener, final boolean wantsPushNotifications) {
+    public Queue<Identifiable> setIdListener(final Object id, final Listener idListener, final boolean wantsPushNotifications) {
         log.log(Level.FINE, "Added new listener {0} for ID {1}", new Object[]{idListener.toString(), id.toString()});
-        return dataStorageId.registerListener(id, idListener, wantsPushNotifications);
+        if (wantsPushNotifications) {
+            listenersId.put(id, idListener);
+            return null;
+        } else {
+            return dataStorageId.setListener(id, idListener);
+        }
     }
 
     @Override
-    public void removeIdListener(Object id, Listener idListener) {
-        if (id != null) {
-            log.log(Level.FINE, "Removed listener {0} for ID {1}", new Object[]{idListener.toString(), id.toString()});
-            dataStorageId.deregisterListener(id, idListener);
+    public void removeIdListener(Object id) {
+        if (id != null) {            
+            dataStorageId.removeListener(id);
+            listenersId.remove(id);
+            log.log(Level.FINE, "Removed listener for ID {0}", new Object[]{id.toString()});
         } else {
-            log.log(Level.FINE, "Removed listener {0}", new Object[]{idListener.toString()});
-            dataStorageId.deregisterListener(idListener);
+            log.log(Level.FINE, "NULL message id received for deregistration");
         }
     }
 
@@ -116,7 +133,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
             try {
                 s = socket.accept();
                 log.log(Level.FINE, "Connection accepted from IP {0}:{1}", new Object[]{s.getInetAddress().getHostAddress(), s.getPort()});
-                final SocketReader sr = new SocketReader(s, idFilter, dataStorageClient, dataStorageId);
+                final SocketReader sr = new SocketReader(s, idFilter, dataStorageClient, listenersClient, dataStorageId, listenersId);
                 sr.registerHistory(hm);
                 for (Observer o : dataListeners) {
                     sr.addObserver(o);
@@ -153,8 +170,6 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         try {
             run = false;
             exec.shutdownNow();
-            dataStorageClient.stopService();
-            dataStorageId.stopService();
             socket.close();
             log.fine("Server socket has been stopped.");
         } catch (IOException ex) {

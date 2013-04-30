@@ -1,5 +1,6 @@
 package cz.tul.comm.communicator;
 
+import cz.tul.comm.GenericResponses;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
@@ -91,13 +92,14 @@ public class CommunicatorImpl extends Observable implements Communicator {
     }
 
     @Override
-    public boolean sendData(final Object data) {
+    public Object sendData(final Object data) {
         return sendData(data, 0);
     }
 
     @Override
-    public boolean sendData(final Object data, final int timeout) {
-        boolean result = false;
+    public Object sendData(final Object data, final int timeout) {
+        boolean readAndReply = false;
+        Object response = null;
         Status stat = Status.OFFLINE;
 
         try (final Socket s = new Socket(address, port)) {
@@ -110,12 +112,16 @@ public class CommunicatorImpl extends Observable implements Communicator {
             log.log(Level.CONFIG, "Data sent to {0}:{1} - [{2}]", new Object[]{getAddress().getHostAddress(), getPort(), data.toString()});
 
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
-                result = in.readBoolean();
-                log.log(Level.FINE, "Received reply from client - {0}", result);
+                response = in.readObject();
+                log.log(Level.FINE, "Received reply from client - {0}", response);
                 stat = Status.ONLINE;
+                readAndReply = true;
             } catch (IOException ex) {
                 log.log(Level.WARNING, "Error receiving response from output socket", ex);
                 stat = Status.NOT_RESPONDING;
+            } catch (ClassNotFoundException ex) {
+                log.log(Level.WARNING, "Unknown class object received.", ex);
+                response = GenericResponses.UNKNOWN_DATA;
             }
         } catch (SocketTimeoutException ex) {
             log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", address.getHostAddress());
@@ -125,11 +131,11 @@ public class CommunicatorImpl extends Observable implements Communicator {
         }
 
         if (hm != null) {
-            hm.logMessageSend(address, data, result);
+            hm.logMessageSend(address, data, readAndReply, response);
         }
 
         setStatus(stat);
-        return result;
+        return response;
     }
 
     @Override
@@ -150,10 +156,12 @@ public class CommunicatorImpl extends Observable implements Communicator {
 
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                 stat = Status.REACHABLE;
-                in.readBoolean();
+                in.readObject();
                 stat = Status.ONLINE;
             } catch (IOException ex) {
                 log.log(Level.FINE, "Client on IP {0} did not open stream for answer.", address.getHostAddress());
+            } catch (ClassNotFoundException ex) {
+                log.log(Level.WARNING, "Illegal class received from client for KEEP_ALIVE", ex);
             }
         } catch (SocketTimeoutException ex) {
             log.log(Level.FINE, "Client on IP {0} is not responding to request.", address.getHostAddress());
@@ -162,7 +170,7 @@ public class CommunicatorImpl extends Observable implements Communicator {
         }
 
         if (hm != null) {
-            hm.logMessageSend(address, data, result);
+            hm.logMessageSend(address, data, result, stat);
         }
 
         setStatus(stat);

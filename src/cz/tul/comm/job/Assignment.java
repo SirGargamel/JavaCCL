@@ -28,7 +28,7 @@ public interface Assignment {
      * @param result computation result
      * @return true for successfull sending 
      */
-    boolean submitResult(final Object result);
+    void submitResult(final Object result);
 
     /**
      * Cancel job computation.

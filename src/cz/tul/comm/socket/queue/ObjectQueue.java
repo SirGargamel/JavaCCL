@@ -1,8 +1,5 @@
 package cz.tul.comm.socket.queue;
 
-import cz.tul.comm.IService;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,18 +14,16 @@ import java.util.logging.Logger;
  * Identifiable} interface.
  * @author Petr Ječmen
  */
-public class ObjectQueue<O extends Identifiable> implements IService {
+public class ObjectQueue<O extends Identifiable> {
 
     private static final Logger log = Logger.getLogger(ObjectQueue.class.getName());
-    private final Map<Object, Map<Listener, Queue<O>>> data;
-    private final PushDaemon<O> pushDaemon;
+    private final Map<Object, Queue<O>> data;
 
     /**
      * Initialize new queue.
      */
     public ObjectQueue() {
         data = new ConcurrentHashMap<>();
-        pushDaemon = new PushDaemon<>(getDataQueues());
     }
 
     /**
@@ -36,15 +31,8 @@ public class ObjectQueue<O extends Identifiable> implements IService {
      * @param owner queue owner
      * @return data queue for given owner with data with given id
      */
-    public Queue<O> getDataQueue(final Object id, final Listener owner) {
-        Queue<O> result = null;
-
-        Map<Listener, Queue<O>> m = data.get(id);
-        if (m != null) {
-            result = m.get(owner);
-        }
-
-        return result;
+    public Queue<O> getDataQueue(final Object id) {
+        return data.get(id);
     }
 
     /**
@@ -54,23 +42,12 @@ public class ObjectQueue<O extends Identifiable> implements IService {
      * arrival
      * @return data queue, which will be used for storing data with given ID
      */
-    public Queue<O> registerListener(final Object id, final Listener owner, final boolean wantsPush) {
-        Queue<O> result = new ConcurrentLinkedQueue<>();
+    public Queue<O> setListener(final Object id, final Listener owner) {
+        final Queue<O> result = new ConcurrentLinkedQueue<>();
 
         if (id != null) {
-            Map<Listener, Queue<O>> m = data.get(id);
-            if (m == null) {
-                m = new ConcurrentHashMap<>();
-                data.put(id, m);
-            }
-
-            m.put(owner, result);
-
-            if (wantsPush) {
-                pushDaemon.addPushReceiver(owner, id);
-            }
-
-            log.log(Level.FINE, "New listener registered - own: {1}, id:{0}, push:{2}", new Object[]{id.toString(), owner.toString(), wantsPush});
+            data.put(owner, result);
+            log.log(Level.FINE, "New listener registered - own: {1}, id:{0}", new Object[]{id.toString(), owner.toString()});
         }
 
         return result;
@@ -82,26 +59,9 @@ public class ObjectQueue<O extends Identifiable> implements IService {
      * @param id data ID
      * @param owner listener
      */
-    public void deregisterListener(final Object id, final Listener owner) {
-        Map<Listener, Queue<O>> m = data.get(id);
-        if (m != null) {
-            m.remove(owner);
-        }
-        pushDaemon.removePushReceiver(owner, id);
-        log.log(Level.FINE, "Listener deregistered - own: {1}, id:{0}", new Object[]{id.toString(), owner.toString()});
-    }
-
-    /**
-     * Owner will not receive aby notifications about incoming data.
-     *
-     * @param owner listener
-     */
-    public void deregisterListener(final Listener owner) {
-        for (Map<Listener, Queue<O>> m : data.values()) {
-            m.remove(owner);
-        }
-        pushDaemon.removePushReceiver(owner, null);
-        log.log(Level.FINE, "Listener deregistered - own: {0}", new Object[]{owner.toString()});
+    public void removeListener(final Object id) {
+        data.remove(id);
+        log.log(Level.FINE, "Listener deregistered for id{0}", new Object[]{id.toString()});
     }
 
     /**
@@ -111,32 +71,11 @@ public class ObjectQueue<O extends Identifiable> implements IService {
      */
     public void storeData(final O data) {
         if (data != null && data.getId() != null) {
-            final Map<Listener, Queue<O>> m = this.data.get(data.getId());
-            if (m != null) {
-                for (Queue<O> q : m.values()) {
-                    q.add(data);
-                }
-
+            final Queue q = this.data.get(data.getId());
+            if (q != null) {
+                q.add(data);
                 log.log(Level.FINE, "Data [{0}] stored.", data.toString());
-
-                if (!pushDaemon.isAlive()) {
-                    pushDaemon.start();
-                } else {
-                    synchronized (pushDaemon) {
-                        pushDaemon.notify();
-                    }
-                }
             }
         }
-    }
-
-    private Collection<Map<Listener, Queue<O>>> getDataQueues() {
-        return Collections.unmodifiableCollection(data.values());
-    }
-
-    @Override
-    public void stopService() {
-        pushDaemon.stopService();
-        log.fine("ObjectQueue has been stopped.");
     }
 }

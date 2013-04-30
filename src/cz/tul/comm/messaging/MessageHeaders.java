@@ -19,13 +19,5 @@ public interface MessageHeaders {
      * keep alives should be ignored as they function only for cummunication
      * check
      */
-    String KEEP_ALIVE = "keepAlive";
-    /**
-     * job assignment
-     */
-    String JOB = "job";
-    /**
-     * request extra job from server.
-     */
-    String JOB_REQUEST = "jobRequest";
+    String KEEP_ALIVE = "keepAlive";        
 }

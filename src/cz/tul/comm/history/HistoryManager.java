@@ -28,7 +28,7 @@ public interface HistoryManager {
      * @param data transmitted data
      * @param accepted true if data has been received successfully
      */
-    void logMessageReceived(final InetAddress ipSource, final Object data, final boolean accepted);
+    void logMessageReceived(final InetAddress ipSource, final Object data, final boolean accepted, final Object answer);
 
     /**
      * Log that message has been sent.
@@ -37,7 +37,7 @@ public interface HistoryManager {
      * @param data transmitted data
      * @param accepted true if data has been sent successfully
      */
-    void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted);
+    void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted, final Object response);
 
     /**
      * Register new {@link ExportUnit}.

@@ -24,17 +24,10 @@ public interface ListenerRegistrator {
      * @return Queue, which wil be used for data storing when data from this IP
      * is received.
      */
-    Queue<DataPacket> addClientListener(final UUID clientId, final Listener dataListener, final boolean wantsPushNotifications);
+    Queue<DataPacket> setClientListener(final UUID clientId, final Listener dataListener, final boolean wantsPushNotifications);    
 
-    /**
-     * Deregister given listener for given IP. If IP is null, then the listener
-     * is removed completely (from all IPs).
-     *
-     * @param clientId UUID of target listener
-     * @param dataListener target listener
-     */
-    void removeClientListener(final UUID clientId, final Listener dataListener);
-
+    void removeClientListener(final UUID clientId);
+    
     /**
      * Register listener for given ID.
      *
@@ -45,7 +38,7 @@ public interface ListenerRegistrator {
      * @return Queue, which wil be used for data storing when data with this ID
      * is received.
      */
-    Queue<Identifiable> addIdListener(final Object id, final Listener idListener, final boolean wantsPushNotifications);
+    Queue<Identifiable> setIdListener(final Object id, final Listener idListener, final boolean wantsPushNotifications);
 
     /**
      * Deregister given listener for given ID. If ID is null, then the listener
@@ -54,7 +47,7 @@ public interface ListenerRegistrator {
      * @param id data ID for listening
      * @param idListener target listener
      */
-    void removeIdListener(final Object id, final Listener idListener);
+    void removeIdListener(final Object id);
 
     /**
      * Register observer, that will receive all data received by this

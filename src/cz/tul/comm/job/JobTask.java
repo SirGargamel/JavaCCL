@@ -1,5 +1,7 @@
 package cz.tul.comm.job;
 
+import cz.tul.comm.Constants;
+import cz.tul.comm.socket.queue.Identifiable;
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -8,37 +10,61 @@ import java.util.UUID;
  *
  * @author Petr Ječmen
  */
-public class JobTask implements Serializable {
+public class JobTask implements Serializable, Identifiable {
 
     private final UUID jobId;
+    private final String taskDescription;
     private final Object task;
 
     /**
      * Init new JobTasj
+     *
      * @param jobId jobs ID
      * @param task job task
      */
-    public JobTask(UUID jobId, Object task) {
+    public JobTask(final UUID jobId, final String taskDescritpion, final Object task) {
         this.jobId = jobId;
+        this.taskDescription = taskDescritpion;
         this.task = task;
     }
 
-    /**     
+    /**
      * @return jobs ID
      */
     public UUID getJobId() {
         return jobId;
     }
 
-    /**     
+    public String getTaskDescription() {
+        return taskDescription;
+    }
+
+    /**
      * @return job task
      */
     public Object getTask() {
         return task;
     }
-    
+
     @Override
     public String toString() {
-        return "JobTask with ID ".concat(jobId.toString());
+        final StringBuilder sb = new StringBuilder();
+        sb.append("JobTask - ");
+        sb.append(jobId);        
+        sb.append(" - ");
+        sb.append(taskDescription);
+        if (task != null) {
+            sb.append(" - ");
+            sb.append("[");
+            sb.append(task.toString());
+            sb.append("]");
+        }
+
+        return sb.toString();
+    }
+
+    @Override
+    public Object getId() {
+        return Constants.ID_JOB_MANAGER;
     }
 }

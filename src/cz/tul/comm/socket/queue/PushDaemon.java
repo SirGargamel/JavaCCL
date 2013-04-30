@@ -1,12 +1,9 @@
 package cz.tul.comm.socket.queue;
 
 import cz.tul.comm.IService;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,69 +19,49 @@ class PushDaemon<O extends Identifiable> extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(PushDaemon.class.getName());
     private static final int TIME_WAIT = 1_000;
-    private final Collection<Map<Listener, Queue<O>>> data;
-    private final Map<Listener, List<Object>> receivers;
+    private final Map<Object, Queue<O>> data;
+    private final Map<Object, Listener> receivers;
     private final ExecutorService exec;
     private boolean run;
 
-    PushDaemon(final Collection<Map<Listener, Queue<O>>> data) {
+    PushDaemon(final Map<Object, Queue<O>> data) {
         this.data = data;
         receivers = new HashMap<>();
         exec = Executors.newCachedThreadPool();
         run = true;
     }
 
-    void addPushReceiver(final Listener receiver, final Object id) {
-        List<Object> l = receivers.get(receiver);
-        if (l == null) {
-            l = new ArrayList<>();
-            receivers.put(receiver, l);
-        }
-        l.add(id);
+    void setPushReceiver(final Listener receiver, final Object id) {
+        receivers.put(id, receiver);
 
         log.log(Level.FINE, "New push receiver for id {0} registered.", id.toString());
     }
 
-    void removePushReceiver(final Listener receiver, final Object id) {
-        if (id == null) {
-            receivers.remove(receiver);
-            log.log(Level.FINE, "Push receiver {1} deregistered.", receiver.toString());
-        } else {
-            final List<Object> l = receivers.get(receiver);
-            if (l != null) {
-                l.remove(id);
-                log.log(Level.FINE, "Push receiver for id {0} deregistered.", id.toString());
-            }
-        }
+    void removePushReceiver(final Object id) {
+        receivers.remove(id);
+        log.log(Level.FINE, "Push receiver for id {0} deregistered.", id.toString());
+
+
     }
 
     @Override
     public void run() {
-        Queue<O> q;
-        Queue<O> tmp = new LinkedList<>();
+        Queue<O> q;        
         Identifiable object;
+        Object id;
+        Listener l;
         while (run) {
-            for (Map<Listener, Queue<O>> m : data) {
-                for (Listener l : m.keySet()) {
-                    if (receivers.containsKey(l)) {
-                        tmp.clear();
-                        q = m.get(l);
+            for (Entry<Object, Queue<O>> e : data.entrySet()) {
+                id = e.getKey();
+                if (receivers.containsKey(id)) {
+                    l = receivers.get(id);
+                    q = data.get(id);
 
-                        if (q != null) {
-                            while (!q.isEmpty()) {
-                                object = q.poll();
-                                if (receivers.get(l).contains(object.getId())) {
-                                    log.log(Level.FINE, "Pushing data {0} to {1}", new Object[]{object.getId().toString(), l.toString()});
-                                    exec.execute(new Notifier(l, object));
-                                } else {
-                                    tmp.add((O) object);
-                                    log.log(Level.CONFIG, "Data {0} not pushed to {1} because he is not registered for pushing objects with this ID.", new Object[]{object.getId().toString(), l.toString()});
-                                }
-                            }
-
-
-                            // store back data that havent been pushed
-                            q.addAll(tmp);
+                    if (q != null) {
+                        while (!q.isEmpty()) {
+                            object = q.poll();
+                            log.log(Level.FINE, "Pushing data {0} to {1}", new Object[]{object.getId().toString(), l.toString()});
+                            exec.execute(new Notifier(l, object));
                         }
                     }
                 }
@@ -92,7 +69,7 @@ class PushDaemon<O extends Identifiable> extends Thread implements IService {
 
             try {
                 synchronized (this) {
-                    this.wait(TIME_WAIT);
+                    this.wait();
                 }
             } catch (InterruptedException ex) {
                 log.log(Level.WARNING, "PushDameon pause has been interrupted.", ex);
