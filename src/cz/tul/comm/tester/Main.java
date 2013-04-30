@@ -16,7 +16,6 @@ import cz.tul.comm.history.sorting.TimeSorter;
 import cz.tul.comm.job.Assignment;
 import cz.tul.comm.job.AssignmentListener;
 import cz.tul.comm.job.Job;
-import cz.tul.comm.messaging.BasicConversator;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.persistence.ClientSettings;
 import cz.tul.comm.persistence.ServerSettings;
@@ -204,9 +203,8 @@ public class Main {
 
 
         Communicator comm = s.getClientManager().registerClient(InetAddress.getLoopbackAddress(), PORT_C);
-
-        final BasicConversator r = new BasicConversator(comm, s.getListenerRegistrator());
-        System.out.println("Response is " + r.sendAndReceiveData(mOut));
+        
+        System.out.println("Response is " + comm.sendData(mOut));
     }
 
     static void jobTest() {
