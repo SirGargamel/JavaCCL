@@ -39,7 +39,7 @@ public class DummyClient implements AssignmentListener {
     }
 
     private void init() {
-        c.assignAssignmentListener(this);
+        c.setAssignmentListener(this);
     }
 
     public void connectToServer(final String address) {

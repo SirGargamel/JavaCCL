@@ -65,4 +65,15 @@ public class Work implements Callable<Object>, Serializable {
     public int getRepetitionCount() {
         return repetitionCount;
     }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("Work - ");
+        sb.append(jobId);
+        sb.append(" - ");
+        sb.append(repetitionCount);
+        
+        return sb.toString();
+    }
 }

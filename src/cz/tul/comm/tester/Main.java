@@ -113,14 +113,14 @@ public class Main {
         InetAddress ip2 = InetAddress.getByAddress(new byte[]{2, 1, 1, 1});
         InetAddress ip3 = InetAddress.getByAddress(new byte[]{3, 1, 1, 1});
 
-        hm.logMessageReceived(ip2, m2, true);
+        hm.logMessageReceived(ip2, m2, true, null);
         Thread.sleep(100);
-        hm.logMessageSend(ip2, m1, true);
-        hm.logMessageReceived(ip, m2, true);
+        hm.logMessageSend(ip2, m1, true, null);
+        hm.logMessageReceived(ip, m2, true, null);
         Thread.sleep(150);
-        hm.logMessageReceived(ip3, m2, true);
+        hm.logMessageReceived(ip3, m2, true, null);
         Thread.sleep(200);
-        hm.logMessageSend(ip3, m1, true);
+        hm.logMessageSend(ip3, m1, true, null);
 
         hm.export(new File("testIP.xml"), new IPSorter(true));
         hm.export(new File("testInOut.xml"), new InOutSorter());
@@ -185,15 +185,19 @@ public class Main {
         final Message mIn = new Message(id, "fromClient", null);
 
         c.registerToServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
-        c.getListenerRegistrator().addIdListener(id, new Listener() {
+        c.getListenerRegistrator().setIdListener(id, new Listener() {
             @Override
-            public void receiveData(Identifiable data) {
+            public Object receiveData(Identifiable data) {
                 if (data instanceof Message) {
                     final Message m = (Message) data;
                     if (m.getHeader().equals("fromServer")) {
                         System.out.println("Data received - " + data.toString());
-                        c.sendDataToServer(mIn);
+                        return mIn;
+                    } else {
+                        return false;
                     }
+                } else {
+                    return false;
                 }
             }
         }, true);
@@ -218,7 +222,7 @@ public class Main {
         s.assignDataStorage(ds);
         System.out.println("Data storage created and assigned to server.");
 
-        c.assignAssignmentListener(new AssignmentListener() {
+        c.setAssignmentListener(new AssignmentListener() {
             @Override
             public void receiveTask(Assignment task) {
                 System.out.println("Received task - " + task.getTask().toString());
@@ -364,7 +368,7 @@ public class Main {
         if (srv != null || dc != null) {
             if (interactiveMode) {
                 System.out.println("Starting interactive mode.");
-                System.out.println("Input repetition counts separated by spaces.");
+                System.out.println("Input commands with parameters, one command per line, parameters are separated by spaces.");
 
                 String line;
                 Scanner in = new Scanner(System.in);
@@ -401,6 +405,9 @@ public class Main {
                                 break;
                             case "s":
                                 srv = new DummyServer();
+                                break;
+                            default:
+                                System.out.println("Illegal input !");
                                 break;
                         }
                     }
