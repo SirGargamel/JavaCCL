@@ -1,9 +1,11 @@
 package cz.tul.comm.socket;
 
+import cz.tul.comm.ClientLister;
 import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.DataPacket;
+import cz.tul.comm.communicator.MessagePullDaemon;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.socket.queue.Identifiable;
 import cz.tul.comm.socket.queue.Listener;
@@ -42,8 +44,8 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
      * @return new instance of ServerSocket
      * @throws IOException error creating socket on given port
      */
-    public static ServerSocket createServerSocket(final int port, final IDFilter idFilter) throws IOException {
-        ServerSocket result = new ServerSocket(port, idFilter);
+    public static ServerSocket createServerSocket(final int port, final IDFilter idFilter, final ClientLister clientLister) throws IOException {
+        ServerSocket result = new ServerSocket(port, idFilter, clientLister);        
         result.start();
         log.fine("New server socket created and started.");
         return result;
@@ -56,10 +58,11 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     private final ObjectQueue<DataPacket> dataStorageClient;
     private final ObjectQueue<Identifiable> dataStorageId;
     private final Set<Observer> dataListeners;
+    private final MessagePullDaemon mpd;
     private HistoryManager hm;
     private boolean run;
 
-    private ServerSocket(final int port, final IDFilter idFilter) throws IOException {
+    private ServerSocket(final int port, final IDFilter idFilter, final ClientLister clientLister) throws IOException {
         socket = new java.net.ServerSocket(port);
         this.idFilter = idFilter;
         exec = Executors.newCachedThreadPool();
@@ -68,7 +71,8 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         dataListeners = new HashSet<>();
         run = true;
         listenersClient = new HashMap<>();
-        listenersId = new HashMap<>();
+        listenersId = new HashMap<>();        
+        mpd = new MessagePullDaemon(this, clientLister);        
     }
 
     @Override
@@ -135,7 +139,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
             try {
                 s = socket.accept();
                 log.log(Level.FINE, "Connection accepted from IP {0}:{1}", new Object[]{s.getInetAddress().getHostAddress(), s.getPort()});
-                final SocketReader sr = new SocketReader(s, this);
+                final SocketReader sr = new SocketReader(s, this, mpd);
                 sr.registerHistory(hm);
                 for (Observer o : dataListeners) {
                     sr.addObserver(o);
@@ -166,11 +170,18 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         this.hm = hm;
         log.fine("History registered.");
     }
+    
+    @Override
+    public void start() {
+        super.start();
+        mpd.start();
+    }
 
     @Override
     public void stopService() {
         try {
             run = false;
+            mpd.stopService();
             exec.shutdownNow();
             socket.close();
             log.fine("Server socket has been stopped.");

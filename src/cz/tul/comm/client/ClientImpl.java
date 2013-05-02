@@ -1,10 +1,12 @@
 package cz.tul.comm.client;
 
+import cz.tul.comm.ClientLister;
 import cz.tul.comm.ComponentSwitches;
 import cz.tul.comm.Constants;
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.CommunicatorImpl;
+import cz.tul.comm.communicator.CommunicatorInner;
 import cz.tul.comm.communicator.Status;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.HistoryManager;
@@ -21,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,7 +35,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class ClientImpl implements IService, ServerInterface, Client, IDFilter {
+public class ClientImpl implements IService, ServerInterface, Client, IDFilter, ClientLister {
 
     private static final Logger log = Logger.getLogger(ClientImpl.class.getName());
     private static final int TIMEOUT = 1_000;
@@ -70,7 +74,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter {
     }
     private ServerSocket serverSocket;
     private final HistoryManager history;
-    private CommunicatorImpl comm;
+    private CommunicatorInner comm;
     private SystemMessageHandler csm;
     private ClientJobManagerImpl jm;
     private ServerDiscoveryDaemon sdd;
@@ -178,7 +182,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter {
     }
 
     private void start(final int port) throws IOException {
-        serverSocket = ServerSocket.createServerSocket(port, this);
+        serverSocket = ServerSocket.createServerSocket(port, this, this);
         serverSocket.registerHistory(history);
 
         csm = new SystemMessageHandler();
@@ -233,5 +237,12 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter {
     @Override
     public int getLocalSocketPort() {
         return serverSocket.getPort();
+    }
+
+    @Override
+    public Collection<Communicator> getClients() {
+        final Collection<Communicator> result = new ArrayList<>(1);
+        result.add(comm);
+        return result;
     }
 }

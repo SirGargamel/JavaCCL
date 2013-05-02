@@ -32,7 +32,7 @@ import java.util.logging.Logger;
  * @see Serializable
  * @author Petr Ječmen
  */
-public class CommunicatorImpl extends Observable implements Communicator {
+public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     private static final Logger log = Logger.getLogger(CommunicatorImpl.class.getName());
 
@@ -43,7 +43,7 @@ public class CommunicatorImpl extends Observable implements Communicator {
      * @param port target port
      * @return created and initializaed instance of CommunicatorImpl
      */
-    public static CommunicatorImpl initNewCommunicator(final InetAddress address, final int port) {
+    public static CommunicatorInner initNewCommunicator(final InetAddress address, final int port) {
         CommunicatorImpl c;
         try {
             c = new CommunicatorImpl(address, port);
@@ -91,6 +91,7 @@ public class CommunicatorImpl extends Observable implements Communicator {
      *
      * @param hm instance of history manager
      */
+    @Override
     public void registerHistory(final HistoryManager hm) {
         this.hm = hm;
         log.fine("History registered.");
@@ -146,6 +147,11 @@ public class CommunicatorImpl extends Observable implements Communicator {
         }
         if (!readAndReply) {
             unsentData.add(dp);
+            try {
+                response = waitForResponse(dp, timeout);
+            } catch (InterruptedException ex) {
+                log.log(Level.WARNING, "Waiting for response has been interrupted.", ex);
+            }
         }
 
         setStatus(stat);
@@ -153,7 +159,7 @@ public class CommunicatorImpl extends Observable implements Communicator {
     }
 
     private Object waitForResponse(DataPacket question, int timeout) throws InterruptedException {
-        long startTime = Calendar.getInstance(Locale.getDefault()).getTimeInMillis();        
+        long startTime = Calendar.getInstance(Locale.getDefault()).getTimeInMillis();
         if (timeout > 0) {
             long dif = Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - startTime;
             while (dif < timeout) {
@@ -250,16 +256,19 @@ public class CommunicatorImpl extends Observable implements Communicator {
     /**
      * @param id new CommunicatorImpl UUID
      */
+    @Override
     public void setId(UUID id) {
         this.id = id;
         setChanged();
         notifyObservers(this.id);
     }
 
+    @Override
     public Queue<DataPacket> getUnsentData() {
         return unsentData;
     }
-    
+
+    @Override
     public void storeResponse(final DataPacket question, final Object response) {
         responses.put(question, response);
     }

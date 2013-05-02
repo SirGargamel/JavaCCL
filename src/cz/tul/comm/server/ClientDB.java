@@ -2,6 +2,7 @@ package cz.tul.comm.server;
 
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.CommunicatorImpl;
+import cz.tul.comm.communicator.CommunicatorInner;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.socket.IDFilter;
 import java.net.InetAddress;
@@ -40,7 +41,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
         Communicator cc = getClient(address, port);
         if (cc == null) {
             try {
-                CommunicatorImpl ccI = CommunicatorImpl.initNewCommunicator(address, port);
+                CommunicatorInner ccI = CommunicatorImpl.initNewCommunicator(address, port);
                 if (ccI != null) {
                     ccI.registerHistory(hm);
                     ccI.addObserver(this);
@@ -115,7 +116,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
 
     @Override
     public void update(Observable o, Object arg) {
-        if (o instanceof CommunicatorImpl && arg instanceof UUID) {
+        if (o instanceof Communicator && arg instanceof UUID) {
             prepareAllowedIDs();
         }
     }

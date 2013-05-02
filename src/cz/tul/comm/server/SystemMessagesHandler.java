@@ -1,16 +1,13 @@
 package cz.tul.comm.server;
 
-import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.communicator.Communicator;
-import cz.tul.comm.communicator.CommunicatorImpl;
+import cz.tul.comm.communicator.CommunicatorInner;
 import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.socket.queue.Identifiable;
 import cz.tul.comm.socket.queue.Listener;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,8 +48,8 @@ public class SystemMessagesHandler implements Listener {
                             UUID clientId = UUID.randomUUID();
                             Communicator c = clientManager.registerClient(dp.getSourceIP(), Integer.parseInt(m.getData().toString()));
                             if (c != null) {
-                                if (c instanceof CommunicatorImpl) {
-                                    ((CommunicatorImpl) c).setId(clientId);
+                                if (c instanceof CommunicatorInner) {
+                                    ((CommunicatorInner) c).setId(clientId);
                                 }
                                 log.log(Level.CONFIG, "LOGIN received from {0}, assigning id {1}", new Object[]{dp.getSourceIP().getHostAddress(), clientId});
                                 return clientId;

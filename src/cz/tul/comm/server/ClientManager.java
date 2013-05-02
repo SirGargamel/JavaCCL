@@ -1,9 +1,8 @@
 package cz.tul.comm.server;
 
+import cz.tul.comm.ClientLister;
 import cz.tul.comm.communicator.Communicator;
-import cz.tul.comm.communicator.CommunicatorImpl;
 import java.net.InetAddress;
-import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -11,7 +10,7 @@ import java.util.UUID;
  *
  * @author Petr Ječmen
  */
-public interface ClientManager {
+public interface ClientManager extends ClientLister {
 
     /**
      * Register a new client.
@@ -42,9 +41,4 @@ public interface ClientManager {
      * @return client communicator with given UUID
      */
     Communicator getClient(final UUID id);
-
-    /**
-     * @return list of all clients
-     */
-    Collection<Communicator> getClients();
 }

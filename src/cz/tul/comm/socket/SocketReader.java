@@ -2,6 +2,7 @@ package cz.tul.comm.socket;
 
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.communicator.DataPacket;
+import cz.tul.comm.communicator.MessagePullDaemon;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
@@ -11,8 +12,6 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Observable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,10 +22,10 @@ import java.util.logging.Logger;
  */
 class SocketReader extends Observable implements Runnable {
 
-    private static final Logger log = Logger.getLogger(SocketReader.class.getName());
-    private final ExecutorService exec;
+    private static final Logger log = Logger.getLogger(SocketReader.class.getName());    
     private final Socket socket;
     private final DataPacketHandler dpHandler;
+    private final MessagePullDaemon mpd;
     private HistoryManager hm;
 
     /**
@@ -39,7 +38,7 @@ class SocketReader extends Observable implements Runnable {
      */
     SocketReader(
             final Socket socket,
-            final DataPacketHandler dpHandler) {
+            final DataPacketHandler dpHandler,final MessagePullDaemon mpd) {
         if (socket != null) {
             this.socket = socket;
         } else {
@@ -50,8 +49,11 @@ class SocketReader extends Observable implements Runnable {
         } else {
             throw new NullPointerException("ID listeners cannot be null");
         }
-
-        exec = Executors.newCachedThreadPool();
+        if (mpd != null) {
+            this.mpd = mpd;
+        } else {
+            throw new NullPointerException("MessagePullDaemon cannot be null");
+        }
     }
 
     /**
@@ -93,7 +95,7 @@ class SocketReader extends Observable implements Runnable {
                     sendReply(ip, dataIn, dataRead, GenericResponses.OK);
                     break;
                 case (MessageHeaders.MSG_PULL_REQUEST):
-                    // TODO give socket to MessagePullReceiver
+                    mpd.handleMessagePullRequest(socket, m.getData());
                     break;
                 default:
                     log.log(Level.WARNING, "Received Message with unidentifined header - {0}", new Object[]{m.toString()});
