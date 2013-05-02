@@ -12,8 +12,13 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Observable;
+import java.util.Queue;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +59,8 @@ public class CommunicatorImpl extends Observable implements Communicator {
     private final int STATUS_CHECK_INTERVAL = 5_000;
     private final InetAddress address;
     private final int port;
+    private final Queue<DataPacket> unsentData;
+    private final Map<DataPacket, Object> responses;
     private UUID id;
     private Calendar lastStatusUpdateTime;
     private Status status;
@@ -68,6 +75,9 @@ public class CommunicatorImpl extends Observable implements Communicator {
 
         this.address = address;
         this.port = port;
+
+        unsentData = new LinkedList<>();
+        responses = new HashMap<>();
 
         lastStatusUpdateTime = Calendar.getInstance();
         status = Status.NA;
@@ -101,13 +111,14 @@ public class CommunicatorImpl extends Observable implements Communicator {
         boolean readAndReply = false;
         Object response = null;
         Status stat = Status.OFFLINE;
+        DataPacket dp = new DataPacket(id, data);
 
         try (final Socket s = new Socket(address, port)) {
             s.setSoTimeout(timeout);
 
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
 
-            out.writeObject(new DataPacket(id, data));
+            out.writeObject(dp);
             out.flush();
             log.log(Level.CONFIG, "Data sent to {0}:{1} - [{2}]", new Object[]{getAddress().getHostAddress(), getPort(), data.toString()});
 
@@ -133,9 +144,34 @@ public class CommunicatorImpl extends Observable implements Communicator {
         if (hm != null) {
             hm.logMessageSend(address, data, readAndReply, response);
         }
+        if (!readAndReply) {
+            unsentData.add(dp);
+        }
 
         setStatus(stat);
         return response;
+    }
+
+    private Object waitForResponse(DataPacket question, int timeout) throws InterruptedException {
+        long startTime = Calendar.getInstance(Locale.getDefault()).getTimeInMillis();        
+        if (timeout > 0) {
+            long dif = Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - startTime;
+            while (dif < timeout) {
+                synchronized (this) {
+                    this.wait(timeout);
+                }
+                dif = Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - startTime;
+            }
+        } else {
+            synchronized (this) {
+                this.wait();
+            }
+        }
+        if (responses.containsKey(question)) {
+            return responses.get(question);
+        } else {
+            return GenericResponses.ERROR;
+        }
     }
 
     @Override
@@ -218,6 +254,14 @@ public class CommunicatorImpl extends Observable implements Communicator {
         this.id = id;
         setChanged();
         notifyObservers(this.id);
+    }
+
+    public Queue<DataPacket> getUnsentData() {
+        return unsentData;
+    }
+    
+    public void storeResponse(final DataPacket question, final Object response) {
+        responses.put(question, response);
     }
 
     @Override

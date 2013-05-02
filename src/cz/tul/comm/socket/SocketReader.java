@@ -1,22 +1,16 @@
 package cz.tul.comm.socket;
 
-import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
-import cz.tul.comm.socket.queue.Identifiable;
-import cz.tul.comm.socket.queue.Listener;
-import cz.tul.comm.socket.queue.ObjectQueue;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Map;
 import java.util.Observable;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -32,11 +26,7 @@ class SocketReader extends Observable implements Runnable {
     private static final Logger log = Logger.getLogger(SocketReader.class.getName());
     private final ExecutorService exec;
     private final Socket socket;
-    private final IDFilter idFilter;
-    private final ObjectQueue<DataPacket> dataStorageClient;
-    private final Map<UUID, Listener> clientListeners;
-    private final ObjectQueue<Identifiable> dataStorageId;
-    private final Map<Object, Listener> idListeners;
+    private final DataPacketHandler dpHandler;
     private HistoryManager hm;
 
     /**
@@ -49,34 +39,14 @@ class SocketReader extends Observable implements Runnable {
      */
     SocketReader(
             final Socket socket,
-            final IDFilter idFilter,
-            final ObjectQueue<DataPacket> dataStorageIP,
-            final Map<UUID, Listener> clientListeners,
-            final ObjectQueue<Identifiable> dataStorageId,
-            final Map<Object, Listener> idListeners) {
+            final DataPacketHandler dpHandler) {
         if (socket != null) {
             this.socket = socket;
         } else {
             throw new NullPointerException("Socket cannot be null");
         }
-        this.idFilter = idFilter;
-        if (dataStorageIP != null) {
-            this.dataStorageClient = dataStorageIP;
-        } else {
-            throw new IllegalArgumentException("Data storage cannot be null");
-        }
-        if (clientListeners != null) {
-            this.clientListeners = clientListeners;
-        } else {
-            throw new NullPointerException("Client listeners cannot be null");
-        }
-        if (dataStorageId != null) {
-            this.dataStorageId = dataStorageId;
-        } else {
-            throw new IllegalArgumentException("Data storage cannot be null");
-        }
-        if (idListeners != null) {
-            this.idListeners = idListeners;
+        if (dpHandler != null) {
+            this.dpHandler = dpHandler;
         } else {
             throw new NullPointerException("ID listeners cannot be null");
         }
@@ -114,72 +84,7 @@ class SocketReader extends Observable implements Runnable {
         if (dataIn instanceof DataPacket) {
             final DataPacket dp = (DataPacket) dataIn;
             dp.setSourceIP(ip);
-            final UUID clientId = dp.getClientID();
-            final Object data = dp.getData();
-
-            if (idFilter != null) {
-                if (clientId == null) {
-                    log.log(Level.FINE, "Data with null id [{0}]", data.toString());
-                } else if (!idFilter.isIdAllowed(clientId)) {
-                    log.log(Level.WARNING, "Received data from unregistered client - id {0}, data [{1}]", new Object[]{clientId, data.toString()});
-                    sendReply(ip, dataIn, dataRead, GenericResponses.UUID_NOT_ALLOWED);
-                    return;
-                }
-            }
-
-            log.log(Level.CONFIG, "Data [{0}] received, storing to queue.", data.toString());
-
-            boolean handled = false;
-            if (data instanceof Identifiable) {
-                final Identifiable iData = (Identifiable) data;
-                final Object id = iData.getId();
-                if (id.equals(Constants.ID_SYS_MSG)) { // not pretty !!!
-                    exec.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            final Object response = idListeners.get(id).receiveData(dp);                            
-                            sendReply(ip, dataIn, dataRead, response);                            
-                        }
-                    });
-                    handled = true;
-                } else if (idListeners.containsKey(id)) {
-                    exec.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            final Object response = idListeners.get(id).receiveData(iData);
-                            sendReply(ip, dataIn, dataRead, response);
-                        }
-                    });
-                    handled = true;
-                } else {
-                    dataStorageId.storeData((Identifiable) data);                    
-                }
-            } else {
-                if (clientListeners.containsKey(clientId)) {
-                    exec.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            final Object response = clientListeners.get(clientId).receiveData(dp);
-                            sendReply(ip, dataIn, dataRead, response);
-                        }
-                    });
-                    handled = true;
-                } else {
-                    dataStorageClient.storeData(dp);                    
-                }
-            }
-            if (!handled) {
-                sendReply(ip, dataIn, dataRead, GenericResponses.NOT_HANDLED_DIRECTLY);
-            }
-
-            exec.submit(new Runnable() {
-                @Override
-                public void run() {
-                    setChanged();
-                    SocketReader.this.notifyObservers(dp);
-                }
-            });
-
+            sendReply(ip, dataIn, dataRead, dpHandler.handleDataPacket(dp));
         } else if (dataIn instanceof Message) {
             final Message m = (Message) dataIn;
             switch (m.getHeader()) {
@@ -187,14 +92,23 @@ class SocketReader extends Observable implements Runnable {
                     log.log(Level.FINE, "keepAlive received from {0}", ip.getHostAddress());
                     sendReply(ip, dataIn, dataRead, GenericResponses.OK);
                     break;
+                case (MessageHeaders.MSG_PULL_REQUEST):
+                    // TODO give socket to MessagePullReceiver
+                    break;
                 default:
-                    log.log(Level.WARNING, "Received Message with unidefined header - {0}", new Object[]{m.toString()});
+                    log.log(Level.WARNING, "Received Message with unidentifined header - {0}", new Object[]{m.toString()});
                     sendReply(ip, dataIn, dataRead, GenericResponses.UNKNOWN_DATA);
                     break;
             }
         } else {
             log.log(Level.WARNING, "Received data is not an instance of DataPacket - {0}", new Object[]{dataIn});
             sendReply(ip, dataIn, dataRead, GenericResponses.ILLEGAL_DATA);
+        }
+
+        try {
+            socket.close();
+        } catch (Exception ex) {
+            log.log(Level.FINE, "Error closing socket.", ex);
         }
     }
 

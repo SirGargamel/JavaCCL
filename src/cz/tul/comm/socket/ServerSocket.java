@@ -1,5 +1,7 @@
 package cz.tul.comm.socket;
 
+import cz.tul.comm.Constants;
+import cz.tul.comm.GenericResponses;
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.history.HistoryManager;
@@ -28,7 +30,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class ServerSocket extends Thread implements IService, ListenerRegistrator {
+public class ServerSocket extends Thread implements IService, ListenerRegistrator, DataPacketHandler {
 
     private static final Logger log = Logger.getLogger(ServerSocket.class.getName());
 
@@ -105,7 +107,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
 
     @Override
     public void removeIdListener(Object id) {
-        if (id != null) {            
+        if (id != null) {
             dataStorageId.removeListener(id);
             listenersId.remove(id);
             log.log(Level.FINE, "Removed listener for ID {0}", new Object[]{id.toString()});
@@ -133,7 +135,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
             try {
                 s = socket.accept();
                 log.log(Level.FINE, "Connection accepted from IP {0}:{1}", new Object[]{s.getInetAddress().getHostAddress(), s.getPort()});
-                final SocketReader sr = new SocketReader(s, idFilter, dataStorageClient, listenersClient, dataStorageId, listenersId);
+                final SocketReader sr = new SocketReader(s, this);
                 sr.registerHistory(hm);
                 for (Observer o : dataListeners) {
                     sr.addObserver(o);
@@ -175,5 +177,54 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         } catch (IOException ex) {
             // expected exception due to listening interruption
         }
+    }
+
+    @Override
+    public Object handleDataPacket(final DataPacket dp) {
+        final UUID clientId = dp.getClientID();
+        final Object data = dp.getData();
+        Object result = GenericResponses.NOT_HANDLED_DIRECTLY;
+
+        if (idFilter != null) {
+            if (clientId == null) {
+                log.log(Level.FINE, "Data with null id [{0}]", data.toString());
+            } else if (!idFilter.isIdAllowed(clientId)) {
+                log.log(Level.WARNING, "Received data from unregistered client - id {0}, data [{1}]", new Object[]{clientId, data.toString()});
+                return GenericResponses.UUID_NOT_ALLOWED;
+            } else {
+                log.log(Level.CONFIG, "Data [{0}] received, forwarding to listeners.", data.toString());
+            }
+        } else {
+            log.log(Level.CONFIG, "Data [{0}] received, forwarding to listeners.", data.toString());
+        }
+
+        if (data instanceof Identifiable) {
+            final Identifiable iData = (Identifiable) data;
+            final Object id = iData.getId();
+            if (id.equals(Constants.ID_SYS_MSG)) { // not pretty !!!
+                result = listenersId.get(id).receiveData(dp);
+            } else if (listenersId.containsKey(id)) {
+                result = listenersId.get(id).receiveData(iData);
+            } else {
+                dataStorageId.storeData((Identifiable) data);
+            }
+        } else {
+            if (listenersClient.containsKey(clientId)) {
+                result = listenersClient.get(clientId).receiveData(dp);
+            } else {
+                dataStorageClient.storeData(dp);
+            }
+        }
+
+        exec.submit(new Runnable() {
+            @Override
+            public void run() {
+                for (Observer o : dataListeners) {
+                    o.update(null, dp);
+                }
+            }
+        });
+
+        return result;
     }
 }
