@@ -45,11 +45,14 @@ public class SystemMessagesHandler implements Listener {
                 switch (header) {
                     case MessageHeaders.LOGIN:
                         try {
-                            UUID clientId = UUID.randomUUID();
                             Communicator c = clientManager.registerClient(dp.getSourceIP(), Integer.parseInt(m.getData().toString()));
                             if (c != null) {
-                                if (c instanceof CommunicatorInner) {
-                                    ((CommunicatorInner) c).setId(clientId);
+                                UUID clientId = c.getId();
+                                if (clientId == null) {
+                                    clientId = UUID.randomUUID();
+                                    if (c instanceof CommunicatorInner) {
+                                        ((CommunicatorInner) c).setId(clientId);
+                                    }
                                 }
                                 log.log(Level.CONFIG, "LOGIN received from {0}, assigning id {1}", new Object[]{dp.getSourceIP().getHostAddress(), clientId});
                                 return clientId;
