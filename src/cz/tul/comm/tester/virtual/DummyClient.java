@@ -79,6 +79,7 @@ public class DummyClient implements AssignmentListener {
                             log.warning("Waiting for client close has been interrupted.");
                         }
                     }
+                    log.info("Closing dummyClient.");
                     c.stopService();
                 } else if (chance > (1 - (fatalChance + errorChance))) {
                     synchronized (this) {

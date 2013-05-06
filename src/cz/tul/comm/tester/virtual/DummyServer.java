@@ -62,6 +62,8 @@ public class DummyServer {
             final Object result = job.getResult(true);
             if (!result.equals(work.buildResult())) {
                 System.out.println("Result mismatch - [" + result.toString() + "] vs [" + work.buildResult() + "]");
+            } else {
+                System.out.println("Result match for id " + job.getId());
             }
         }
     }

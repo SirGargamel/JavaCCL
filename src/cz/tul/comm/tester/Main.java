@@ -203,7 +203,7 @@ public class Main {
 
 
         Communicator comm = s.getClientManager().registerClient(InetAddress.getLoopbackAddress(), PORT_C);
-        
+
         System.out.println("Response is " + comm.sendData(mOut));
     }
 
@@ -331,7 +331,6 @@ public class Main {
     static void testWithDummies(String[] args) throws UnknownHostException {
         Utils.adjustMainLoggerLevel(Level.CONFIG);
 
-        boolean interactiveMode = false;
         DummyServer srv = null;
         DummyClient dc = null;
         int repCount;
@@ -343,75 +342,53 @@ public class Main {
                 case "-s":
                     srv = new DummyServer();
                     break;
-                case "-i":
-                    interactiveMode = true;
-                    break;
-                case "-j":
-                    try {
-                        repCount = Integer.parseInt(args[i + 1]);
-                        if (srv != null) {
-                            srv.submitJob(repCount);
-                        } else {
-                            log.warning("Server not initialized yet, commands must be after -s modifier.");
-                        }
-                    } catch (NumberFormatException ex) {
-                        log.log(Level.WARNING, "Illegal count of repetitions used - {0}", args[i + 1]);
-                    }
-
-                    i++;
-                    break;
             }
         }
 
         if (srv != null || dc != null) {
-            if (interactiveMode) {
-                System.out.println("Starting interactive mode.");
-                System.out.println("Input commands with parameters, one command per line, parameters are separated by spaces.");
+            System.out.println("Starting interactive mode.");
+            System.out.println("Input commands with parameters, one command per line, parameters are separated by spaces.");
 
-                String line;
-                Scanner in = new Scanner(System.in);
-                boolean run = true;
-                String[] split;
-                while (run) {
-                    line = in.nextLine().trim().replaceAll("[ ]+", " ");
-                    split = line.split(" ");
-                    if (split.length > 0) {
-                        switch (split[0]) {
-                            case "j":
-                                if (split.length > 1 && srv != null) {
-                                    try {
-                                        repCount = Integer.parseInt(split[1]);
-                                        srv.submitJob(repCount);
-                                    } catch (NumberFormatException ex) {
-                                        log.log(Level.WARNING, "Illegal count of repetitions used - {0}", split[1]);
-                                    }
-                                } else {
-                                    log.warning("Job needs repetition count as parameter.");
+            String line;
+            Scanner in = new Scanner(System.in);
+            boolean run = true;
+            String[] split;
+            while (run) {
+                line = in.nextLine().trim().replaceAll("[ ]+", " ");
+                split = line.split(" ");
+                if (split.length > 0) {
+                    switch (split[0]) {
+                        case "j":
+                            if (split.length > 1 && srv != null) {
+                                try {
+                                    repCount = Integer.parseInt(split[1]);
+                                    srv.submitJob(repCount);
+                                } catch (NumberFormatException ex) {
+                                    log.log(Level.WARNING, "Illegal count of repetitions used - {0}", split[1]);
                                 }
-                                break;
-                            case "cs":
-                                if (split.length > 1 && dc != null) {
-                                    dc.connectToServer(split[1]);
-                                }
-                            case "ca":
-                                if (split.length > 1 && srv != null) {
-                                    srv.registerClient(split[1]);
-                                }
-                                break;
-                            case "c":
-                                dc = DummyClient.newInstance(CLIENT_ERROR_CHANCE_MAX * Math.random(), CLIENT_FATAL_CHANCE_MAX * Math.random());
-                                break;
-                            case "s":
-                                srv = new DummyServer();
-                                break;
-                            default:
-                                System.out.println("Illegal input !");
-                                break;
-                        }
+                            } else {
+                                log.warning("Job needs repetition count as parameter and active server.");
+                            }
+                            break;
+                        case "cs":
+                            if (split.length > 1 && dc != null) {
+                                dc.connectToServer(split[1]);
+                            } else {
+                                System.out.println("Illegal command.");
+                            }
+                        case "cc":
+                            if (split.length > 1 && srv != null) {
+                                srv.registerClient(split[1]);
+                            } else {
+                                System.out.println("Illegal command.");
+                            }
+                            break;
+                        default:
+                            System.out.println("Illegal input !");
+                            System.out.println("Valid commands - j, cs, cc");
+                            break;
                     }
                 }
-            } else if (srv != null) {
-                srv.waitForJobs();
             }
         }
     }
