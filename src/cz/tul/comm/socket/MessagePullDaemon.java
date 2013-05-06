@@ -1,12 +1,15 @@
-package cz.tul.comm.communicator;
+package cz.tul.comm.socket;
 
 import cz.tul.comm.ClientLister;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.IService;
+import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.communicator.CommunicatorInner;
+import cz.tul.comm.communicator.DataPacket;
+import cz.tul.comm.communicator.Status;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
-import cz.tul.comm.socket.DataPacketHandler;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -26,7 +29,7 @@ import java.util.logging.Logger;
 public class MessagePullDaemon extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(MessagePullDaemon.class.getName());
-    private static final int WAIT_TIME = 500;
+    private static final int WAIT_TIME = 100;
     private final Collection<Communicator> comms;
     private final DataPacketHandler dpHandler;
     private boolean run;
@@ -60,7 +63,7 @@ public class MessagePullDaemon extends Thread implements IService {
 
         while (run) {
             for (Communicator comm : comms) {
-                if (comm.checkStatus().equals(Status.ONLINE)) {
+                if (comm != null && comm.checkStatus().equals(Status.ONLINE)) {
                     ipComm = comm.getAddress();
                     port = comm.getPort();
                     m = new Message(MessageHeaders.MSG_PULL_REQUEST, comm.getId());
@@ -69,7 +72,7 @@ public class MessagePullDaemon extends Thread implements IService {
                         try (final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream())) {
                             out.writeObject(m);
                             out.flush();
-                            log.log(Level.CONFIG, "Message pull request sent to {0}:{1}", new Object[]{ipComm.getHostAddress(), port});
+                            log.log(Level.FINE, "Message pull request sent to {0}:{1}", new Object[]{ipComm.getHostAddress(), port});
 
                             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                                 try {
@@ -147,7 +150,7 @@ public class MessagePullDaemon extends Thread implements IService {
             out.writeObject(msg);
             out.flush();
 
-            if (communicator != null) {
+            if (communicator != null && !(msg instanceof GenericResponses)) {
                 try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                     final Object response = in.readObject();
                     if (msg instanceof DataPacket) {

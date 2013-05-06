@@ -5,7 +5,6 @@ import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.DataPacket;
-import cz.tul.comm.communicator.MessagePullDaemon;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.socket.queue.Identifiable;
 import cz.tul.comm.socket.queue.Listener;

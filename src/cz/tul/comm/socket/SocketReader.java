@@ -2,7 +2,6 @@ package cz.tul.comm.socket;
 
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.communicator.DataPacket;
-import cz.tul.comm.communicator.MessagePullDaemon;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
