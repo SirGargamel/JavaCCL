@@ -102,7 +102,7 @@ class SocketReader extends Observable implements Runnable {
                     break;
             }
         } else {
-            log.log(Level.WARNING, "Received data is not an instance of DataPacket - {0}", new Object[]{dataIn});
+            log.log(Level.WARNING, "Received data is not an instance of DataPacket or Message - {0}", new Object[]{dataIn});
             sendReply(ip, dataIn, dataRead, GenericResponses.ILLEGAL_DATA);
         }
 
