@@ -6,6 +6,8 @@ import cz.tul.comm.GenericResponses;
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.history.HistoryManager;
+import cz.tul.comm.messaging.Message;
+import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.socket.queue.Identifiable;
 import cz.tul.comm.socket.queue.Listener;
 import cz.tul.comm.socket.queue.ObjectQueue;
@@ -44,7 +46,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
      * @throws IOException error creating socket on given port
      */
     public static ServerSocket createServerSocket(final int port, final IDFilter idFilter, final ClientLister clientLister) throws IOException {
-        ServerSocket result = new ServerSocket(port, idFilter, clientLister);        
+        ServerSocket result = new ServerSocket(port, idFilter, clientLister);
         result.start();
         log.fine("New server socket created and started.");
         return result;
@@ -70,8 +72,8 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         dataListeners = new HashSet<>();
         run = true;
         listenersClient = new HashMap<>();
-        listenersId = new HashMap<>();        
-        mpd = new MessagePullDaemon(this, clientLister);        
+        listenersId = new HashMap<>();
+        mpd = new MessagePullDaemon(this, clientLister);
     }
 
     @Override
@@ -169,7 +171,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         this.hm = hm;
         log.fine("History registered.");
     }
-    
+
     @Override
     public void start() {
         super.start();
@@ -197,7 +199,18 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
 
         if (idFilter != null) {
             if (clientId == null) {
-                log.log(Level.FINE, "Data with null id [{0}]", data.toString());
+                boolean allowed = false;
+                if (data instanceof Message) {
+                    final UUID mId = ((Message) data).getId();
+                    final String header = ((Message) data).getHeader();
+                    if (mId.equals(Constants.ID_SYS_MSG) && header.equals(MessageHeaders.LOGIN)) {
+                        allowed = true;
+                    }
+                }
+                if (!allowed) {
+                    log.log(Level.FINE, "Data with null id received and its not a sys msg [{0}].", data.toString());
+                    return GenericResponses.ILLEGAL_DATA;
+                }
             } else if (!idFilter.isIdAllowed(clientId)) {
                 log.log(Level.WARNING, "Received data from unregistered client - id {0}, data [{1}]", new Object[]{clientId, data.toString()});
                 return GenericResponses.UUID_NOT_ALLOWED;
