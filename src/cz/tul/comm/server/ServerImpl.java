@@ -11,7 +11,6 @@ import cz.tul.comm.job.JobManager;
 import cz.tul.comm.job.ServerJobManagerImpl;
 import cz.tul.comm.persistence.ServerSettings;
 import cz.tul.comm.server.daemons.ClientDiscoveryDaemon;
-import cz.tul.comm.server.daemons.ClientStatusDaemon;
 import cz.tul.comm.socket.ListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
@@ -65,8 +64,7 @@ public final class ServerImpl implements IService, Server {
     }
     private final ClientDB clients;
     private final ServerSocket serverSocket;
-    private final HistoryManager history;
-    private final ClientStatusDaemon clientStatusDaemon;
+    private final HistoryManager history;    
     private final ServerJobManagerImpl jobManager;
     private ClientDiscoveryDaemon cdd;
 
@@ -76,13 +74,7 @@ public final class ServerImpl implements IService, Server {
         clients = new ClientDB();
 
         serverSocket = ServerSocket.createServerSocket(port, clients, clients);
-        serverSocket.registerHistory(history);
-
-        if (ComponentSwitches.useClientStatus) {
-            clientStatusDaemon = new ClientStatusDaemon(clients);
-        } else {
-            clientStatusDaemon = null;
-        }
+        serverSocket.registerHistory(history);        
 
         jobManager = new ServerJobManagerImpl(clients, serverSocket);
         getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jobManager, true);
@@ -165,9 +157,6 @@ public final class ServerImpl implements IService, Server {
             }));
         }
 
-        if (clientStatusDaemon != null) {
-            clientStatusDaemon.start();
-        }
         if (cdd != null) {
             cdd.start();
         }
@@ -176,9 +165,6 @@ public final class ServerImpl implements IService, Server {
 
     @Override
     public void stopService() {
-        if (clientStatusDaemon != null) {
-            clientStatusDaemon.stopService();
-        }
         if (cdd != null) {
             cdd.stopService();
         }
