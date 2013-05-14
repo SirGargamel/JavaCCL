@@ -132,7 +132,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         boolean serverStatus = false;
         if (comm != null) {
             Status s = comm.getStatus();
-            if (s.equals(Status.ONLINE) || s.equals(Status.REACHABLE) || s.equals(Status.NOT_RESPONDING)) {
+            if (s.equals(Status.ONLINE) || s.equals(Status.PASSIVE)) {
                 serverStatus = true;
             }
         }

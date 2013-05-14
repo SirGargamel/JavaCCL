@@ -285,7 +285,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
 
     private boolean isClientOnline(final Communicator comm) {
         final Status s = comm.getStatus();
-        final boolean result = s.equals(Status.ONLINE) || s.equals(Status.REACHABLE);
+        final boolean result = s.equals(Status.ONLINE) || s.equals(Status.PASSIVE);
         if (result) {
             storeClientOnlineStatus(comm);
         }

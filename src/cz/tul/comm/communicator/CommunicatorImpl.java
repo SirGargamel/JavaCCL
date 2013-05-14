@@ -80,7 +80,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         responses = new HashMap<>();
 
         lastStatusUpdateTime = Calendar.getInstance();
-        status = Status.NA;
+        status = Status.OFFLINE;
 
         setChanged();
         notifyObservers();
@@ -126,18 +126,16 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                 response = in.readObject();
                 log.log(Level.FINE, "Received reply from client - {0}", response);
-                stat = Status.ONLINE;
+                setStatus(Status.ONLINE);
                 readAndReply = true;
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Error receiving response from output socket", ex);
-                stat = Status.NOT_RESPONDING;
+                log.log(Level.WARNING, "Error receiving response from output socket", ex);                
             } catch (ClassNotFoundException ex) {
                 log.log(Level.WARNING, "Unknown class object received.", ex);
                 response = GenericResponses.UNKNOWN_DATA;
             }
         } catch (SocketTimeoutException ex) {
-            log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", address.getHostAddress());
-            stat = Status.NOT_RESPONDING;
+            log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", address.getHostAddress());            
         } catch (IOException ex) {
             log.log(Level.WARNING, "Cannot write to output socket.", ex);
         }
@@ -190,14 +188,11 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             s.setSoTimeout(TIMEOUT);
 
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-
-            stat = Status.NA;
+            
             out.writeObject(data);
-            out.flush();
-            stat = Status.NOT_RESPONDING;
+            out.flush();            
 
-            try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
-                stat = Status.REACHABLE;
+            try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {                
                 in.readObject();
                 stat = Status.ONLINE;
             } catch (IOException ex) {
@@ -206,8 +201,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                 log.log(Level.WARNING, "Illegal class received from client for KEEP_ALIVE", ex);
             }
         } catch (SocketTimeoutException ex) {
-            log.log(Level.FINE, "Client on IP {0} is not responding to request.", address.getHostAddress());
-            stat = Status.NOT_RESPONDING;
+            log.log(Level.FINE, "Client on IP {0} is not responding to request.", address.getHostAddress());            
         } catch (IOException ex) {
         }
 
@@ -215,6 +209,10 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             hm.logMessageSend(address, data, result, stat);
         }
 
+        if (status.equals(Status.PASSIVE) && stat == Status.OFFLINE) {
+            stat = Status.PASSIVE;
+        }
+        
         setStatus(stat);
         return getStatus();
     }
@@ -265,6 +263,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     @Override
     public Queue<DataPacket> getUnsentData() {
+        setStatus(Status.PASSIVE);
         return unsentData;
     }
 
