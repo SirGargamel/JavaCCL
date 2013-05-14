@@ -1,6 +1,5 @@
 package cz.tul.comm.socket;
 
-import cz.tul.comm.ClientLister;
 import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.IService;
