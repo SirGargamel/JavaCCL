@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     private static final Logger log = Logger.getLogger(CommunicatorImpl.class.getName());
+    private static final Object dummy = "dummyObject";
 
     /**
      * Create new communicator with given IP and on given port
@@ -55,7 +56,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
         return c;
     }
-    private final int TIMEOUT = 500;
+    private final int TIMEOUT = 250;
     private final int STATUS_CHECK_INTERVAL = 5_000;
     private final InetAddress address;
     private final int port;
@@ -110,7 +111,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     @Override
     public Object sendData(final Object data, final int timeout) {
         boolean readAndReply = false;
-        Object response = null;
+        Object response = dummy;
         Status stat = Status.OFFLINE;
         DataPacket dp = new DataPacket(id, data);
 
@@ -129,13 +130,13 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                 setStatus(Status.ONLINE);
                 readAndReply = true;
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Error receiving response from output socket", ex);                
+                log.log(Level.WARNING, "Error receiving response from output socket", ex);
             } catch (ClassNotFoundException ex) {
                 log.log(Level.WARNING, "Unknown class object received.", ex);
                 response = GenericResponses.UNKNOWN_DATA;
             }
         } catch (SocketTimeoutException ex) {
-            log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", address.getHostAddress());            
+            log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", address.getHostAddress());
         } catch (IOException ex) {
             log.log(Level.WARNING, "Cannot write to output socket.", ex);
         }
@@ -143,7 +144,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         if (hm != null) {
             hm.logMessageSend(address, data, readAndReply, response);
         }
-        if (!readAndReply) {
+        if (!readAndReply && !unsentData.contains(dp)) {
             unsentData.add(dp);
             try {
                 response = waitForResponse(dp, timeout);
@@ -160,15 +161,31 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         long startTime = Calendar.getInstance(Locale.getDefault()).getTimeInMillis();
         if (timeout > 0) {
             long dif = Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - startTime;
-            while (dif < timeout) {
+            while (dif < timeout && !responses.containsKey(question)) {
                 synchronized (this) {
-                    this.wait(timeout);
+                    this.wait(TIMEOUT);
+                }
+                if (checkStatus().equals(Status.ONLINE)) {
+                    Object response = sendData(question.getData());
+                    if (response != dummy) {
+                        unsentData.remove(question);
+                        responses.put(question, response);
+                    }
                 }
                 dif = Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - startTime;
             }
         } else {
-            synchronized (this) {
-                this.wait();
+            while (!responses.containsKey(question)) {
+                synchronized (this) {
+                    this.wait(TIMEOUT);
+                }
+                if (checkStatus().equals(Status.ONLINE)) {
+                    Object response = sendData(question.getData());
+                    if (response != dummy) {
+                        unsentData.remove(question);
+                        responses.put(question, response);
+                    }
+                }
             }
         }
         if (responses.containsKey(question)) {
@@ -188,11 +205,11 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             s.setSoTimeout(TIMEOUT);
 
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-            
-            out.writeObject(data);
-            out.flush();            
 
-            try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {                
+            out.writeObject(data);
+            out.flush();
+
+            try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                 in.readObject();
                 stat = Status.ONLINE;
             } catch (IOException ex) {
@@ -201,7 +218,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                 log.log(Level.WARNING, "Illegal class received from client for KEEP_ALIVE", ex);
             }
         } catch (SocketTimeoutException ex) {
-            log.log(Level.FINE, "Client on IP {0} is not responding to request.", address.getHostAddress());            
+            log.log(Level.FINE, "Client on IP {0} is not responding to request.", address.getHostAddress());
         } catch (IOException ex) {
         }
 
@@ -212,7 +229,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         if (status.equals(Status.PASSIVE) && stat == Status.OFFLINE) {
             stat = Status.PASSIVE;
         }
-        
+
         setStatus(stat);
         return getStatus();
     }
