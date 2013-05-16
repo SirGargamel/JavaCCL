@@ -108,7 +108,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
 
         return result;
     }
-    
+
     public void requestJob(final Communicator comm) {
         if (isClientOnline(comm)) {
             final ServerSideJob ssj = jobQueue.poll();
@@ -163,7 +163,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
     public void run() {
         log.fine("JobManager has been started.");
         while (run) {
-            if (!jobQueue.isEmpty()) {                
+            if (!jobQueue.isEmpty()) {
                 checkAssignedJobs();
                 checkClientStatuses();
                 assignJobs();
@@ -413,6 +413,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                                     itEntry.remove();
                                 }
                                 addJob(e.getKey(), ssj, jobComputing);
+                                assignTime.remove(ssj);
                                 ssj.setStatus(JobStatus.ACCEPTED);
                                 log.log(Level.FINE, "Job with ID {0} has been accepted.", id);
                                 storeJobAction(ssj.getId(), e.getKey().getId(), JobMessageHeaders.JOB_ACCEPT);
