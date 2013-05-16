@@ -516,7 +516,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
         JobStatus s = job.getStatus();
         if (s == JobStatus.SENT || s == JobStatus.ACCEPTED) {
             Communicator comm = owners.get(job);
-            JobTask jt = new JobTask(job.getId(), JobMessageHeaders.JOB_CANCEL, this);
+            JobTask jt = new JobTask(job.getId(), JobMessageHeaders.JOB_CANCEL, null);
             comm.sendData(jt);
             jobQueue.addFirst(job);
 
