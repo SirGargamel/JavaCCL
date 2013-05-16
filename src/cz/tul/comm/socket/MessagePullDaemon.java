@@ -29,7 +29,7 @@ public class MessagePullDaemon extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(MessagePullDaemon.class.getName());
     private static final int WAIT_TIME = 100;
-    private final Collection<Communicator> comms;
+    private final ClientLister clientLister;    
     private final DataPacketHandler dpHandler;
     private boolean run;
     private HistoryManager hm;
@@ -39,21 +39,19 @@ public class MessagePullDaemon extends Thread implements IService {
             this.dpHandler = dpHandler;
         } else {
             throw new NullPointerException("DatapacketHandler cannot be null.");
-        }
-
-        comms = clientLister.getClients();
-
+        }        
+        if (clientLister != null) {
+            this.clientLister = clientLister;
+        } else {
+            throw new NullPointerException("ClientLister cannot be null.");
+        }  
+        
         run = true;
-    }
-
-    public void registerComm(final Communicator comm) {
-        if (comm != null) {
-            comms.add(comm);
-        }
     }
 
     @Override
     public void run() {
+        Collection<Communicator> comms;
         Message m;
         InetAddress ipComm;
         int port;
@@ -61,6 +59,7 @@ public class MessagePullDaemon extends Thread implements IService {
         boolean dataRead = false;
 
         while (run) {
+            comms = clientLister.getClients();            
             for (Communicator comm : comms) {
                 if (comm != null && comm.checkStatus().equals(Status.ONLINE)) {
                     ipComm = comm.getAddress();
@@ -123,14 +122,18 @@ public class MessagePullDaemon extends Thread implements IService {
         this.hm = hm;
         log.fine("History registered.");
     }
-    
+
     public void handleMessagePullRequest(final Socket s, Object pullData) {
         Object msg = null;
         CommunicatorInner communicator = null;
+        
         if (pullData instanceof UUID) {
+            Collection<Communicator> comms = clientLister.getClients();
+            
             final UUID id = (UUID) pullData;
             for (Communicator comm : comms) {
-                if (id.equals(comm.getId()) && comm instanceof CommunicatorInner) {
+                if (comm instanceof CommunicatorInner
+                        && id.equals(comm.getId())) {
                     communicator = (CommunicatorInner) comm;
                     final Queue<DataPacket> q = communicator.getUnsentData();
                     if (!q.isEmpty()) {
