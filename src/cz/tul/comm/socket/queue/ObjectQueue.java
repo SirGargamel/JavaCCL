@@ -71,7 +71,7 @@ public class ObjectQueue<O extends Identifiable> {
      */
     public void storeData(final O data) {
         if (data != null && data.getId() != null) {
-            final Queue q = this.data.get(data.getId());
+            final Queue<O> q = this.data.get(data.getId());
             if (q != null) {
                 q.add(data);
                 log.log(Level.FINE, "Data [{0}] stored.", data.toString());
