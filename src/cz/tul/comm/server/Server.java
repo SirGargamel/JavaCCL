@@ -51,12 +51,12 @@ public interface Server extends IService {
      */
     HistoryManager getHistory();
 
-    /**     
+    /**
      * @return Interface for managing listeners.
      */
     ListenerRegistrator getListenerRegistrator();
 
-    /**     
+    /**
      * @return interface for job management
      */
     JobManager getJobManager();

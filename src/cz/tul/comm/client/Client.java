@@ -6,6 +6,8 @@ import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.job.AssignmentListener;
 import cz.tul.comm.socket.ListenerRegistrator;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.UUID;
 
 /**
  * Interface for client side of library.
@@ -69,6 +71,10 @@ public interface Client extends IService {
      * @return true for successfull data sending
      */
     Object sendDataToServer(final Object data);
+
+    Object sendDataToClient(final UUID clientId, final Object data) throws UnknownHostException;
+    
+    Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException;
 
     /**
      * Request an extra job from server.

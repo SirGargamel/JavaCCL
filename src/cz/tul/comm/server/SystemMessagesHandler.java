@@ -1,5 +1,6 @@
 package cz.tul.comm.server;
 
+import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.CommunicatorInner;
@@ -77,6 +78,15 @@ public class SystemMessagesHandler implements Listener {
                         } else {
                             log.log(Level.WARNING, "Invalid client id received - {0}", id.toString());
                             return GenericResponses.ILLEGAL_DATA;
+                        }
+                    case MessageHeaders.CLIENT_IP_PORT_QUESTION:
+                        UUID clientid = (UUID) m.getData();
+                        Communicator comm = clientManager.getClient(clientid);
+                        if (comm != null) {
+                            String response = comm.getAddress().getHostAddress().concat(Constants.DELIMITER).concat(String.valueOf(comm.getPort()));
+                            return response;
+                        } else {
+                            return GenericResponses.UUID_UNKNOWN;
                         }
                     default:
                         return GenericResponses.UNKNOWN_DATA;

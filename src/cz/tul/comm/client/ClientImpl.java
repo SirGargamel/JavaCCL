@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
@@ -244,5 +245,34 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         final Collection<Communicator> result = new ArrayList<>(1);
         result.add(comm);
         return result;
+    }
+
+    @Override
+    public Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException {
+        // ask server for IP and port
+        final Message serverQuestion = new Message(Constants.ID_SYS_MSG, MessageHeaders.CLIENT_IP_PORT_QUESTION, clientId);
+        final Object clientIpPort = sendDataToServer(serverQuestion);
+        if (clientIpPort instanceof String) {
+            final String ipPort = (String) clientIpPort;
+            String[] split = ipPort.split(Constants.DELIMITER);
+            if (split.length > 1) {
+                final int port = Integer.valueOf(split[1]);
+                // create Comm to client
+                final Communicator c = CommunicatorImpl.initNewCommunicator(InetAddress.getByName(split[0]), port);
+                // send data to client and return result        
+                return c.sendData(data, timeout);
+            } else {
+                log.warning("Illegal UUID used.");
+                return null;
+            }
+        } else {
+            log.warning("Illegal UUID used.");
+            return null;
+        }
+    }
+
+    @Override
+    public Object sendDataToClient(UUID clientId, Object data) throws UnknownHostException {
+        return sendDataToClient(clientId, data, 0);
     }
 }
