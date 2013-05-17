@@ -75,5 +75,5 @@ public interface Server extends IService {
      * @param task jobs task
      * @return interface for job control and result obtaining
      */
-    Job submitJob(final Object task);
+    Job submitJob(final Object task) throws IllegalArgumentException;
 }

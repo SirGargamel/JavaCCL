@@ -26,7 +26,7 @@ public interface JobManager {
      * @param task jobs task
      * @return interface for job control
      */
-    Job submitJob(final Object task);
+    Job submitJob(final Object task) throws IllegalArgumentException;
 
     /**
      * Method waits until all jobs are completed.

@@ -67,7 +67,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     private Status status;
     private HistoryManager hm;
 
-    private CommunicatorImpl(final InetAddress address, final int port) {
+    private CommunicatorImpl(final InetAddress address, final int port) throws IllegalArgumentException {
         if (address == null) {
             throw new IllegalArgumentException("Invalid address \"" + address + "\"");
         } else if (port < 0 || port > 65_535) {
@@ -104,12 +104,16 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     }
 
     @Override
-    public Object sendData(final Object data) {
+    public Object sendData(final Object data) throws IllegalArgumentException {
         return sendData(data, 0);
     }
 
     @Override
-    public Object sendData(final Object data, final int timeout) {
+    public Object sendData(final Object data, final int timeout) throws IllegalArgumentException {
+        if (!(data instanceof Serializable)) {
+            throw new IllegalArgumentException("Data for sending must be serializable (eg. implement Serializable interface.)");
+        }
+        
         boolean readAndReply = false;
         Object response = dummy;
         Status stat = Status.OFFLINE;

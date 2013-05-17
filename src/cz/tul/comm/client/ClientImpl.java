@@ -38,8 +38,7 @@ import java.util.logging.Logger;
  */
 public class ClientImpl implements IService, ServerInterface, Client, IDFilter, ClientLister {
 
-    private static final Logger log = Logger.getLogger(ClientImpl.class.getName());
-    private static final int TIMEOUT = 1_000;
+    private static final Logger log = Logger.getLogger(ClientImpl.class.getName());    
 
     /**
      * Create and initialize new instance of client at given port.
@@ -145,7 +144,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     public Object sendDataToServer(final Object data) {
         log.log(Level.INFO, "Sending data to server - {0}", data.toString());
         if (comm == null) {
-            throw new NullPointerException("No server communicator set");
+            throw new NullPointerException("No server communicator set.");
         } else {
             if (!isServerUp()) {
                 log.warning("Server could not be contacted.");
@@ -248,31 +247,26 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
-    public Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException {
+    public Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException, IllegalArgumentException {
         // ask server for IP and port
         final Message serverQuestion = new Message(Constants.ID_SYS_MSG, MessageHeaders.CLIENT_IP_PORT_QUESTION, clientId);
         final Object clientIpPort = sendDataToServer(serverQuestion);
         if (clientIpPort instanceof String) {
             final String ipPort = (String) clientIpPort;
             String[] split = ipPort.split(Constants.DELIMITER);
-            if (split.length > 1) {
-                final int port = Integer.valueOf(split[1]);
-                // create Comm to client
-                final Communicator c = CommunicatorImpl.initNewCommunicator(InetAddress.getByName(split[0]), port);
-                // send data to client and return result        
-                return c.sendData(data, timeout);
-            } else {
-                log.warning("Illegal UUID used.");
-                return null;
-            }
+            final InetAddress ip = InetAddress.getByName(split[0]);
+            final int port = Integer.valueOf(split[1]);
+            // create Comm to client
+            final Communicator c = CommunicatorImpl.initNewCommunicator(ip, port);
+            // send data to client and return result        
+            return c.sendData(data, timeout);
         } else {
-            log.warning("Illegal UUID used.");
-            return null;
+            throw new IllegalArgumentException("Illegal client id used - " + clientId.toString());
         }
     }
 
     @Override
-    public Object sendDataToClient(UUID clientId, Object data) throws UnknownHostException {
+    public Object sendDataToClient(UUID clientId, Object data) throws UnknownHostException, IllegalArgumentException {
         return sendDataToClient(clientId, data, 0);
     }
 }

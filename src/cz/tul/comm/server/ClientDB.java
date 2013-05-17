@@ -37,20 +37,16 @@ class ClientDB implements ClientManager, Observer, IDFilter {
     }
 
     @Override
-    public Communicator registerClient(final InetAddress address, final int port) {
+    public Communicator registerClient(final InetAddress address, final int port) throws IllegalArgumentException {
         Communicator cc = getClient(address, port);
         if (cc == null) {
-            try {
-                CommunicatorInner ccI = CommunicatorImpl.initNewCommunicator(address, port);
-                if (ccI != null) {
-                    ccI.registerHistory(hm);
-                    ccI.addObserver(this);
-                    cc = ccI;
-                    clients.add(cc);
-                    log.log(Level.CONFIG, "New client with IP {0} on port {1} registered", new Object[]{address.getHostAddress(), port});
-                }
-            } catch (IllegalArgumentException ex) {
-                log.log(Level.WARNING, "Invalid Communicator parameters.", ex);
+            CommunicatorInner ccI = CommunicatorImpl.initNewCommunicator(address, port);
+            if (ccI != null) {
+                ccI.registerHistory(hm);
+                ccI.addObserver(this);
+                cc = ccI;
+                clients.add(cc);
+                log.log(Level.CONFIG, "New client with IP {0} on port {1} registered", new Object[]{address.getHostAddress(), port});
             }
         } else {
             log.log(Level.CONFIG, "Client with IP {0} on port {1} is already registered, no changes made", new Object[]{address.getHostAddress(), port});

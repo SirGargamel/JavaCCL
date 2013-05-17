@@ -72,9 +72,9 @@ public interface Client extends IService {
      */
     Object sendDataToServer(final Object data);
 
-    Object sendDataToClient(final UUID clientId, final Object data) throws UnknownHostException;
+    Object sendDataToClient(final UUID clientId, final Object data) throws UnknownHostException, IllegalArgumentException;
     
-    Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException;
+    Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException, IllegalArgumentException;
 
     /**
      * Request an extra job from server.

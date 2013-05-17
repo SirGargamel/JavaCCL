@@ -43,7 +43,7 @@ public interface Communicator {
      * @param data data for sending (must implement Serializable interface)
      * @return true for successfull send
      */
-    Object sendData(final Object data);
+    Object sendData(final Object data) throws IllegalArgumentException;
 
     /**
      * Send data to given target.
@@ -52,6 +52,6 @@ public interface Communicator {
      * @param timeout time, after which sending is considered unsuccessfull
      * @return true for successfull send
      */
-    Object sendData(final Object data, final int timeout);
+    Object sendData(final Object data, final int timeout) throws IllegalArgumentException;
     
 }

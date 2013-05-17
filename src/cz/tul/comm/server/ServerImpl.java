@@ -140,7 +140,7 @@ public final class ServerImpl implements IService, Server {
     }
 
     @Override
-    public Job submitJob(final Object task) {
+    public Job submitJob(final Object task) throws IllegalArgumentException {
         return jobManager.submitJob(task);
     }
 

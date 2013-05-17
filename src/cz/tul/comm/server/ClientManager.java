@@ -19,7 +19,7 @@ public interface ClientManager extends ClientLister {
      * @param port client port
      * @return {@link CommunicatorImpl} for client communication
      */
-    Communicator registerClient(final InetAddress adress, final int port);
+    Communicator registerClient(final InetAddress adress, final int port) throws IllegalArgumentException;
 
     /**
      * Deregister client with given id.

@@ -98,7 +98,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
     }
 
     @Override
-    public Job submitJob(final Object task) {
+    public Job submitJob(final Object task) throws IllegalArgumentException {
         final ServerSideJob result = new ServerSideJob(task, this);
         jobQueue.add(result);
         allJobs.add(result);
