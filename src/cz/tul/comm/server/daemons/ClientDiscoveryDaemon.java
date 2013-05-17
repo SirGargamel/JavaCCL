@@ -34,7 +34,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
     public ClientDiscoveryDaemon(final int serverSocketPort) throws SocketException {                
         s = new DatagramSocket(Constants.DEFAULT_PORT);
         s.setBroadcast(true);
-        message = Constants.DISCOVERY_QUESTION.concat(Constants.DISCOVERY_QUESTION_DELIMITER).concat(String.valueOf(serverSocketPort)).getBytes();
+        message = Constants.DISCOVERY_QUESTION.concat(Constants.DELIMITER).concat(String.valueOf(serverSocketPort)).getBytes();
         messageLength = message.length;
         run = true;
     }

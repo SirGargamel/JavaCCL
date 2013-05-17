@@ -53,7 +53,7 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
 
                     //See if the packet holds the right message                    
                     if (message.startsWith(Constants.DISCOVERY_QUESTION)) {
-                        final String portS = message.substring(Constants.DISCOVERY_QUESTION.length() + Constants.DISCOVERY_QUESTION_DELIMITER.length());
+                        final String portS = message.substring(Constants.DISCOVERY_QUESTION.length() + Constants.DELIMITER.length());
                         try {
                             final int port = Integer.valueOf(portS);
                             sr.registerToServer(packet.getAddress(), port);
