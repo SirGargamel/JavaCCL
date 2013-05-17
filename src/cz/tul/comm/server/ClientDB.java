@@ -56,6 +56,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
             log.log(Level.CONFIG, "Client with IP {0} on port {1} is already registered, no changes made", new Object[]{address.getHostAddress(), port});
         }
 
+        prepareAllowedIDs();
         return cc;
     }
 
@@ -67,6 +68,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
             cc = i.next();
             if (cc.getId().equals(id)) {
                 i.remove();
+                prepareAllowedIDs();
                 break;
             }
         }
