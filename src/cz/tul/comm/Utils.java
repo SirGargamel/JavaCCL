@@ -1,6 +1,10 @@
 package cz.tul.comm;
 
+import java.io.ByteArrayOutputStream;
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -43,6 +47,21 @@ public class Utils {
         } catch (IOException | SecurityException ex) {
             log.log(Level.SEVERE, "Error preparing file logger.", ex);
         }
+    }
+    
+    public static boolean checkSerialization(final Object data) {
+        boolean result = false;
+        
+        if (data instanceof Serializable || data instanceof Externalizable) {
+            try (ObjectOutputStream o = new ObjectOutputStream(new ByteArrayOutputStream())) {
+                o.writeObject(data);
+                result = true;
+            } catch (IOException ex) {
+                // not serializable
+            }
+        }
+        
+        return result;
     }
 
     private Utils() {

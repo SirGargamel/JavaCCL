@@ -1,6 +1,6 @@
 package cz.tul.comm.job;
 
-import java.io.Serializable;
+import cz.tul.comm.Utils;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,10 +21,10 @@ public class ServerSideJob implements Job {
 
     ServerSideJob(final Object task, final JobCancelManager jobCancelManager) throws IllegalArgumentException {
         jcm = jobCancelManager;
-        if (task instanceof Serializable) {
+        if (Utils.checkSerialization(task)) {
             this.task = task;
         } else {
-            throw new IllegalArgumentException("Jobs task must be serializable (eg. implement Serializable interface.)");
+            throw new IllegalArgumentException("JobTasks data (and all of its members) must be serializable (eg. implement Serializable or Externalizable interface.)");
         }
         jobStatus = JobStatus.SUBMITTED;
         jobId = UUID.randomUUID();

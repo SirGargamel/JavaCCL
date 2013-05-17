@@ -1,6 +1,7 @@
 package cz.tul.comm.communicator;
 
 import cz.tul.comm.GenericResponses;
+import cz.tul.comm.Utils;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
@@ -110,8 +111,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     @Override
     public Object sendData(final Object data, final int timeout) throws IllegalArgumentException {
-        if (!(data instanceof Serializable)) {
-            throw new IllegalArgumentException("Data for sending must be serializable (eg. implement Serializable interface.)");
+        if (!Utils.checkSerialization(data)) {
+            throw new IllegalArgumentException("Data for sending (and all of its members) must be serializable (eg. implement Serializable or Externalizable interface.)");
         }
         
         boolean readAndReply = false;
