@@ -65,6 +65,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     private final Map<DataPacket, Object> responses;
     private UUID id;
     private Calendar lastStatusUpdateTime;
+    private Calendar lastUnsentDataCheckTime;
     private Status status;
     private HistoryManager hm;
 
@@ -114,7 +115,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         if (!Utils.checkSerialization(data)) {
             throw new IllegalArgumentException("Data for sending (and all of its members) must be serializable (eg. implement Serializable or Externalizable interface.)");
         }
-        
+
         boolean readAndReply = false;
         Object response = dummy;
         Status stat = Status.OFFLINE;
@@ -231,15 +232,18 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             hm.logMessageSend(address, data, result, stat);
         }
 
-        if (status.equals(Status.PASSIVE) && stat == Status.OFFLINE) {
-            stat = Status.PASSIVE;
+        if (stat == Status.OFFLINE) {
+            final Calendar currentTime = Calendar.getInstance(Locale.getDefault());
+            if (currentTime.getTimeInMillis() - lastUnsentDataCheckTime.getTimeInMillis() < STATUS_CHECK_INTERVAL) {
+                stat = Status.PASSIVE;
+            }
         }
 
         setStatus(stat);
         return getStatus();
     }
 
-    public void setStatus(final Status newStatus) {
+    private void setStatus(final Status newStatus) {
         status = newStatus;
         lastStatusUpdateTime = Calendar.getInstance();
 
@@ -285,7 +289,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     @Override
     public Queue<DataPacket> getUnsentData() {
-        setStatus(Status.PASSIVE);
+        lastUnsentDataCheckTime = Calendar.getInstance(Locale.getDefault());
         return unsentData;
     }
 
