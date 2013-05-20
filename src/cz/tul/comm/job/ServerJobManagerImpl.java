@@ -43,15 +43,6 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
     private static final int MAX_CLIENT_NA_TIME = 5_000;
     private static final int MAX_JOB_ASSIGN_TIME = 5_000;
     private static final int JOB_CANCEL_WAIT_TIME = 2_000;
-
-    private static void addJob(final Communicator comm, final ServerSideJob job, final Map<Communicator, List<ServerSideJob>> dataMap) {
-        List<ServerSideJob> l = dataMap.get(comm);
-        if (l == null) {
-            l = new ArrayList<>(1);
-            dataMap.put(comm, l);
-        }
-        l.add(job);
-    }
     private final ClientManager clientManager;
     private DataStorage dataStorage;
     private final ListenerRegistrator listenerRegistrator;
@@ -450,7 +441,14 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                     if (list.isEmpty()) {
                         itEntry.remove();
                     }
-                    addJob(e.getKey(), ssj, jobComputing);
+
+                    List<ServerSideJob> l = jobComputing.get(e.getKey());
+                    if (l == null) {
+                        l = new ArrayList<>(1);
+                        jobComputing.put(e.getKey(), l);
+                    }
+                    l.add(ssj);
+
                     ssj.setStatus(JobStatus.ACCEPTED);
                     log.log(Level.FINE, "Job with ID {0} has been accepted.", id);
                     storeJobAction(ssj.getId(), e.getKey().getId(), JobMessageHeaders.JOB_ACCEPT);
@@ -548,7 +546,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
             jobQueue.addFirst(job);
 
             switch (job.getStatus()) {
-                case SENT:                    
+                case SENT:
                     final Iterator<AssignmentRecord> it = jobsWaitingAssignment.get(comm).iterator();
                     AssignmentRecord ar;
                     while (it.hasNext()) {
@@ -556,7 +554,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                         if (ar.getJob() == job || ar.getJob().equals(job)) {
                             it.remove();
                         }
-                    }                    
+                    }
                     break;
                 case ACCEPTED:
                     jobComputing.get(comm).remove(job);
