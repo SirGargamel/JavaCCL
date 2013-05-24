@@ -234,7 +234,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
         if (stat == Status.OFFLINE) {
             final Calendar currentTime = Calendar.getInstance(Locale.getDefault());
-            if (currentTime.getTimeInMillis() - lastUnsentDataCheckTime.getTimeInMillis() < STATUS_CHECK_INTERVAL) {
+            if (lastUnsentDataCheckTime != null && currentTime.getTimeInMillis() - lastUnsentDataCheckTime.getTimeInMillis() < STATUS_CHECK_INTERVAL) {
                 stat = Status.PASSIVE;
             }
         }

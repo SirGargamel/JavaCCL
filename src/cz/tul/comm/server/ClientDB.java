@@ -60,9 +60,11 @@ class ClientDB implements ClientManager, Observer, IDFilter {
     public void deregisterClient(final UUID id) {
         final Iterator<Communicator> i = clients.iterator();
         Communicator cc;
+        UUID ccId;
         while (i.hasNext()) {
             cc = i.next();
-            if (cc.getId().equals(id)) {
+            ccId = cc.getId();
+            if (ccId != null && ccId.equals(id)) {
                 i.remove();
                 prepareAllowedIDs();
                 break;
