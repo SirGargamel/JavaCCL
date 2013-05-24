@@ -67,7 +67,9 @@ public class Utils {
     public static boolean checkSerialization(final Object data) {
         boolean result = false;
 
-        if (data instanceof Serializable || data instanceof Externalizable) {
+        if (data == null) {
+            result = true;
+        } else if (data instanceof Serializable || data instanceof Externalizable) {
             try (ObjectOutputStream o = new ObjectOutputStream(new ByteArrayOutputStream())) {
                 o.writeObject(data);
                 result = true;

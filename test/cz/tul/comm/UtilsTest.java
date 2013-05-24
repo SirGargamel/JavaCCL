@@ -24,7 +24,11 @@ public class UtilsTest {
     @Test
     public void testCheckSerialization() {
         System.out.println("checkSerialization");
+        
         Object data = "testString";
+        assertTrue(Utils.checkSerialization(data));
+        
+        data = null;
         assertTrue(Utils.checkSerialization(data));
 
         data = new BufferedImage(1, 1, BufferedImage.TYPE_3BYTE_BGR);
