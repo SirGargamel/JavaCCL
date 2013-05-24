@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 /**
  * Utilities.
+ *
  * @author Petr Ječmen
  */
 public class Utils {
@@ -20,7 +21,15 @@ public class Utils {
     private static final String LOG_FILE_NAME = "systemLog.xml";
 
     /**
+     * enable logging of all actions
+     */
+    public static void enableDebugMode() {
+        Utils.adjustMainLoggerLevel(Level.FINE);
+    }
+
+    /**
      * Set level of main logger (and its children)
+     *
      * @param level new Logger level
      */
     public static void adjustMainLoggerLevel(final Level level) {
@@ -34,7 +43,7 @@ public class Utils {
     /**
      * initialize file logging
      */
-    public static void prepareFileLogger() {
+    public static void useFileLogging() {
         try {
             Logger l = log.getParent();
             Handler fh = new FileHandler(LOG_FILE_NAME, true);
@@ -48,10 +57,16 @@ public class Utils {
             log.log(Level.SEVERE, "Error preparing file logger.", ex);
         }
     }
-    
+
+    /**
+     * Checks if the given object is fully serializable.
+     *
+     * @param data object for testing
+     * @return true if object can be serialized using {@link ObjectOutputStream}
+     */
     public static boolean checkSerialization(final Object data) {
         boolean result = false;
-        
+
         if (data instanceof Serializable || data instanceof Externalizable) {
             try (ObjectOutputStream o = new ObjectOutputStream(new ByteArrayOutputStream())) {
                 o.writeObject(data);
@@ -60,7 +75,7 @@ public class Utils {
                 // not serializable
             }
         }
-        
+
         return result;
     }
 
