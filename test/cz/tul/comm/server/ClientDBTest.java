@@ -114,10 +114,10 @@ public class ClientDBTest {
         Communicator c2 = instance.registerClient(InetAddress.getLoopbackAddress(), 5000);
         Communicator c3 = instance.registerClient(InetAddress.getLoopbackAddress(), 5001);
         
-        Collection expResult = new HashSet(2);
+        Collection<Communicator> expResult = new HashSet(2);
         expResult.add(c1);
         expResult.add(c3);
-        Collection result = instance.getClients();
+        Collection<Communicator> result = instance.getClients();
         assertEquals(expResult, result);
     }
 
