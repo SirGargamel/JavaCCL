@@ -93,6 +93,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
+                sendDataToServer(new Message(MessageHeaders.LOGOUT, comm.getId()));                
                 stopService();
             }
         }));
