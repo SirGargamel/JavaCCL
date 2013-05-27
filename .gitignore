@@ -1,5 +1,6 @@
 /dist/
 /build/
+/.jacocoverage/
 /test.xml
 /testIP.xml
 /testTime.xml
@@ -7,7 +8,7 @@
 /testInOut.xml
 /systemLog.xml.lck
 /systemLog.xml
-!/src/cz/tul/comm/tester/virtual/
-/src/cz/tul/comm/tester/Misc.java
+/src/cz/tul/comm/tester/
+/src/cz/tul/comm/tester/virtual
 # system logs
 systemLog.xml*
