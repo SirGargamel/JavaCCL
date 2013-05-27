@@ -1,6 +1,7 @@
-package cz.tul.comm.job;
+package cz.tul.comm.job.server;
 
 import cz.tul.comm.Utils;
+import cz.tul.comm.job.JobStatus;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;

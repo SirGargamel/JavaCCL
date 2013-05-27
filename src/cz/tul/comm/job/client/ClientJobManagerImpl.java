@@ -1,7 +1,9 @@
-package cz.tul.comm.job;
+package cz.tul.comm.job.client;
 
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.client.ServerInterface;
+import cz.tul.comm.job.JobMessageHeaders;
+import cz.tul.comm.job.JobTask;
 import cz.tul.comm.socket.queue.Identifiable;
 import cz.tul.comm.socket.queue.Listener;
 import java.util.HashMap;

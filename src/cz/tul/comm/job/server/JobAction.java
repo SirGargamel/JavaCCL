@@ -1,4 +1,4 @@
-package cz.tul.comm.job;
+package cz.tul.comm.job.server;
 
 import java.util.Calendar;
 import java.util.Locale;

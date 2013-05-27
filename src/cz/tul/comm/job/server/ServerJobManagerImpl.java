@@ -1,9 +1,12 @@
-package cz.tul.comm.job;
+package cz.tul.comm.job.server;
 
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.Status;
+import cz.tul.comm.job.JobMessageHeaders;
+import cz.tul.comm.job.JobStatus;
+import cz.tul.comm.job.JobTask;
 import cz.tul.comm.server.ClientManager;
 import cz.tul.comm.server.DataStorage;
 import cz.tul.comm.socket.ListenerRegistrator;

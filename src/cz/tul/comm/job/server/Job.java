@@ -1,5 +1,6 @@
-package cz.tul.comm.job;
+package cz.tul.comm.job.server;
 
+import cz.tul.comm.job.JobStatus;
 import java.util.UUID;
 
 /**

@@ -1,4 +1,4 @@
-package cz.tul.comm.job;
+package cz.tul.comm.job.client;
 
 import java.util.UUID;
 

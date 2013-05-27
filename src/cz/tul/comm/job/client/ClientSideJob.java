@@ -1,5 +1,6 @@
-package cz.tul.comm.job;
+package cz.tul.comm.job.client;
 
+import cz.tul.comm.job.JobStatus;
 import java.util.UUID;
 import java.util.logging.Logger;
 
