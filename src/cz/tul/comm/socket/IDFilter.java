@@ -9,6 +9,8 @@ import java.util.UUID;
  */
 public interface IDFilter {
 
+    UUID getLocalID();
+    
     boolean isTargetIdValid(final UUID id);
     
     /**

@@ -280,4 +280,9 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
             return false;
         }
     }
+
+    @Override
+    public UUID getLocalID() {
+        return comm.getSourceId();
+    }
 }

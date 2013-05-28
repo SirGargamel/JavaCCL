@@ -135,7 +135,9 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                 response = in.readObject();
                 log.log(Level.FINE, "Received reply from client - {0}", response);
                 setStatus(Status.ONLINE);
-                readAndReply = true;
+                if (response != GenericResponses.ILLEGAL_TARGET_ID && response != GenericResponses.UUID_NOT_ALLOWED) {
+                    readAndReply = true;
+                } 
             } catch (IOException ex) {
                 log.log(Level.WARNING, "Error receiving response from output socket", ex);
             } catch (ClassNotFoundException ex) {
@@ -217,8 +219,12 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             out.flush();
 
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
-                in.readObject();
-                stat = Status.ONLINE;
+                Object response = in.readObject();
+                if (targetId == null || targetId.equals(response)) {
+                    stat = Status.ONLINE;
+                } else {
+                    log.log(Level.FINE, "KEEP_ALIVE response received for another ID. {0} , {1}", new Object[]{response, targetId});
+                }
             } catch (IOException ex) {
                 log.log(Level.FINE, "Client on IP {0} did not open stream for answer.", address.getHostAddress());
             } catch (ClassNotFoundException ex) {

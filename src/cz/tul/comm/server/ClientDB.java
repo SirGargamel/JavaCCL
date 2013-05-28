@@ -145,4 +145,9 @@ class ClientDB implements ClientManager, Observer, IDFilter {
     public boolean isTargetIdValid(UUID id) {
         return id.equals(localId);
     }
+
+    @Override
+    public UUID getLocalID() {
+        return localId;
+    }
 }

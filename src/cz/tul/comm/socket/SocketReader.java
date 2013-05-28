@@ -25,6 +25,7 @@ class SocketReader extends Observable implements Runnable {
     private final Socket socket;
     private final DataPacketHandler dpHandler;
     private final MessagePullDaemon mpd;
+    private final IDFilter idFilter;
     private HistoryManager hm;
 
     /**
@@ -37,7 +38,8 @@ class SocketReader extends Observable implements Runnable {
      */
     SocketReader(
             final Socket socket,
-            final DataPacketHandler dpHandler, final MessagePullDaemon mpd) {
+            final DataPacketHandler dpHandler, final MessagePullDaemon mpd,
+            final IDFilter idFilter) {
         if (socket != null) {
             this.socket = socket;
         } else {
@@ -52,6 +54,11 @@ class SocketReader extends Observable implements Runnable {
             this.mpd = mpd;
         } else {
             throw new NullPointerException("MessagePullDaemon cannot be null");
+        }
+        if (idFilter != null) {
+            this.idFilter = idFilter;
+        } else {
+            throw new NullPointerException("IDFilter cannot be null");
         }
     }
 
@@ -91,7 +98,7 @@ class SocketReader extends Observable implements Runnable {
             switch (m.getHeader()) {
                 case (MessageHeaders.KEEP_ALIVE):
                     log.log(Level.FINE, "keepAlive received from {0}", ip.getHostAddress());
-                    sendReply(ip, dataIn, dataRead, GenericResponses.OK);
+                    sendReply(ip, dataIn, dataRead, idFilter.getLocalID());
                     break;
                 case (MessageHeaders.MSG_PULL_REQUEST):
                     mpd.handleMessagePullRequest(socket, m.getData());

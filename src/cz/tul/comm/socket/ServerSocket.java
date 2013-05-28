@@ -139,7 +139,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
             try {
                 s = socket.accept();
                 log.log(Level.FINE, "Connection accepted from IP {0}:{1}", new Object[]{s.getInetAddress().getHostAddress(), s.getPort()});
-                final SocketReader sr = new SocketReader(s, this, mpd);
+                final SocketReader sr = new SocketReader(s, this, mpd, idFilter);
                 sr.registerHistory(hm);
                 for (Observer o : dataListeners) {
                     sr.addObserver(o);
