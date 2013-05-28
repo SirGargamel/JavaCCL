@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  */
 class SocketReader extends Observable implements Runnable {
 
-    private static final Logger log = Logger.getLogger(SocketReader.class.getName());    
+    private static final Logger log = Logger.getLogger(SocketReader.class.getName());
     private final Socket socket;
     private final DataPacketHandler dpHandler;
     private final MessagePullDaemon mpd;
@@ -32,12 +32,12 @@ class SocketReader extends Observable implements Runnable {
      * data reading and store data accoring to IP and ID.
      *
      * @param socket socket for reading
-     * @param dataStorageIP IP listeners storage
-     * @param dataStorageId ID listeners storage
+     * @param dpHandler handler for incopming non-system data
+     * @param mpd message pull request handler
      */
     SocketReader(
             final Socket socket,
-            final DataPacketHandler dpHandler,final MessagePullDaemon mpd) {
+            final DataPacketHandler dpHandler, final MessagePullDaemon mpd) {
         if (socket != null) {
             this.socket = socket;
         } else {

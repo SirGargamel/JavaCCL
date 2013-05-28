@@ -45,7 +45,7 @@ public class ClientDBTest {
 
         CommunicatorInner comm = (CommunicatorInner) instance.registerClient(InetAddress.getLoopbackAddress(), 5000);
         UUID id = UUID.randomUUID();
-        comm.setId(id);
+        comm.setTargetId(id);
 
         instance.registerClient(InetAddress.getLoopbackAddress(), 5001);
 
@@ -93,7 +93,7 @@ public class ClientDBTest {
         ClientDB instance = new ClientDB();
 
         CommunicatorInner c1 = (CommunicatorInner) instance.registerClient(InetAddress.getLoopbackAddress(), 5000);
-        c1.setId(id);
+        c1.setTargetId(id);
         Communicator c2 = instance.registerClient(InetAddress.getLoopbackAddress(), 5001);
 
         assertEquals(c1, instance.getClient(id));        
@@ -130,7 +130,7 @@ public class ClientDBTest {
         UUID id = UUID.randomUUID();
         ClientDB instance = new ClientDB();
         CommunicatorInner comm = (CommunicatorInner) instance.registerClient(InetAddress.getLoopbackAddress(), 5000);
-        comm.setId(id);
+        comm.setTargetId(id);
         assertTrue(instance.isIdAllowed(id));
         assertFalse(instance.isIdAllowed(UUID.randomUUID()));
     }

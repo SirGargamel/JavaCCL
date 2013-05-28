@@ -15,7 +15,17 @@ public interface CommunicatorInner extends Communicator {
 
     void storeResponse(final DataPacket question, final Object response);
     
-    void setId(final UUID id);
+    /**
+     * @param id UUID of target
+     */
+    void setTargetId(final UUID id);
+    
+    /**
+     * @param id UUID of this communiator
+     */
+    void setSourceId(final UUID id);
+    
+    UUID getSourceId();
     
     void addObserver(final Observer o);
     

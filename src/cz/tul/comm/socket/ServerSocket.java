@@ -192,7 +192,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
 
     @Override
     public Object handleDataPacket(final DataPacket dp) {
-        final UUID clientId = dp.getClientID();
+        final UUID clientId = dp.getSourceID();
         final Object data = dp.getData();
         Object result = GenericResponses.NOT_HANDLED_DIRECTLY;
 
@@ -210,6 +210,9 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                     log.log(Level.FINE, "Data with null id received and its not a sys msg [{0}].", data.toString());
                     return GenericResponses.ILLEGAL_DATA;
                 }
+            } else if (!idFilter.isTargetIdValid(dp.getTargetID())) {
+                log.log(Level.WARNING, "Received data not for this client - id {0}, data [{1}]", new Object[]{clientId, data.toString()});
+                return GenericResponses.ILLEGAL_TARGET_ID;
             } else if (!idFilter.isIdAllowed(clientId)) {
                 log.log(Level.WARNING, "Received data from unregistered client - id {0}, data [{1}]", new Object[]{clientId, data.toString()});
                 return GenericResponses.UUID_NOT_ALLOWED;

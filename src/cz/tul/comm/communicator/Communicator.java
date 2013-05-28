@@ -25,7 +25,7 @@ public interface Communicator {
     /**
      * @return CommunicatorImpl ID (assigned by server)
      */
-    UUID getId();
+    UUID getTargetId();
 
     /**
      * @return target client port

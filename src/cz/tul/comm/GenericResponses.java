@@ -7,6 +7,7 @@ package cz.tul.comm;
 public enum GenericResponses {
 
     ILLEGAL_DATA,
+    ILLEGAL_TARGET_ID,
     NOT_HANDLED_DIRECTLY,
     ERROR,
     UNKNOWN_DATA,

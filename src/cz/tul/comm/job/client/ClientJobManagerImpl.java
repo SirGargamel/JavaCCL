@@ -58,7 +58,7 @@ public class ClientJobManagerImpl implements Listener, ClientJobManager {
     }
 
     public void requestAssignment() {
-        sendDataToServer(null, JobMessageHeaders.JOB_REQUEST, server.getServerComm().getId());
+        sendDataToServer(null, JobMessageHeaders.JOB_REQUEST, server.getServerComm().getTargetId());
     }
 
     private Object sendDataToServer(final UUID jobId, final String header, final Object result) {

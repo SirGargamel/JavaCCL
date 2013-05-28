@@ -28,12 +28,14 @@ class ClientDB implements ClientManager, Observer, IDFilter {
     private static final Logger log = Logger.getLogger(ClientDB.class.getName());
     private final Set<Communicator> clients;
     private Collection<UUID> allowedIDs;
+    private final UUID localId;
     private HistoryManager hm;
 
     ClientDB() {
         clients = Collections.synchronizedSet(new HashSet<Communicator>());
         allowedIDs = Collections.emptySet();
         allowedIDs = Collections.unmodifiableCollection(allowedIDs);
+        localId = UUID.randomUUID();
     }
 
     @Override
@@ -44,8 +46,9 @@ class ClientDB implements ClientManager, Observer, IDFilter {
             if (ccI != null) {
                 ccI.registerHistory(hm);
                 ccI.addObserver(this);
+                ccI.setSourceId(localId);                
+                clients.add(ccI);
                 cc = ccI;
-                clients.add(cc);
                 log.log(Level.CONFIG, "New client with IP {0} on port {1} registered", new Object[]{address.getHostAddress(), port});
             }
         } else {
@@ -63,7 +66,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
         UUID ccId;
         while (i.hasNext()) {
             cc = i.next();
-            ccId = cc.getId();
+            ccId = cc.getTargetId();
             if (ccId != null && ccId.equals(id)) {
                 i.remove();
                 prepareAllowedIDs();
@@ -89,7 +92,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
 
         if (id != null) {
             for (Communicator c : clients) {
-                if (id.equals(c.getId())) {
+                if (id.equals(c.getTargetId())) {
                     result = c;
                     break;
                 }
@@ -125,7 +128,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
         Collection<UUID> ids = new HashSet<>();
         UUID id;
         for (Communicator comm : clients) {
-            id = comm.getId();
+            id = comm.getTargetId();
             if (id != null) {
                 ids.add(id);
             }
@@ -136,5 +139,10 @@ class ClientDB implements ClientManager, Observer, IDFilter {
     @Override
     public boolean isIdAllowed(UUID id) {
         return allowedIDs.contains(id);
+    }
+
+    @Override
+    public boolean isTargetIdValid(UUID id) {
+        return id.equals(localId);
     }
 }

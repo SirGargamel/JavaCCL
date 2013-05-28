@@ -63,7 +63,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     private final int port;
     private final Queue<DataPacket> unsentData;
     private final Map<DataPacket, Object> responses;
-    private UUID id;
+    private UUID sourceId;
+    private UUID targetId;
     private Calendar lastStatusUpdateTime;
     private Calendar lastUnsentDataCheckTime;
     private Status status;
@@ -119,7 +120,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         boolean readAndReply = false;
         Object response = dummy;
         Status stat = Status.OFFLINE;
-        DataPacket dp = new DataPacket(id, data);
+        DataPacket dp = new DataPacket(sourceId, targetId, data);
 
         try (final Socket s = new Socket(address, port)) {
             s.setSoTimeout(timeout);
@@ -273,18 +274,22 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     }
 
     @Override
-    public UUID getId() {
-        return id;
+    public UUID getTargetId() {
+        return targetId;
     }
 
-    /**
-     * @param id new CommunicatorImpl UUID
-     */
     @Override
-    public void setId(UUID id) {
-        this.id = id;
+    public void setTargetId(UUID id) {
+        this.targetId = id;
         setChanged();
-        notifyObservers(this.id);
+        notifyObservers(this.targetId);
+    }
+
+    @Override
+    public void setSourceId(UUID id) {
+        this.sourceId = id;
+        setChanged();
+        notifyObservers(this.sourceId);
     }
 
     @Override
@@ -313,5 +318,10 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         hash = 23 * hash + Objects.hashCode(this.address);
         hash = 23 * hash + this.port;
         return hash;
+    }
+
+    @Override
+    public UUID getSourceId() {
+        return sourceId;
     }
 }

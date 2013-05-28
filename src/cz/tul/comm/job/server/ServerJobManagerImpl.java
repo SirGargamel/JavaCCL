@@ -104,7 +104,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
     public void requestJob(final Communicator comm) {
         if (isClientOnline(comm)) {
             final ServerSideJob ssj = jobQueue.poll();
-            log.log(Level.CONFIG, "Job with ID {0} assigned to client with ID {1} after request.", new Object[]{ssj.getId(), comm.getId()});
+            log.log(Level.CONFIG, "Job with ID {0} assigned to client with ID {1} after request.", new Object[]{ssj.getId(), comm.getTargetId()});
             assignJob(ssj, comm);
         }
     }
@@ -180,7 +180,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
             job = jobQueue.poll();
             comm = pickClient(job.getId(), clients);
             if (comm != null) {
-                log.log(Level.CONFIG, "Job with ID {0} assigned to client with ID {1}.", new Object[]{job.getId(), comm.getId()});
+                log.log(Level.CONFIG, "Job with ID {0} assigned to client with ID {1}.", new Object[]{job.getId(), comm.getTargetId()});
                 assignJob(job, comm);
             } else {
                 putBack.add(job);
@@ -254,7 +254,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
         }
 
         for (JobAction ja : actionList) {
-            if (ja.getOwnerId().equals(comm.getId())) {
+            if (ja.getOwnerId().equals(comm.getTargetId())) {
                 return true;
             }
         }
@@ -264,7 +264,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
     private Calendar lastCancelTime(final List<JobAction> actionList, final Communicator comm) {
         List<Calendar> cancelTimes = new ArrayList<>();
         for (JobAction ja : actionList) {
-            if (ja.getOwnerId().equals(comm.getId()) && ja.getActionDescription().equals(JobMessageHeaders.JOB_CANCEL)) {
+            if (ja.getOwnerId().equals(comm.getTargetId()) && ja.getActionDescription().equals(JobMessageHeaders.JOB_CANCEL)) {
                 cancelTimes.add(ja.getActionTime());
             }
         }
@@ -299,16 +299,16 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
         l.add(createNewAssignmentRecord(job));
         storeClientOnlineStatus(comm);
         job.setStatus(JobStatus.SENT);
-        storeJobAction(job.getId(), comm.getId(), JobMessageHeaders.JOB_TASK);
+        storeJobAction(job.getId(), comm.getTargetId(), JobMessageHeaders.JOB_TASK);
         submitJob(job, comm);
     }
 
     private void submitJob(final ServerSideJob ssj, final Communicator comm) {
         final JobTask jt = new JobTask(ssj.getId(), JobMessageHeaders.JOB_TASK, ssj.getTask());
         final Object response = comm.sendData(jt);
+        owners.put(ssj, comm);
         if (response != null && response.equals(GenericResponses.OK)) {
-            ssj.setStatus(JobStatus.SENT);
-            owners.put(ssj, comm);
+            ssj.setStatus(JobStatus.SENT);            
         } else {
             ssj.cancelJob();
         }
@@ -338,10 +338,10 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
             // check client, then resend or give to another
             comm = owners.get(ssj);
             ssj.cancelJob();
-            storeJobAction(ssj.getId(), comm.getId(), JobMessageHeaders.JOB_CANCEL);
+            storeJobAction(ssj.getId(), comm.getTargetId(), JobMessageHeaders.JOB_CANCEL);
             if (isClientOnline(comm)) {
-                log.log(Level.CONFIG, "Job with id {0} has been sent again to client with id {1} for confirmation.", new Object[]{ssj.getId(), comm.getId()});
-                storeJobAction(ssj.getId(), comm.getId(), JobMessageHeaders.JOB_TASK);
+                log.log(Level.CONFIG, "Job with id {0} has been sent again to client with id {1} for confirmation.", new Object[]{ssj.getId(), comm.getTargetId()});
+                storeJobAction(ssj.getId(), comm.getTargetId(), JobMessageHeaders.JOB_TASK);
                 submitJob(ssj, comm);
             } else {
                 log.log(Level.CONFIG, "Job with id {0} hasnt been accepted in time, so it was cancelled and returned to queue.", new Object[]{ssj.getId(), MAX_JOB_ASSIGN_TIME});
@@ -363,12 +363,12 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                 if (lastOnline != null) {
                     final long dif = actualTime.getTimeInMillis() - lastOnline.getTimeInMillis();
                     if (dif > MAX_CLIENT_NA_TIME) {
-                        log.log(Level.CONFIG, "Client with id {0} is not reachable, its task has been cancelled and returned to queue.", comm.getId());
+                        log.log(Level.CONFIG, "Client with id {0} is not reachable, its task has been cancelled and returned to queue.", comm.getTargetId());
                         final List<AssignmentRecord> reassignedList = jobsWaitingAssignment.get(comm);
                         for (AssignmentRecord reassigned : reassignedList) {
                             ssj = reassigned.getJob();
                             ssj.cancelJob();
-                            storeJobAction(ssj.getId(), comm.getId(), JobMessageHeaders.JOB_CANCEL);
+                            storeJobAction(ssj.getId(), comm.getTargetId(), JobMessageHeaders.JOB_CANCEL);
                             if (!jobQueue.contains(ssj)) {
                                 jobQueue.addFirst(ssj);
                             }
@@ -454,7 +454,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
 
                     ssj.setStatus(JobStatus.ACCEPTED);
                     log.log(Level.FINE, "Job with ID {0} has been accepted.", id);
-                    storeJobAction(ssj.getId(), e.getKey().getId(), JobMessageHeaders.JOB_ACCEPT);
+                    storeJobAction(ssj.getId(), e.getKey().getTargetId(), JobMessageHeaders.JOB_ACCEPT);
                     return GenericResponses.OK;
                 }
             }
@@ -484,7 +484,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                     jobQueue.addFirst(ssj);
                     ssj.setStatus(JobStatus.CANCELED);
                     log.log(Level.CONFIG, "Job with ID {0} has been cancelled.", id);
-                    storeJobAction(ssj.getId(), e.getKey().getId(), JobMessageHeaders.JOB_CANCEL);
+                    storeJobAction(ssj.getId(), e.getKey().getTargetId(), JobMessageHeaders.JOB_CANCEL);
                     wakeUp();
                     return GenericResponses.OK;
                 }
@@ -514,7 +514,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                     }
                     ssj.setStatus(JobStatus.FINISHED);
                     log.log(Level.CONFIG, "Job with ID {0} has been computed succefully.", id);
-                    storeJobAction(ssj.getId(), e.getKey().getId(), JobMessageHeaders.JOB_RESULT);
+                    storeJobAction(ssj.getId(), e.getKey().getTargetId(), JobMessageHeaders.JOB_RESULT);
                     wakeUp();
                     return GenericResponses.OK;
                 }

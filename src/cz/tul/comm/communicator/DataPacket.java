@@ -14,27 +14,24 @@ import java.util.UUID;
  */
 public class DataPacket implements Serializable, Identifiable {
 
-    private final UUID clientID;
+    private final UUID sourceID;
+    private final UUID targetID;
     private final Object data;
     private InetAddress sourceIP;
 
-    /**
-     * Init new data packet.
-     *
-     * @param clientID clients ID
-     * @param data data for sending
-     */
-    public DataPacket(UUID clientID, Object data) {
-        this.clientID = clientID;
+    public DataPacket(UUID sourceID, UUID targetID, Object data) {
+        this.sourceID = sourceID;
+        this.targetID = targetID;
         this.data = data;
+    }    
+
+    public UUID getSourceID() {
+        return sourceID;
     }
 
-    /**
-     * @return clients ID
-     */
-    public UUID getClientID() {
-        return clientID;
-    }
+    public UUID getTargetID() {
+        return targetID;
+    }    
 
     /**
      * @return data for sending
@@ -45,7 +42,7 @@ public class DataPacket implements Serializable, Identifiable {
 
     @Override
     public Object getId() {
-        return getClientID();
+        return getTargetID();
     }
 
     /**
@@ -66,10 +63,13 @@ public class DataPacket implements Serializable, Identifiable {
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("[");
-        if (clientID != null) {
-            sb.append(clientID.toString());
-        } else {
-            sb.append("No ID");
+        if (sourceID != null) {
+            sb.append("from ");
+            sb.append(sourceID.toString());
+        }        
+        if (sourceID != null) {
+            sb.append(" to ");
+            sb.append(targetID.toString());
         }
         if (data != null) {
             sb.append(" - ");

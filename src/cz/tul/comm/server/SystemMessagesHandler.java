@@ -47,16 +47,15 @@ public class SystemMessagesHandler implements Listener {
                     case MessageHeaders.LOGIN:
                         try {
                             Communicator c = clientManager.registerClient(dp.getSourceIP(), Integer.parseInt(m.getData().toString()));
-                            if (c != null) {
-                                UUID clientId = c.getId();
+                            if (c instanceof CommunicatorInner) {
+                                CommunicatorInner cI = (CommunicatorInner) c;
+                                UUID clientId = c.getTargetId();
                                 if (clientId == null) {
                                     clientId = UUID.randomUUID();
-                                    if (c instanceof CommunicatorInner) {
-                                        ((CommunicatorInner) c).setId(clientId);
-                                    }
+                                    cI.setTargetId(clientId);
                                 }
                                 log.log(Level.CONFIG, "LOGIN received from {0}, assigning id {1}", new Object[]{dp.getSourceIP().getHostAddress(), clientId});
-                                return clientId;
+                                return new UUID[]{clientId, cI.getSourceId()};
                             } else {
                                 log.warning("Error registering new client.");
                                 return GenericResponses.ERROR;

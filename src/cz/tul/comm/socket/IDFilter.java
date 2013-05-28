@@ -9,6 +9,8 @@ import java.util.UUID;
  */
 public interface IDFilter {
 
+    boolean isTargetIdValid(final UUID id);
+    
     /**
      * Check, if given ID is allowed.
      *

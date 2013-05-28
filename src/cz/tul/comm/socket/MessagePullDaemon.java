@@ -29,7 +29,7 @@ public class MessagePullDaemon extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(MessagePullDaemon.class.getName());
     private static final int WAIT_TIME = 100;
-    private final ClientLister clientLister;    
+    private final ClientLister clientLister;
     private final DataPacketHandler dpHandler;
     private boolean run;
     private HistoryManager hm;
@@ -39,19 +39,20 @@ public class MessagePullDaemon extends Thread implements IService {
             this.dpHandler = dpHandler;
         } else {
             throw new NullPointerException("DatapacketHandler cannot be null.");
-        }        
+        }
         if (clientLister != null) {
             this.clientLister = clientLister;
         } else {
             throw new NullPointerException("ClientLister cannot be null.");
-        }  
-        
+        }
+
         run = true;
     }
 
     @Override
     public void run() {
         Collection<Communicator> comms;
+        CommunicatorInner commI;
         Message m;
         InetAddress ipComm;
         int port;
@@ -59,12 +60,13 @@ public class MessagePullDaemon extends Thread implements IService {
         boolean dataRead = false;
 
         while (run) {
-            comms = clientLister.getClients();            
+            comms = clientLister.getClients();
             for (Communicator comm : comms) {
-                if (comm != null && comm.checkStatus().equals(Status.ONLINE)) {
+                if (comm instanceof CommunicatorInner && comm.checkStatus().equals(Status.ONLINE)) {                    
                     ipComm = comm.getAddress();
                     port = comm.getPort();
-                    m = new Message(MessageHeaders.MSG_PULL_REQUEST, comm.getId());
+                    commI = (CommunicatorInner) comm;
+                    m = new Message(MessageHeaders.MSG_PULL_REQUEST, commI.getSourceId());
 
                     try (final Socket s = new Socket(ipComm, port)) {
                         try (final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream())) {
@@ -126,26 +128,30 @@ public class MessagePullDaemon extends Thread implements IService {
     public void handleMessagePullRequest(final Socket s, Object pullData) {
         Object msg = null;
         CommunicatorInner communicator = null;
-        
+
         if (pullData instanceof UUID) {
             Collection<Communicator> comms = clientLister.getClients();
-            
+
             final UUID id = (UUID) pullData;
             for (Communicator comm : comms) {
                 if (comm instanceof CommunicatorInner
-                        && id.equals(comm.getId())) {
+                        && id.equals(comm.getTargetId())) {
                     communicator = (CommunicatorInner) comm;
                     final Queue<DataPacket> q = communicator.getUnsentData();
                     if (!q.isEmpty()) {
                         msg = q.poll();
                     } else {
                         msg = GenericResponses.OK;
+                        log.log(Level.FINE, "No data for UUID {0}.", id);
                     }
                 }
             }
             if (msg == null) {
                 msg = GenericResponses.UUID_UNKNOWN;
+                log.log(Level.CONFIG, "Unknown UUID requested data - {0}.", id);
             }
+        } else {
+            msg = GenericResponses.ILLEGAL_DATA;
         }
 
         try (final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream())) {

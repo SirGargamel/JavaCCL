@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  */
 public class ClientImpl implements IService, ServerInterface, Client, IDFilter, ClientLister {
 
-    private static final Logger log = Logger.getLogger(ClientImpl.class.getName());    
+    private static final Logger log = Logger.getLogger(ClientImpl.class.getName());
 
     /**
      * Create and initialize new instance of client at given port.
@@ -93,7 +93,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                sendDataToServer(new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGOUT, comm.getId()));                
+                sendDataToServer(new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGOUT, comm.getTargetId()));
                 stopService();
             }
         }));
@@ -106,14 +106,15 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         comm = CommunicatorImpl.initNewCommunicator(address, port);
         if (isServerUp()) {
             final Message login = new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGIN, serverSocket.getPort());
-            final Object id = comm.sendData(login);
+            final Object ids = comm.sendData(login);
 
-            if (id instanceof UUID) {
-                comm.setId((UUID) id);
+            if (ids instanceof UUID[]) {
+                comm.setSourceId(((UUID[]) ids)[0]);
+                comm.setTargetId(((UUID[]) ids)[1]);
                 result = true;
-                log.log(Level.INFO, "Client has been registered to new server, new ID has been received - {0}", comm.getId());
+                log.log(Level.INFO, "Client has been registered to new server, new ID has been received - {0}", comm.getTargetId());
             } else {
-                log.log(Level.WARNING, "Invalid response received - {0}", id.toString());
+                log.log(Level.WARNING, "Invalid response received - {0}", ids.toString());
             }
         } else {
             log.log(Level.CONFIG, "Server could not be contacted.");
@@ -123,7 +124,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
 
     @Override
     public void deregisterFromServer() {
-        final Message m = new Message(MessageHeaders.LOGOUT, comm.getId());
+        final Message m = new Message(MessageHeaders.LOGOUT, comm.getTargetId());
         sendDataToServer(m);
         comm = null;
     }
@@ -222,11 +223,11 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
 
     @Override
     public boolean isIdAllowed(UUID id) {
-        final UUID commId = comm.getId();
+        final UUID commId = comm.getTargetId();
         if (commId == null) {
             return true;
         } else {
-            return comm.getId().equals(id);
+            return comm.getTargetId().equals(id);
         }
     }
 
@@ -269,5 +270,14 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     @Override
     public Object sendDataToClient(UUID clientId, Object data) throws UnknownHostException, IllegalArgumentException {
         return sendDataToClient(clientId, data, 0);
+    }
+
+    @Override
+    public boolean isTargetIdValid(UUID id) {
+        if (id != null) {            
+            return id.equals(comm.getSourceId());
+        } else {
+            return false;
+        }
     }
 }
