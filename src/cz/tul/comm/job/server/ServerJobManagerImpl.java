@@ -278,7 +278,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
 
     private boolean isClientOnline(final Communicator comm) {
         final Status s = comm.getStatus();
-        final boolean result = s.equals(Status.ONLINE) || s.equals(Status.PASSIVE);
+        final boolean result = !s.equals(Status.OFFLINE);
         if (result) {
             storeClientOnlineStatus(comm);
         }
@@ -305,13 +305,15 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
 
     private void submitJob(final ServerSideJob ssj, final Communicator comm) {
         final JobTask jt = new JobTask(ssj.getId(), JobMessageHeaders.JOB_TASK, ssj.getTask());
-        final Object response = comm.sendData(jt);
+        final Object response;
+        response = comm.sendData(jt);
         owners.put(ssj, comm);
         if (response != null && response.equals(GenericResponses.OK)) {
-            ssj.setStatus(JobStatus.SENT);            
+            ssj.setStatus(JobStatus.SENT);
         } else {
             ssj.cancelJob();
         }
+
     }
 
     private void checkAssignedJobs() {

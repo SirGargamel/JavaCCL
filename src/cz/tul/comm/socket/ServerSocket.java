@@ -139,7 +139,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
             try {
                 s = socket.accept();
                 log.log(Level.FINE, "Connection accepted from IP {0}:{1}", new Object[]{s.getInetAddress().getHostAddress(), s.getPort()});
-                final SocketReader sr = new SocketReader(s, this, mpd, idFilter);
+                final SocketReader sr = new SocketReader(s, this, mpd);
                 sr.registerHistory(hm);
                 for (Observer o : dataListeners) {
                     sr.addObserver(o);
@@ -202,7 +202,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                 if (data instanceof Message) {
                     final UUID mId = ((Message) data).getId();
                     final String header = ((Message) data).getHeader();
-                    if (mId.equals(Constants.ID_SYS_MSG) && header.equals(MessageHeaders.LOGIN)) {
+                    if (mId.equals(Constants.ID_SYS_MSG) && (header.equals(MessageHeaders.LOGIN) || header.equals(MessageHeaders.STATUS_CHECK))) {
                         allowed = true;
                     }
                 }
@@ -211,10 +211,10 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                     return GenericResponses.ILLEGAL_DATA;
                 }
             } else if (!idFilter.isTargetIdValid(dp.getTargetID())) {
-                log.log(Level.WARNING, "Received data not for this client - id {0}, data [{1}]", new Object[]{clientId, data.toString()});
+                log.log(Level.FINE, "Received data not for this client - client id is {0}, data packet [{1}]", new Object[]{clientId, dp.toString()});
                 return GenericResponses.ILLEGAL_TARGET_ID;
             } else if (!idFilter.isIdAllowed(clientId)) {
-                log.log(Level.WARNING, "Received data from unregistered client - id {0}, data [{1}]", new Object[]{clientId, data.toString()});
+                log.log(Level.FINE, "Received data from unregistered client - id {0}, data [{1}]", new Object[]{clientId, data.toString()});
                 return GenericResponses.UUID_NOT_ALLOWED;
             } else {
                 log.log(Level.CONFIG, "Data [{0}] received, forwarding to listeners.", data.toString());

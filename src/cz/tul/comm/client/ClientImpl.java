@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +40,7 @@ import java.util.logging.Logger;
 public class ClientImpl implements IService, ServerInterface, Client, IDFilter, ClientLister {
 
     private static final Logger log = Logger.getLogger(ClientImpl.class.getName());
+    private static final int TIMEOUT = 5000;
 
     /**
      * Create and initialize new instance of client at given port.
@@ -104,21 +106,17 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         log.log(Level.CONFIG, "Registering new server IP and port - {0}:{1}", new Object[]{address.getHostAddress(), port});
         boolean result = false;
         comm = CommunicatorImpl.initNewCommunicator(address, port);
-        if (isServerUp()) {
-            final Message login = new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGIN, serverSocket.getPort());
-            final Object ids = comm.sendData(login);
-
-            if (ids instanceof UUID[]) {
-                comm.setSourceId(((UUID[]) ids)[0]);
-                comm.setTargetId(((UUID[]) ids)[1]);
-                result = true;
-                log.log(Level.INFO, "Client has been registered to new server, new ID has been received - {0}", comm.getTargetId());
-            } else {
-                log.log(Level.WARNING, "Invalid response received - {0}", ids.toString());
-            }
+        comm.setTargetId(Constants.ID_SERVER);
+        final Message login = new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGIN, serverSocket.getPort());
+        final Object id = comm.sendData(login);
+        if (id instanceof UUID) {
+            comm.setSourceId(((UUID) id));
+            result = true;
+            log.log(Level.INFO, "Client has been registered to new server, new ID has been received - {0}", comm.getSourceId());
         } else {
-            log.log(Level.CONFIG, "Server could not be contacted.");
+            log.log(Level.WARNING, "Invalid response received - {0}", id.toString());
         }
+
         return result;
     }
 
@@ -134,9 +132,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         boolean serverStatus = false;
         if (comm != null) {
             Status s = comm.getStatus();
-            if (s.equals(Status.ONLINE) || s.equals(Status.PASSIVE)) {
-                serverStatus = true;
-            }
+            serverStatus = !s.equals(Status.OFFLINE);
         }
         log.log(Level.INFO, "Is server running - {0}", serverStatus);
         return serverStatus;
@@ -152,7 +148,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
                 log.warning("Server could not be contacted.");
                 return false;
             } else {
-                return comm.sendData(data);
+                return comm.sendData(data, TIMEOUT);
             }
         }
     }
@@ -187,7 +183,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         serverSocket = ServerSocket.createServerSocket(port, this, this);
         serverSocket.registerHistory(history);
 
-        csm = new SystemMessageHandler();
+        csm = new SystemMessageHandler(this);
         getListenerRegistrator().setIdListener(Constants.ID_SYS_MSG, csm, true);
 
         jm = new ClientJobManagerImpl(this);
@@ -204,11 +200,13 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
                 }
             }));
         }
-        if (sdd != null) {
-            sdd.start();
-        } else if (ComponentSwitches.useClientAutoConnectLocalhost && !isServerUp()) {
-            log.info("Could not init server discovery, trying to connect to local host.");
-            registerToServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
+        if (ComponentSwitches.useClientDiscovery) {
+            if (sdd != null) {
+                sdd.start();
+            } else if (ComponentSwitches.useClientAutoConnectLocalhost && !isServerUp()) {
+                log.info("Could not init server discovery, trying to connect to local host.");
+                registerToServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
+            }
         }
     }
 
@@ -249,7 +247,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
-    public Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException, IllegalArgumentException {
+    public Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException, IllegalArgumentException, SocketTimeoutException {
         // ask server for IP and port
         final Message serverQuestion = new Message(Constants.ID_SYS_MSG, MessageHeaders.CLIENT_IP_PORT_QUESTION, clientId);
         final Object clientIpPort = sendDataToServer(serverQuestion);
@@ -268,13 +266,13 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
-    public Object sendDataToClient(UUID clientId, Object data) throws UnknownHostException, IllegalArgumentException {
+    public Object sendDataToClient(UUID clientId, Object data) throws UnknownHostException, IllegalArgumentException, SocketTimeoutException {
         return sendDataToClient(clientId, data, 0);
     }
 
     @Override
     public boolean isTargetIdValid(UUID id) {
-        if (id != null) {            
+        if (id != null) {
             return id.equals(comm.getSourceId());
         } else {
             return false;

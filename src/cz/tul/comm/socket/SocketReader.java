@@ -25,7 +25,6 @@ class SocketReader extends Observable implements Runnable {
     private final Socket socket;
     private final DataPacketHandler dpHandler;
     private final MessagePullDaemon mpd;
-    private final IDFilter idFilter;
     private HistoryManager hm;
 
     /**
@@ -38,8 +37,7 @@ class SocketReader extends Observable implements Runnable {
      */
     SocketReader(
             final Socket socket,
-            final DataPacketHandler dpHandler, final MessagePullDaemon mpd,
-            final IDFilter idFilter) {
+            final DataPacketHandler dpHandler, final MessagePullDaemon mpd) {
         if (socket != null) {
             this.socket = socket;
         } else {
@@ -55,11 +53,6 @@ class SocketReader extends Observable implements Runnable {
         } else {
             throw new NullPointerException("MessagePullDaemon cannot be null");
         }
-        if (idFilter != null) {
-            this.idFilter = idFilter;
-        } else {
-            throw new NullPointerException("IDFilter cannot be null");
-        }
     }
 
     /**
@@ -74,47 +67,44 @@ class SocketReader extends Observable implements Runnable {
 
     @Override
     public void run() {
-        boolean dataReadV = false;
+        boolean dataRead = false;
         final InetAddress ip = socket.getInetAddress();
-        Object dataInV = null;
-        try {
-            final ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-            dataInV = in.readObject();
-            dataReadV = true;
+        Object dataIn = null;
+        try (final ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+            dataIn = in.readObject();
+            dataRead = true;
+
+            if (dataIn instanceof DataPacket) {
+                final DataPacket dp = (DataPacket) dataIn;
+                dp.setSourceIP(ip);
+                sendReply(ip, dataIn, dataRead, dpHandler.handleDataPacket(dp));
+            } else if (dataIn instanceof Message) {
+                final Message m = (Message) dataIn;
+                switch (m.getHeader()) {
+                    case (MessageHeaders.MSG_PULL_REQUEST):
+                        mpd.handleMessagePullRequest(socket, m.getData(), in);
+                        break;
+                    default:
+                        log.log(Level.WARNING, "Received Message with unidentifined header - {0}", new Object[]{m.toString()});
+                        sendReply(ip, dataIn, dataRead, GenericResponses.UNKNOWN_DATA);
+                        break;
+                }
+            } else {
+                log.log(Level.WARNING, "Received data is not an instance of DataPacket or Message - {0}", new Object[]{dataIn});
+                sendReply(ip, dataIn, dataRead, GenericResponses.ILLEGAL_DATA);
+            }
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error reading data from socket.", ex);
+            sendReply(ip, dataIn, dataRead, GenericResponses.ERROR);
         } catch (ClassNotFoundException ex) {
             log.log(Level.WARNING, "Invalid data received from sender.", ex);
-        }
-        final Object dataIn = dataInV;
-        final boolean dataRead = dataReadV;
-
-        if (dataIn instanceof DataPacket) {
-            final DataPacket dp = (DataPacket) dataIn;
-            dp.setSourceIP(ip);
-            sendReply(ip, dataIn, dataRead, dpHandler.handleDataPacket(dp));
-        } else if (dataIn instanceof Message) {
-            final Message m = (Message) dataIn;
-            switch (m.getHeader()) {
-                case (MessageHeaders.KEEP_ALIVE):
-                    log.log(Level.FINE, "keepAlive received from {0}", ip.getHostAddress());
-                    sendReply(ip, dataIn, dataRead, idFilter.getLocalID());
-                    break;
-                case (MessageHeaders.MSG_PULL_REQUEST):
-                    mpd.handleMessagePullRequest(socket, m.getData());
-                    break;
-                default:
-                    log.log(Level.WARNING, "Received Message with unidentifined header - {0}", new Object[]{m.toString()});
-                    sendReply(ip, dataIn, dataRead, GenericResponses.UNKNOWN_DATA);
-                    break;
-            }
-        } else {
-            log.log(Level.WARNING, "Received data is not an instance of DataPacket or Message - {0}", new Object[]{dataIn});
             sendReply(ip, dataIn, dataRead, GenericResponses.ILLEGAL_DATA);
         }
 
         try {
-            socket.close();
+            if (!socket.isClosed()) {
+                socket.close();
+            }
         } catch (Exception ex) {
             log.log(Level.FINE, "Error closing socket.", ex);
         }

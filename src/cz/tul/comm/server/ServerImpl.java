@@ -22,8 +22,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Class enclosing server-to-client communication. Handles custom data sending to
- * given client, whole job computation and client status monitoring.
+ * Class enclosing server-to-client communication. Handles custom data sending
+ * to given client, whole job computation and client status monitoring.
  *
  * @author Petr Ječmen
  */
@@ -41,7 +41,7 @@ public final class ServerImpl implements IService, Server {
     public static Server initNewServer(final int port) throws IOException {
         final ServerImpl result = new ServerImpl(port);
         result.start();
-        log.log(Level.INFO, "New server created on port {0}", port);
+        log.log(Level.INFO, "New server created on port {0}", new Object[]{port});
 
         return result;
     }
@@ -64,7 +64,7 @@ public final class ServerImpl implements IService, Server {
     }
     private final ClientDB clients;
     private final ServerSocket serverSocket;
-    private final HistoryManager history;    
+    private final HistoryManager history;
     private final ServerJobManagerImpl jobManager;
     private ClientDiscoveryDaemon cdd;
 
@@ -74,7 +74,7 @@ public final class ServerImpl implements IService, Server {
         clients = new ClientDB();
 
         serverSocket = ServerSocket.createServerSocket(port, clients, clients);
-        serverSocket.registerHistory(history);        
+        serverSocket.registerHistory(history);
 
         jobManager = new ServerJobManagerImpl(clients, serverSocket);
         getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jobManager, true);

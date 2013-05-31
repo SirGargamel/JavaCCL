@@ -1,5 +1,6 @@
 package cz.tul.comm.communicator;
 
+import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.Utils;
 import cz.tul.comm.history.HistoryManager;
@@ -49,7 +50,6 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         CommunicatorImpl c;
         try {
             c = new CommunicatorImpl(address, port);
-            c.checkStatus();
         } catch (IllegalArgumentException ex) {
             log.log(Level.WARNING, "Illegal arguments used for Communicator creation.", ex);
             return null;
@@ -83,7 +83,6 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         unsentData = new LinkedList<>();
         responses = new HashMap<>();
 
-        lastStatusUpdateTime = Calendar.getInstance();
         status = Status.OFFLINE;
 
         setChanged();
@@ -119,62 +118,65 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
         boolean readAndReply = false;
         Object response = dummy;
-        Status stat = Status.OFFLINE;
+        Status stat = getStatus();
         DataPacket dp = new DataPacket(sourceId, targetId, data);
 
-        try (final Socket s = new Socket(address, port)) {
-            s.setSoTimeout(timeout);
+        if (stat.equals(Status.ONLINE)) {
+            try (final Socket s = new Socket(address, port)) {
+                s.setSoTimeout(timeout);
 
-            final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
+                final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
 
-            out.writeObject(dp);
-            out.flush();
-            log.log(Level.CONFIG, "Data sent to {0}:{1} - [{2}]", new Object[]{getAddress().getHostAddress(), getPort(), data.toString()});
+                out.writeObject(dp);
+                out.flush();
+                log.log(Level.CONFIG, "Data sent to {0}:{1} - [{2}]", new Object[]{getAddress().getHostAddress(), getPort(), data.toString()});
 
-            try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
-                response = in.readObject();
-                log.log(Level.FINE, "Received reply from client - {0}", response);
-                setStatus(Status.ONLINE);
-                if (response != GenericResponses.ILLEGAL_TARGET_ID && response != GenericResponses.UUID_NOT_ALLOWED) {
-                    readAndReply = true;
-                } 
+                try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
+                    response = in.readObject();
+                    log.log(Level.FINE, "Received reply from client - {0}", response);
+                    if (response != GenericResponses.ILLEGAL_TARGET_ID && response != GenericResponses.UUID_NOT_ALLOWED) {
+                        readAndReply = true;
+                    }
+                } catch (IOException ex) {
+                    log.log(Level.WARNING, "Error receiving response from output socket", ex);
+                } catch (ClassNotFoundException ex) {
+                    log.log(Level.WARNING, "Unknown class object received.", ex);
+                    response = GenericResponses.UNKNOWN_DATA;
+                }
+            } catch (SocketTimeoutException ex) {
+                log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", address.getHostAddress());
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Error receiving response from output socket", ex);
-            } catch (ClassNotFoundException ex) {
-                log.log(Level.WARNING, "Unknown class object received.", ex);
-                response = GenericResponses.UNKNOWN_DATA;
+                log.log(Level.WARNING, "Cannot write to output socket.", ex);
             }
-        } catch (SocketTimeoutException ex) {
-            log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", address.getHostAddress());
-        } catch (IOException ex) {
-            log.log(Level.WARNING, "Cannot write to output socket.", ex);
+        } else {
+            if (!readAndReply && !unsentData.contains(dp)) {
+                unsentData.add(dp);
+                try {
+                    response = waitForResponse(dp, timeout);
+                    readAndReply = true;
+                } catch (InterruptedException ex) {
+                    log.log(Level.WARNING, "Waiting for response has been interrupted.", ex);
+                }
+            }
         }
 
         if (hm != null) {
             hm.logMessageSend(address, data, readAndReply, response);
         }
-        if (!readAndReply && !unsentData.contains(dp)) {
-            unsentData.add(dp);
-            try {
-                response = waitForResponse(dp, timeout);
-            } catch (InterruptedException ex) {
-                log.log(Level.WARNING, "Waiting for response has been interrupted.", ex);
-            }
-        }
 
-        setStatus(stat);
         return response;
     }
 
     private Object waitForResponse(DataPacket question, int timeout) throws InterruptedException {
-        long startTime = Calendar.getInstance(Locale.getDefault()).getTimeInMillis();
+        final long startTime = Calendar.getInstance(Locale.getDefault()).getTimeInMillis();
+        final Status stat = getStatus();
         if (timeout > 0) {
             long dif = Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - startTime;
             while (dif < timeout && !responses.containsKey(question)) {
                 synchronized (this) {
                     this.wait(TIMEOUT);
                 }
-                if (checkStatus().equals(Status.ONLINE)) {
+                if (stat.equals(Status.ONLINE) || stat.equals(Status.PASSIVE)) {
                     Object response = sendData(question.getData());
                     if (response != dummy) {
                         unsentData.remove(question);
@@ -188,7 +190,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                 synchronized (this) {
                     this.wait(TIMEOUT);
                 }
-                if (checkStatus().equals(Status.ONLINE)) {
+                if (stat.equals(Status.ONLINE) || stat.equals(Status.PASSIVE)) {
                     Object response = sendData(question.getData());
                     if (response != dummy) {
                         unsentData.remove(question);
@@ -207,7 +209,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     @Override
     public Status checkStatus() {
         boolean result = false;
-        final Object data = new Message(MessageHeaders.KEEP_ALIVE, null);
+        final Object data = new Message(Constants.ID_SYS_MSG, MessageHeaders.STATUS_CHECK, null);
+        final DataPacket dp = new DataPacket(sourceId, targetId, data);
         Status stat = Status.OFFLINE;
 
         try (final Socket s = new Socket(address, port)) {
@@ -215,15 +218,15 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
 
-            out.writeObject(data);
+            out.writeObject(dp);
             out.flush();
 
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                 Object response = in.readObject();
-                if (targetId == null || targetId.equals(response)) {
+                if (targetId != null && targetId.equals(response)) {
                     stat = Status.ONLINE;
                 } else {
-                    log.log(Level.FINE, "KEEP_ALIVE response received for another ID. {0} , {1}", new Object[]{response, targetId});
+                    log.log(Level.FINE, "STATUS_CHECK response received for another ID. {0} , {1}", new Object[]{response, targetId});
                 }
             } catch (IOException ex) {
                 log.log(Level.FINE, "Client on IP {0} did not open stream for answer.", address.getHostAddress());
@@ -267,7 +270,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     @Override
     public Status getStatus() {
-        if (Calendar.getInstance().getTimeInMillis() - getLastStatusUpdate().getTimeInMillis() > STATUS_CHECK_INTERVAL) {
+        if (getLastStatusUpdate() == null
+                || Calendar.getInstance().getTimeInMillis() - getLastStatusUpdate().getTimeInMillis() > STATUS_CHECK_INTERVAL) {
             checkStatus();
         }
 

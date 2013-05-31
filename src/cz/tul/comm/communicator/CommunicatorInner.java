@@ -11,7 +11,7 @@ import java.util.UUID;
  */
 public interface CommunicatorInner extends Communicator {
     
-     Queue<DataPacket> getUnsentData();
+     Queue<DataPacket> getUnsentData();          
 
     void storeResponse(final DataPacket question, final Object response);
     

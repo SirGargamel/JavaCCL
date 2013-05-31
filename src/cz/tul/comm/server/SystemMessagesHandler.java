@@ -55,7 +55,7 @@ public class SystemMessagesHandler implements Listener {
                                     cI.setTargetId(clientId);
                                 }
                                 log.log(Level.CONFIG, "LOGIN received from {0}, assigning id {1}", new Object[]{dp.getSourceIP().getHostAddress(), clientId});
-                                return new UUID[]{clientId, cI.getSourceId()};
+                                return clientId;
                             } else {
                                 log.warning("Error registering new client.");
                                 return GenericResponses.ERROR;
@@ -78,6 +78,8 @@ public class SystemMessagesHandler implements Listener {
                             log.log(Level.WARNING, "Invalid client id received - {0}", id.toString());
                             return GenericResponses.ILLEGAL_DATA;
                         }
+                    case MessageHeaders.STATUS_CHECK:                        
+                        return Constants.ID_SERVER;
                     case MessageHeaders.CLIENT_IP_PORT_QUESTION:
                         UUID clientid = (UUID) m.getData();
                         Communicator comm = clientManager.getClient(clientid);

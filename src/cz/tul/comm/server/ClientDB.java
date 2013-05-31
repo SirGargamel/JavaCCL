@@ -1,5 +1,6 @@
 package cz.tul.comm.server;
 
+import cz.tul.comm.Constants;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.CommunicatorImpl;
 import cz.tul.comm.communicator.CommunicatorInner;
@@ -27,15 +28,13 @@ class ClientDB implements ClientManager, Observer, IDFilter {
 
     private static final Logger log = Logger.getLogger(ClientDB.class.getName());
     private final Set<Communicator> clients;
-    private Collection<UUID> allowedIDs;
-    private final UUID localId;
+    private Collection<UUID> allowedIDs;    
     private HistoryManager hm;
 
     ClientDB() {
         clients = Collections.synchronizedSet(new HashSet<Communicator>());
         allowedIDs = Collections.emptySet();
-        allowedIDs = Collections.unmodifiableCollection(allowedIDs);
-        localId = UUID.randomUUID();
+        allowedIDs = Collections.unmodifiableCollection(allowedIDs);        
     }
 
     @Override
@@ -46,7 +45,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
             if (ccI != null) {
                 ccI.registerHistory(hm);
                 ccI.addObserver(this);
-                ccI.setSourceId(localId);                
+                ccI.setSourceId(Constants.ID_SERVER);                
                 clients.add(ccI);
                 cc = ccI;
                 log.log(Level.CONFIG, "New client with IP {0} on port {1} registered", new Object[]{address.getHostAddress(), port});
@@ -143,11 +142,11 @@ class ClientDB implements ClientManager, Observer, IDFilter {
 
     @Override
     public boolean isTargetIdValid(UUID id) {
-        return id.equals(localId);
+        return Constants.ID_SERVER.equals(id);
     }
 
     @Override
     public UUID getLocalID() {
-        return localId;
+        return Constants.ID_SERVER;
     }
 }

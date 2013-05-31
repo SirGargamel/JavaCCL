@@ -67,7 +67,7 @@ public class DataPacket implements Serializable, Identifiable {
             sb.append("from ");
             sb.append(sourceID.toString());
         }        
-        if (sourceID != null) {
+        if (targetID != null) {
             sb.append(" to ");
             sb.append(targetID.toString());
         }

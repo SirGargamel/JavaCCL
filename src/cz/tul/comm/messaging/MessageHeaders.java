@@ -19,7 +19,7 @@ public interface MessageHeaders {
      * keep alives should be ignored as they function only for cummunication
      * check
      */
-    String KEEP_ALIVE = "keepAlive";
+    String STATUS_CHECK = "statusCheck";
     String MSG_PULL_REQUEST = "msgPullRequest";
     String CLIENT_IP_PORT_QUESTION = "clientIpPortQuestion";
 }

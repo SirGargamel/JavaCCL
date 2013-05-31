@@ -16,7 +16,9 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Queue;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,6 +33,7 @@ public class MessagePullDaemon extends Thread implements IService {
     private static final int WAIT_TIME = 100;
     private final ClientLister clientLister;
     private final DataPacketHandler dpHandler;
+    private final Set<Communicator> pulNotNeeded;
     private boolean run;
     private HistoryManager hm;
 
@@ -47,6 +50,8 @@ public class MessagePullDaemon extends Thread implements IService {
         }
 
         run = true;
+
+        pulNotNeeded = new HashSet<>();
     }
 
     @Override
@@ -62,45 +67,61 @@ public class MessagePullDaemon extends Thread implements IService {
         while (run) {
             comms = clientLister.getClients();
             for (Communicator comm : comms) {
-                if (comm instanceof CommunicatorInner && comm.checkStatus().equals(Status.ONLINE)) {                    
-                    ipComm = comm.getAddress();
-                    port = comm.getPort();
+                if (comm instanceof CommunicatorInner) {
                     commI = (CommunicatorInner) comm;
-                    m = new Message(MessageHeaders.MSG_PULL_REQUEST, commI.getSourceId());
-
-                    try (final Socket s = new Socket(ipComm, port)) {
-                        try (final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream())) {
-                            out.writeObject(m);
-                            out.flush();
-                            log.log(Level.FINE, "Message pull request sent to {0}:{1}", new Object[]{ipComm.getHostAddress(), port});
-
-                            try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
-                                try {
-                                    dataIn = in.readObject();
-                                    dataRead = true;
-
-                                    if (dataIn instanceof GenericResponses) {
-                                        if (!dataIn.equals(GenericResponses.OK)) {
-                                            log.log(Level.WARNING, "Error occured during message pull request - {0}", dataIn.toString());
-                                        }
-                                    } else if (dataIn instanceof DataPacket) {
-                                        final DataPacket dp = (DataPacket) dataIn;
-                                        response = dpHandler.handleDataPacket(dp);
-                                        out.writeObject(response);
-                                    }
-                                } catch (ClassNotFoundException ex) {
-                                    log.log(Level.WARNING, "Illegal class received.", ex);
-                                }
-                            }
-                        }
-                    } catch (SocketTimeoutException ex) {
-                        log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", ipComm.getHostAddress());
-                    } catch (IOException ex) {
-                        log.log(Level.WARNING, "Error operating socket.", ex);
+                    final UUID id = commI.getSourceId();
+                    if (id == null) {
+                        continue;
                     }
 
-                    if (hm != null) {
-                        hm.logMessageReceived(ipComm, dataIn, dataRead, response);
+                    final Status status = comm.getStatus();
+                    if (status.equals(Status.PASSIVE)
+                            || (status.equals(Status.ONLINE) && !pulNotNeeded.contains(comm))) {
+                        ipComm = comm.getAddress();
+                        port = comm.getPort();
+
+                        m = new Message(MessageHeaders.MSG_PULL_REQUEST, id);
+
+                        try (final Socket s = new Socket(ipComm, port)) {
+                            try (final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream())) {
+                                out.writeObject(m);
+                                out.flush();
+                                log.log(Level.FINE, "Message pull request sent to {0}:{1}", new Object[]{ipComm.getHostAddress(), port});
+
+                                try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
+                                    try {
+                                        dataIn = in.readObject();
+                                        dataRead = true;
+
+                                        if (dataIn instanceof GenericResponses) {
+                                            if (dataIn.equals(GenericResponses.PULL_NOT_NEEDED)) {
+                                                pulNotNeeded.add(comm);
+                                            } else if (!dataIn.equals(GenericResponses.OK)) {
+                                                log.log(Level.WARNING, "Error occured during message pull request - {0}", dataIn.toString());
+                                            }
+                                        } else if (dataIn instanceof DataPacket) {
+                                            final DataPacket dp = (DataPacket) dataIn;
+                                            response = dpHandler.handleDataPacket(dp);
+                                            log.log(Level.FINE, "Pulled message [{0}], responding with {1}.", new Object[]{dataIn, response});
+                                            out.writeObject(response);
+                                            out.flush();
+                                        } else {
+                                            log.log(Level.WARNING, "Pulled unknown data.");
+                                        }
+                                    } catch (ClassNotFoundException ex) {
+                                        log.log(Level.WARNING, "Illegal class received.", ex);
+                                    }
+                                }
+                            }
+                        } catch (SocketTimeoutException ex) {
+                            log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", ipComm.getHostAddress());
+                        } catch (IOException ex) {
+                            log.log(Level.WARNING, "Error operating socket.", ex);
+                        }
+
+                        if (hm != null) {
+                            hm.logMessageReceived(ipComm, dataIn, dataRead, response);
+                        }
                     }
                 }
             }
@@ -125,24 +146,37 @@ public class MessagePullDaemon extends Thread implements IService {
         log.fine("History registered.");
     }
 
-    public void handleMessagePullRequest(final Socket s, Object pullData) {
+    public void handleMessagePullRequest(final Socket s, Object pullData, ObjectInputStream in) {
         Object msg = null;
         CommunicatorInner communicator = null;
 
         if (pullData instanceof UUID) {
+            final UUID id = (UUID) pullData;
             Collection<Communicator> comms = clientLister.getClients();
 
-            final UUID id = (UUID) pullData;
             for (Communicator comm : comms) {
-                if (comm instanceof CommunicatorInner
-                        && id.equals(comm.getTargetId())) {
+                if (comm instanceof CommunicatorInner) {
                     communicator = (CommunicatorInner) comm;
-                    final Queue<DataPacket> q = communicator.getUnsentData();
-                    if (!q.isEmpty()) {
-                        msg = q.poll();
-                    } else {
+
+                    if (id.equals(communicator.getSourceId())) {
                         msg = GenericResponses.OK;
-                        log.log(Level.FINE, "No data for UUID {0}.", id);
+                        // no request on itself
+                        break;
+                    }
+
+                    if (id.equals(comm.getTargetId())) {
+                        if (comm.getStatus().equals(Status.ONLINE)) {
+                            msg = GenericResponses.PULL_NOT_NEEDED;
+                        } else {
+                            final Queue<DataPacket> q = communicator.getUnsentData();
+                            if (!q.isEmpty()) {
+                                msg = q.poll();
+                                log.log(Level.FINE, "Data prepared for UUID msg pull [{0}].", msg);
+                            } else {
+                                msg = GenericResponses.OK;
+                                log.log(Level.FINE, "No data for UUID {0}.", id);
+                            }
+                        }
                     }
                 }
             }
@@ -159,7 +193,7 @@ public class MessagePullDaemon extends Thread implements IService {
             out.flush();
 
             if (communicator != null && !(msg instanceof GenericResponses)) {
-                try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
+                try {
                     final Object response = in.readObject();
                     if (msg instanceof DataPacket) {
                         communicator.storeResponse((DataPacket) msg, response);
@@ -169,7 +203,7 @@ public class MessagePullDaemon extends Thread implements IService {
                 }
             }
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error operating socket.", ex);
+            log.log(Level.WARNING, "Error operating socket.\n", ex);
         }
     }
 

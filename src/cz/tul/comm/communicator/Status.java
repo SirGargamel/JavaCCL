@@ -15,5 +15,9 @@ public enum Status {
      * Client is aviable.
      */
     ONLINE,
-    PASSIVE;
+    /**
+     * Client is not directly reachable, but is able to create connection to
+     * this client.
+     */
+    PASSIVE,
 }

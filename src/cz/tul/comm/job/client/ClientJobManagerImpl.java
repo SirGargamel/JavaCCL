@@ -6,6 +6,7 @@ import cz.tul.comm.job.JobMessageHeaders;
 import cz.tul.comm.job.JobTask;
 import cz.tul.comm.socket.queue.Identifiable;
 import cz.tul.comm.socket.queue.Listener;
+import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -105,8 +106,8 @@ public class ClientJobManagerImpl implements Listener, ClientJobManager {
                     });
                     return GenericResponses.OK;
                 default:
-                    return GenericResponses.UNKNOWN_DATA;                    
-            }            
+                    return GenericResponses.UNKNOWN_DATA;
+            }
         } else {
             return GenericResponses.ILLEGAL_DATA;
         }
