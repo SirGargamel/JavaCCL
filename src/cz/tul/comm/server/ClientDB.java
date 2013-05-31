@@ -5,6 +5,8 @@ import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.CommunicatorImpl;
 import cz.tul.comm.communicator.CommunicatorInner;
 import cz.tul.comm.history.HistoryManager;
+import cz.tul.comm.messaging.Message;
+import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.socket.IDFilter;
 import java.net.InetAddress;
 import java.util.Collection;
@@ -28,13 +30,13 @@ class ClientDB implements ClientManager, Observer, IDFilter {
 
     private static final Logger log = Logger.getLogger(ClientDB.class.getName());
     private final Set<Communicator> clients;
-    private Collection<UUID> allowedIDs;    
+    private Collection<UUID> allowedIDs;
     private HistoryManager hm;
 
     ClientDB() {
         clients = Collections.synchronizedSet(new HashSet<Communicator>());
         allowedIDs = Collections.emptySet();
-        allowedIDs = Collections.unmodifiableCollection(allowedIDs);        
+        allowedIDs = Collections.unmodifiableCollection(allowedIDs);
     }
 
     @Override
@@ -45,9 +47,15 @@ class ClientDB implements ClientManager, Observer, IDFilter {
             if (ccI != null) {
                 ccI.registerHistory(hm);
                 ccI.addObserver(this);
-                ccI.setSourceId(Constants.ID_SERVER);                
+                ccI.setSourceId(Constants.ID_SERVER);
                 clients.add(ccI);
                 cc = ccI;
+
+                final UUID id = UUID.randomUUID();
+                final Message m = new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGIN, id);
+                cc.sendData(m);
+                ccI.setTargetId(id);
+
                 log.log(Level.CONFIG, "New client with IP {0} on port {1} registered", new Object[]{address.getHostAddress(), port});
             }
         } else {
@@ -56,6 +64,22 @@ class ClientDB implements ClientManager, Observer, IDFilter {
 
         prepareAllowedIDs();
         return cc;
+    }
+
+    @Override
+    public Communicator addClient(final InetAddress address, final int port, final UUID clientId) {
+        CommunicatorInner ccI = CommunicatorImpl.initNewCommunicator(address, port);
+        if (ccI != null) {
+            ccI.registerHistory(hm);
+            ccI.addObserver(this);
+            ccI.setSourceId(Constants.ID_SERVER);
+            clients.add(ccI);
+            ccI.setTargetId(clientId);
+            log.log(Level.CONFIG, "New client with IP {0} on port {1} with ID {2} registered", new Object[]{address.getHostAddress(), port, clientId});
+        }
+
+        prepareAllowedIDs();
+        return ccI;
     }
 
     @Override

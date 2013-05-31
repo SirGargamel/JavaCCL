@@ -95,7 +95,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                sendDataToServer(new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGOUT, comm.getTargetId()));
+                sendDataToServer(new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGOUT, comm.getSourceId()));
                 stopService();
             }
         }));
@@ -183,7 +183,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         serverSocket = ServerSocket.createServerSocket(port, this, this);
         serverSocket.registerHistory(history);
 
-        csm = new SystemMessageHandler(this);
+        csm = new SystemMessageHandler(this, this);
         getListenerRegistrator().setIdListener(Constants.ID_SYS_MSG, csm, true);
 
         jm = new ClientJobManagerImpl(this);
@@ -221,6 +221,14 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
 
     @Override
     public boolean isIdAllowed(UUID id) {
+        if (comm == null && id.equals(Constants.ID_SERVER)) {
+            return true;
+        }
+
+        if (comm == null) {
+            return false;
+        }
+
         final UUID commId = comm.getTargetId();
         if (commId == null) {
             return true;
@@ -273,14 +281,26 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     @Override
     public boolean isTargetIdValid(UUID id) {
         if (id != null) {
-            return id.equals(comm.getSourceId());
+            if (comm != null) {
+                return id.equals(comm.getSourceId());
+            } else {
+                return true;
+            }
         } else {
-            return false;
+            if (comm == null) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
     @Override
     public UUID getLocalID() {
-        return comm.getSourceId();
+        if (comm != null) {
+            return comm.getSourceId();
+        } else {
+            return null;
+        }
     }
 }

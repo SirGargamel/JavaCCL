@@ -1,12 +1,15 @@
 package cz.tul.comm.client;
 
 import cz.tul.comm.GenericResponses;
+import cz.tul.comm.communicator.CommunicatorInner;
 import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.socket.IDFilter;
 import cz.tul.comm.socket.queue.Identifiable;
 import cz.tul.comm.socket.queue.Listener;
+import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -15,19 +18,20 @@ import java.util.logging.Logger;
  * @author Petr Ječmen
  */
 class SystemMessageHandler implements Listener {
-
+    
     private static final Logger log = Logger.getLogger(SystemMessageHandler.class.getName());
-    private IDFilter idFIlter;
-
-    public SystemMessageHandler(IDFilter idFIlter) {
+    private final IDFilter idFIlter;
+    private final ServerInterface serverInterface;
+    
+    public SystemMessageHandler(IDFilter idFIlter, ServerInterface serverInterface) {
         this.idFIlter = idFIlter;
+        this.serverInterface = serverInterface;
     }
     
-
     @Override
     public Object receiveData(Identifiable data) {
         Object result = GenericResponses.ILLEGAL_DATA;
-
+        
         if (data instanceof DataPacket) {
             final DataPacket dp = (DataPacket) data;
             final Object innerData = dp.getData();
@@ -37,10 +41,22 @@ class SystemMessageHandler implements Listener {
                     case MessageHeaders.STATUS_CHECK:                        
                         result = idFIlter.getLocalID();
                         break;
+                    case MessageHeaders.LOGIN:
+                        final Object mData = m.getData();
+                        if (mData instanceof UUID) {
+                            final CommunicatorInner comm = (CommunicatorInner) serverInterface.getServerComm();
+                            if (comm != null) {
+                                comm.setSourceId((UUID) mData);
+                            }
+                            log.log(Level.CONFIG, "Received new client ID - {0}", mData.toString());
+                        } else {
+                            log.log(Level.WARNING, "Illegal data received with LOGIN message - [{0}].", mData.toString());
+                        }
+                        break;
                 }
             }
         }
-
+        
         return result;
     }
 }

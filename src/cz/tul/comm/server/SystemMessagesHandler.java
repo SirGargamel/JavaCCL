@@ -46,20 +46,10 @@ public class SystemMessagesHandler implements Listener {
                 switch (header) {
                     case MessageHeaders.LOGIN:
                         try {
-                            Communicator c = clientManager.registerClient(dp.getSourceIP(), Integer.parseInt(m.getData().toString()));
-                            if (c instanceof CommunicatorInner) {
-                                CommunicatorInner cI = (CommunicatorInner) c;
-                                UUID clientId = c.getTargetId();
-                                if (clientId == null) {
-                                    clientId = UUID.randomUUID();
-                                    cI.setTargetId(clientId);
-                                }
-                                log.log(Level.CONFIG, "LOGIN received from {0}, assigning id {1}", new Object[]{dp.getSourceIP().getHostAddress(), clientId});
-                                return clientId;
-                            } else {
-                                log.warning("Error registering new client.");
-                                return GenericResponses.ERROR;
-                            }
+                            UUID clientId = UUID.randomUUID();
+                            clientManager.addClient(dp.getSourceIP(), Integer.parseInt(m.getData().toString()), clientId);
+                            log.log(Level.CONFIG, "LOGIN received from {0}, assigning id {1}", new Object[]{dp.getSourceIP().getHostAddress(), clientId});
+                            return clientId;
                         } catch (NumberFormatException ex) {
                             log.log(Level.WARNING, "Illegal login data received - {0}",
                                     new Object[]{m.getData().toString()});
@@ -78,7 +68,7 @@ public class SystemMessagesHandler implements Listener {
                             log.log(Level.WARNING, "Invalid client id received - {0}", id.toString());
                             return GenericResponses.ILLEGAL_DATA;
                         }
-                    case MessageHeaders.STATUS_CHECK:                        
+                    case MessageHeaders.STATUS_CHECK:
                         return Constants.ID_SERVER;
                     case MessageHeaders.CLIENT_IP_PORT_QUESTION:
                         UUID clientid = (UUID) m.getData();
