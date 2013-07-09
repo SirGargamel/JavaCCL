@@ -145,10 +145,15 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
             throw new NullPointerException("No server communicator set.");
         } else {
             if (!isServerUp()) {
-                log.warning("Server could not be contacted.");
-                return false;
+                log.info("Server could not be contacted.");
+                return null;
             } else {
-                return comm.sendData(data, TIMEOUT);
+                try {
+                    return comm.sendData(data, TIMEOUT);                
+                } catch (SocketTimeoutException ex) {
+                    log.log(Level.INFO, "Server is not responding to request.");
+                    return null;
+                }
             }
         }
     }

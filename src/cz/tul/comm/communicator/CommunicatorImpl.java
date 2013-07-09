@@ -107,11 +107,16 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     @Override
     public Object sendData(final Object data) throws IllegalArgumentException {
-        return sendData(data, 0);
+        try {
+            return sendData(data, 0);
+        } catch (SocketTimeoutException ex) {
+            log.log(Level.WARNING, "Socket timedou even with no timeout set..", address.getHostAddress());
+            return null;
+        }
     }
 
     @Override
-    public Object sendData(final Object data, final int timeout) throws IllegalArgumentException {
+    public Object sendData(final Object data, final int timeout) throws IllegalArgumentException, SocketTimeoutException {
         if (!Utils.checkSerialization(data)) {
             throw new IllegalArgumentException("Data for sending (and all of its members) must be serializable (eg. implement Serializable or Externalizable interface.)");
         }
@@ -143,8 +148,6 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                     log.log(Level.WARNING, "Unknown class object received.", ex);
                     response = GenericResponses.UNKNOWN_DATA;
                 }
-            } catch (SocketTimeoutException ex) {
-                log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", address.getHostAddress());
             } catch (IOException ex) {
                 log.log(Level.WARNING, "Cannot write to output socket.", ex);
             }

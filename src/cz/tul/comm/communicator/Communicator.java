@@ -1,6 +1,7 @@
 package cz.tul.comm.communicator;
 
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.util.UUID;
 
 /**
@@ -52,6 +53,6 @@ public interface Communicator {
      * @param timeout time, after which sending is considered unsuccessfull
      * @return true for successfull send
      */
-    Object sendData(final Object data, final int timeout) throws IllegalArgumentException;
+    Object sendData(final Object data, final int timeout) throws IllegalArgumentException, SocketTimeoutException;
     
 }
