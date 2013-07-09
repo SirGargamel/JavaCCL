@@ -57,8 +57,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
         return c;
     }
-    private final int TIMEOUT = 250;
-    private final int STATUS_CHECK_INTERVAL = 5_000;
+    private final int TIMEOUT = 100;
+    private final int STATUS_CHECK_INTERVAL = 500;
     private final InetAddress address;
     private final int port;
     private final Queue<DataPacket> unsentData;
