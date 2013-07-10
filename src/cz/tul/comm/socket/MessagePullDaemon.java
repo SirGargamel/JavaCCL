@@ -16,9 +16,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Queue;
-import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,8 +30,7 @@ public class MessagePullDaemon extends Thread implements IService {
     private static final Logger log = Logger.getLogger(MessagePullDaemon.class.getName());
     private static final int WAIT_TIME = 100;
     private final ClientLister clientLister;
-    private final DataPacketHandler dpHandler;
-    private final Set<Communicator> pulNotNeeded;
+    private final DataPacketHandler dpHandler;    
     private boolean run;
     private HistoryManager hm;
 
@@ -50,8 +47,6 @@ public class MessagePullDaemon extends Thread implements IService {
         }
 
         run = true;
-
-        pulNotNeeded = new HashSet<>();
     }
 
     @Override
@@ -75,8 +70,7 @@ public class MessagePullDaemon extends Thread implements IService {
                     }
 
                     final Status status = comm.getStatus();
-                    if (status.equals(Status.PASSIVE)
-                            || (status.equals(Status.ONLINE) && !pulNotNeeded.contains(comm))) {
+                    if (status.equals(Status.ONLINE)) {
                         ipComm = comm.getAddress();
                         port = comm.getPort();
 
@@ -94,9 +88,7 @@ public class MessagePullDaemon extends Thread implements IService {
                                         dataRead = true;
 
                                         if (dataIn instanceof GenericResponses) {
-                                            if (dataIn.equals(GenericResponses.PULL_NOT_NEEDED)) {
-                                                pulNotNeeded.add(comm);
-                                            } else if (!dataIn.equals(GenericResponses.OK)) {
+                                            if (!dataIn.equals(GenericResponses.OK)) {
                                                 log.log(Level.WARNING, "Error occured during message pull request - {0}", dataIn.toString());
                                             }
                                         } else if (dataIn instanceof DataPacket) {
@@ -165,17 +157,13 @@ public class MessagePullDaemon extends Thread implements IService {
                     }
 
                     if (id.equals(comm.getTargetId())) {
-                        if (comm.getStatus().equals(Status.ONLINE)) {
-                            msg = GenericResponses.PULL_NOT_NEEDED;
+                        final Queue<DataPacket> q = communicator.getUnsentData();
+                        if (!q.isEmpty()) {
+                            msg = q.poll();
+                            log.log(Level.FINE, "Data prepared for UUID msg pull [{0}].", msg);
                         } else {
-                            final Queue<DataPacket> q = communicator.getUnsentData();
-                            if (!q.isEmpty()) {
-                                msg = q.poll();
-                                log.log(Level.FINE, "Data prepared for UUID msg pull [{0}].", msg);
-                            } else {
-                                msg = GenericResponses.OK;
-                                log.log(Level.FINE, "No data for UUID {0}.", id);
-                            }
+                            msg = GenericResponses.OK;
+                            log.log(Level.FINE, "No data for UUID {0}.", id);
                         }
                     }
                 }

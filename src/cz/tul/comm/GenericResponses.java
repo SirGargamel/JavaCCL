@@ -14,8 +14,7 @@ public enum GenericResponses implements Serializable {
     ERROR,    
     UNKNOWN_DATA,
     UUID_NOT_ALLOWED,
-    UUID_UNKNOWN,
-    PULL_NOT_NEEDED,
+    UUID_UNKNOWN,    
     OK,
     REPLY_LATER;
     
