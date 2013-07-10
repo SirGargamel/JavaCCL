@@ -41,28 +41,23 @@ class ClientDB implements ClientManager, Observer, IDFilter {
 
     @Override
     public Communicator registerClient(final InetAddress address, final int port) throws IllegalArgumentException {
-        Communicator cc = getClient(address, port);
-        if (cc == null) {
-            CommunicatorInner ccI = CommunicatorImpl.initNewCommunicator(address, port);
-            if (ccI != null) {
-                ccI.registerHistory(hm);
-                ccI.addObserver(this);
-                ccI.setSourceId(Constants.ID_SERVER);
-                clients.add(ccI);
-                cc = ccI;
+        CommunicatorInner cc = CommunicatorImpl.initNewCommunicator(address, port);
+        if (cc != null) {
+            cc.registerHistory(hm);
+            cc.addObserver(this);
+            cc.setSourceId(Constants.ID_SERVER);
+            clients.add(cc);
 
-                final UUID id = UUID.randomUUID();
-                final Message m = new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGIN, id);
-                cc.sendData(m);
-                ccI.setTargetId(id);
+            final UUID id = UUID.randomUUID();
+            final Message m = new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGIN, id);
+            cc.sendData(m);
+            cc.setTargetId(id);
 
-                log.log(Level.CONFIG, "New client with IP {0} on port {1} registered", new Object[]{address.getHostAddress(), port});
-            }
-        } else {
-            log.log(Level.CONFIG, "Client with IP {0} on port {1} is already registered, no changes made", new Object[]{address.getHostAddress(), port});
+            prepareAllowedIDs();
+
+            log.log(Level.CONFIG, "New client with IP {0} on port {1} registered", new Object[]{address.getHostAddress(), port});
         }
 
-        prepareAllowedIDs();
         return cc;
     }
 
@@ -73,12 +68,14 @@ class ClientDB implements ClientManager, Observer, IDFilter {
             ccI.registerHistory(hm);
             ccI.addObserver(this);
             ccI.setSourceId(Constants.ID_SERVER);
-            clients.add(ccI);
             ccI.setTargetId(clientId);
+
+            clients.add(ccI);
+            prepareAllowedIDs();
+
             log.log(Level.CONFIG, "New client with IP {0} on port {1} with ID {2} registered", new Object[]{address.getHostAddress(), port, clientId});
         }
 
-        prepareAllowedIDs();
         return ccI;
     }
 
