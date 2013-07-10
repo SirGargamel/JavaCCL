@@ -127,29 +127,9 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         DataPacket dp = new DataPacket(sourceId, targetId, data);
 
         if (stat.equals(Status.ONLINE)) {
-            try (final Socket s = new Socket(address, port)) {
-                s.setSoTimeout(timeout);
-
-                final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-
-                out.writeObject(dp);
-                out.flush();
-                log.log(Level.CONFIG, "Data sent to {0}:{1} - [{2}]", new Object[]{getAddress().getHostAddress(), getPort(), data.toString()});
-
-                try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
-                    response = in.readObject();
-                    log.log(Level.FINE, "Received reply from client - {0}", response);
-                    if (response != GenericResponses.ILLEGAL_TARGET_ID && response != GenericResponses.UUID_NOT_ALLOWED) {
-                        readAndReply = true;
-                    }
-                } catch (IOException ex) {
-                    log.log(Level.WARNING, "Error receiving response from output socket", ex);
-                } catch (ClassNotFoundException ex) {
-                    log.log(Level.WARNING, "Unknown class object received.", ex);
-                    response = GenericResponses.UNKNOWN_DATA;
-                }
-            } catch (IOException ex) {
-                log.log(Level.WARNING, "Cannot write to output socket.", ex);
+            response = pushDataToOnlineClient(dp, timeout);
+            if (response != GenericResponses.ILLEGAL_TARGET_ID && response != GenericResponses.UUID_NOT_ALLOWED) {
+                readAndReply = true;
             }
         } else {
             if (!readAndReply && !unsentData.contains(dp)) {
@@ -170,38 +150,62 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         return response;
     }
 
-    private Object waitForResponse(DataPacket question, int timeout) throws InterruptedException {
-        final long startTime = Calendar.getInstance(Locale.getDefault()).getTimeInMillis();
-        final Status stat = getStatus();
-        if (timeout > 0) {
-            long dif = Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - startTime;
-            while (dif < timeout && !responses.containsKey(question)) {
-                synchronized (this) {
-                    this.wait(TIMEOUT);
-                }
-                if (stat.equals(Status.ONLINE) || stat.equals(Status.PASSIVE)) {
-                    Object response = sendData(question.getData());
-                    if (response != dummy) {
-                        unsentData.remove(question);
-                        responses.put(question, response);
-                    }
-                }
-                dif = Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - startTime;
+    private Object pushDataToOnlineClient(final DataPacket dp, final int timeout) {
+        Object response = dummy;
+        try (final Socket s = new Socket(address, port)) {
+            s.setSoTimeout(timeout);
+
+            final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
+
+            out.writeObject(dp);
+            out.flush();
+            log.log(Level.CONFIG, "Data sent to {0}:{1} - [{2}]", new Object[]{getAddress().getHostAddress(), getPort(), dp.getData().toString()});
+
+            try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
+                response = in.readObject();
+                log.log(Level.FINE, "Received reply from client - {0}", response);
+            } catch (IOException ex) {
+                log.log(Level.WARNING, "Error receiving response from output socket", ex);
+            } catch (ClassNotFoundException ex) {
+                log.log(Level.WARNING, "Unknown class object received.", ex);
+                response = GenericResponses.UNKNOWN_DATA;
             }
-        } else {
-            while (!responses.containsKey(question)) {
-                synchronized (this) {
-                    this.wait(TIMEOUT);
-                }
-                if (stat.equals(Status.ONLINE) || stat.equals(Status.PASSIVE)) {
-                    Object response = sendData(question.getData());
-                    if (response != dummy) {
-                        unsentData.remove(question);
-                        responses.put(question, response);
-                    }
-                }
-            }
+        } catch (IOException ex) {
+            log.log(Level.WARNING, "Cannot write to output socket.", ex);
         }
+        return response;
+    }
+
+    private Object waitForResponse(final DataPacket question, final int timeout) throws InterruptedException {
+        Status stat;
+        final int time;
+        if (timeout > 0) {
+            time = timeout;
+        } else {
+            time = Integer.MAX_VALUE;
+        }
+        
+        final long startTime = Calendar.getInstance(Locale.getDefault()).getTimeInMillis();
+        long dif = Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - startTime;
+        while (!responses.containsKey(question) && (dif <= time)) {
+            synchronized (this) {
+                this.wait(TIMEOUT);
+            }
+            stat = checkStatus();
+            if (stat.equals(Status.ONLINE)) {
+                Object response = pushDataToOnlineClient(question, timeout);
+                if (response != dummy) {
+                    unsentData.remove(question);
+                    responses.put(question, response);
+                }
+            }
+            dif = Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - startTime;
+        }
+        
+        if (unsentData.contains(question)) {
+            unsentData.remove(question);
+        }
+
         if (responses.containsKey(question)) {
             return responses.get(question);
         } else {
@@ -273,8 +277,9 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     @Override
     public Status getStatus() {
-        if (getLastStatusUpdate() == null
-                || Calendar.getInstance().getTimeInMillis() - getLastStatusUpdate().getTimeInMillis() > STATUS_CHECK_INTERVAL) {
+        Calendar lastUpdate = getLastStatusUpdate();
+        if (lastUpdate == null
+                || Calendar.getInstance().getTimeInMillis() - lastUpdate.getTimeInMillis() > STATUS_CHECK_INTERVAL) {
             checkStatus();
         }
 
