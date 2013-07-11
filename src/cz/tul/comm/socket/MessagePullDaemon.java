@@ -15,7 +15,9 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -28,9 +30,9 @@ import java.util.logging.Logger;
 public class MessagePullDaemon extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(MessagePullDaemon.class.getName());
-    private static final int WAIT_TIME = 100;
+    private static final int WAIT_TIME = 500;
     private final ClientLister clientLister;
-    private final DataPacketHandler dpHandler;    
+    private final DataPacketHandler dpHandler;
     private boolean run;
     private HistoryManager hm;
 
@@ -58,8 +60,23 @@ public class MessagePullDaemon extends Thread implements IService {
         int port;
         Object dataIn = null, response = null;
         boolean dataRead = false;
+        Calendar lastTime = Calendar.getInstance(Locale.getDefault()), now;
+        long dif, wait;
 
         while (run) {
+            now = Calendar.getInstance(Locale.getDefault());
+            dif = now.getTimeInMillis() - lastTime.getTimeInMillis();
+            wait = WAIT_TIME - dif;
+            if (wait > 0) {
+                try {
+                    synchronized (this) {
+                        this.wait(wait);
+                    }
+                } catch (InterruptedException ex) {
+                    log.log(Level.WARNING, "Waiting between message pulls has been interrupted.", ex);
+                }
+            }
+
             comms = clientLister.getClients();
             for (Communicator comm : comms) {
                 if (comm instanceof CommunicatorInner) {
