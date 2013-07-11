@@ -102,6 +102,11 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
+    public boolean registerToServer(final InetAddress address) {
+        return registerToServer(address, Constants.DEFAULT_PORT);
+    }
+
+    @Override
     public boolean registerToServer(final InetAddress address, final int port) {
         log.log(Level.CONFIG, "Registering new server IP and port - {0}:{1}", new Object[]{address.getHostAddress(), port});
         boolean result = false;
@@ -119,12 +124,12 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
 
         return result;
     }
-    
+
     @Override
     public void setServerInfo(final InetAddress address, final int port, final UUID clientId) {
         comm = CommunicatorImpl.initNewCommunicator(address, port);
         comm.setTargetId(Constants.ID_SERVER);
-        comm.setSourceId(clientId);        
+        comm.setSourceId(clientId);
     }
 
     @Override
@@ -156,7 +161,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
                 return null;
             } else {
                 try {
-                    return comm.sendData(data, TIMEOUT);                
+                    return comm.sendData(data, TIMEOUT);
                 } catch (SocketTimeoutException ex) {
                     log.log(Level.INFO, "Server is not responding to request.");
                     return null;

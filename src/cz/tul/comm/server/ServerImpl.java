@@ -53,11 +53,14 @@ public final class ServerImpl implements IService, Server {
      */
     public static Server initNewServer() {
         Server s = null;
+        int port = Constants.DEFAULT_PORT;
 
-        try {
-            s = initNewServer(Constants.DEFAULT_PORT);
-        } catch (IOException ex) {
-            log.log(Level.SEVERE, "Error initializing server on default port", ex);
+        while (s == null) {
+            try {
+                s = initNewServer(port++);
+            } catch (IOException ex) {
+                log.log(Level.WARNING, "Error initializing server on port " + (port - 1), ex);
+            }
         }
 
         return s;

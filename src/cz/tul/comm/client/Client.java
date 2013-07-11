@@ -56,6 +56,8 @@ public interface Client extends IService {
      */
     boolean isServerUp();
 
+    boolean registerToServer(final InetAddress address);
+    
     /**
      * Try to register to server at given address and port.
      *
@@ -63,7 +65,7 @@ public interface Client extends IService {
      * @param port target port
      * @return true if registration has been successfull
      */
-    boolean registerToServer(final InetAddress address, final int port);
+    boolean registerToServer(final InetAddress address, final int port);        
 
     /**
      * Send data to server.
