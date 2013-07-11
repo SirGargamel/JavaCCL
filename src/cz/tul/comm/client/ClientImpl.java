@@ -119,6 +119,13 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
 
         return result;
     }
+    
+    @Override
+    public void setServerInfo(final InetAddress address, final int port, final UUID clientId) {
+        comm = CommunicatorImpl.initNewCommunicator(address, port);
+        comm.setTargetId(Constants.ID_SERVER);
+        comm.setSourceId(clientId);        
+    }
 
     @Override
     public void deregisterFromServer() {

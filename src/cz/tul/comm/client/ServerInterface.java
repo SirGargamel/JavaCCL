@@ -2,6 +2,7 @@ package cz.tul.comm.client;
 
 import cz.tul.comm.communicator.Communicator;
 import java.net.InetAddress;
+import java.util.UUID;
 
 /**
  * Registrator of server IP and port. Offers also functionality to test if the
@@ -17,6 +18,8 @@ public interface ServerInterface {
      * @return true for successfull registration 
      */
     boolean registerToServer(final InetAddress address, final int port);
+    
+    void setServerInfo(final InetAddress address, final int port, final UUID clientId);
 
     /**
      * Send server info that client no longer wants to participate.
