@@ -8,7 +8,7 @@ import java.util.Collection;
  *
  * @author Petr Ječmen
  */
-public interface JobManager {
+public interface ServerJobManager {
 
     /**
      * @return collection of all submitted jobs

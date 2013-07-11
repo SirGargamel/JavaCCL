@@ -5,7 +5,7 @@ import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.job.server.Job;
-import cz.tul.comm.job.server.JobManager;
+import cz.tul.comm.job.server.ServerJobManager;
 import cz.tul.comm.socket.ListenerRegistrator;
 import java.net.InetAddress;
 import java.util.UUID;
@@ -60,7 +60,7 @@ public interface Server extends IService {
     /**
      * @return interface for job management
      */
-    JobManager getJobManager();
+    ServerJobManager getJobManager();
 
     /**
      * Register new client communicationg on given IP and on default port.

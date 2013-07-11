@@ -8,7 +8,7 @@ import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.job.server.Job;
-import cz.tul.comm.job.server.JobManager;
+import cz.tul.comm.job.server.ServerJobManager;
 import cz.tul.comm.job.server.ServerJobManagerImpl;
 import cz.tul.comm.persistence.ServerSettings;
 import cz.tul.comm.server.daemons.ClientDiscoveryDaemon;
@@ -145,7 +145,7 @@ public final class ServerImpl implements IService, Server {
     }
 
     @Override
-    public JobManager getJobManager() {
+    public ServerJobManager getJobManager() {
         return jobManager;
     }
 
