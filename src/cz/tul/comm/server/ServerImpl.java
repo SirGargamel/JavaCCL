@@ -105,7 +105,18 @@ public final class ServerImpl implements IService, Server {
 
     @Override
     public Communicator getClient(final InetAddress address) {
-        return clients.getClient(address, Constants.DEFAULT_PORT);
+        Communicator result = clients.getClient(address, Constants.DEFAULT_PORT);
+
+        if (result == null) {
+            for (Communicator cc : clients.getClients()) {
+                if (cc.getAddress().equals(address)) {
+                    result = cc;
+                    break;
+                }
+            }
+        }
+
+        return result;
     }
 
     @Override
