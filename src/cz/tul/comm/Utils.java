@@ -23,8 +23,9 @@ public class Utils {
     /**
      * enable logging of all actions
      */
-    public static void enableDebugMode() {
-        Utils.adjustMainLoggerLevel(Level.FINE);
+    public static void enableDebugMode() {        
+        adjustMainLoggerLevel(Level.FINE);
+        adjustMainHandlersLoggingLevel(Level.FINE);
     }
 
     /**
@@ -34,10 +35,19 @@ public class Utils {
      */
     public static void adjustMainLoggerLevel(final Level level) {
         Logger l = log.getParent();
-        l.setLevel(level);
+        l.setLevel(level);        
+    }
+    
+    public static void adjustClassLoggingLevel(final Class cls, final Level level) {
+        Logger l = Logger.getLogger(cls.getName());
+        l.setLevel(level);        
+    }
+    
+    public static void adjustMainHandlersLoggingLevel(final Level level) {
+        Logger l = log.getParent();        
         for (Handler h : l.getHandlers()) {
             h.setLevel(level);
-        }
+        }      
     }
 
     /**
