@@ -2,6 +2,7 @@ package cz.tul.comm.client;
 
 import cz.tul.comm.Constants;
 import cz.tul.comm.IService;
+import cz.tul.comm.exceptions.ConnectionException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -38,8 +39,8 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
     @Override
     public void run() {
         while (run) {
-            if (!sr.isServerUp()) {                
-                try {                                        
+            if (!sr.isServerUp()) {
+                try {
                     //Receive a packet
                     byte[] recvBuf = new byte[15_000];
                     DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
@@ -48,7 +49,7 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
 
                     //Packet received                    
                     log.log(Level.CONFIG, "Discovery packet received from {0}", new Object[]{packet.getAddress().getHostAddress()});
-                    String message = new String(packet.getData()).trim();                    
+                    String message = new String(packet.getData()).trim();
                     log.log(Level.CONFIG, "Discovery packet received from {0} - {1}", new Object[]{packet.getAddress().getHostAddress(), message});
 
                     //See if the packet holds the right message                    
@@ -56,9 +57,17 @@ public class ServerDiscoveryDaemon extends Thread implements IService {
                         final String portS = message.substring(Constants.DISCOVERY_QUESTION.length() + Constants.DELIMITER.length());
                         try {
                             final int port = Integer.valueOf(portS);
-                            sr.registerToServer(packet.getAddress(), port);
+                            try {
+                                sr.registerToServer(packet.getAddress(), port);
+                            } catch (ConnectionException ex) {
+                                log.log(Level.WARNING, "Could not contact server at IP {0} and port {1}.", new Object[]{packet.getAddress(), port});
+                            }
                         } catch (NumberFormatException ex) {
-                            sr.registerToServer(packet.getAddress(), Constants.DEFAULT_PORT);
+                            try {
+                                sr.registerToServer(packet.getAddress(), Constants.DEFAULT_PORT);
+                            } catch (ConnectionException ex2) {
+                                log.log(Level.WARNING, "Could not contact server at IP {0} on default port {1}.", new Object[]{packet.getAddress(), Constants.DEFAULT_PORT});
+                            }
                         }
                     }
                 } catch (SocketException ex) {

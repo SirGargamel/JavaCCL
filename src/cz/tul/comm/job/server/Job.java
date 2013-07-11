@@ -1,5 +1,6 @@
 package cz.tul.comm.job.server;
 
+import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.job.JobStatus;
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public interface Job {
     /**
      * Cancel job computaiton.
      */
-    void cancelJob();
+    void cancelJob() throws ConnectionException;
 
     /**
      * @return current job status

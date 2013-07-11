@@ -3,6 +3,7 @@ package cz.tul.comm.persistence;
 import cz.tul.comm.Constants;
 import cz.tul.comm.client.ServerInterface;
 import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.exceptions.ConnectionException;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -67,7 +68,11 @@ public class ClientSettings {
                 }
 
                 if (ip != null) {
-                    reg.registerToServer(ip, port);
+                    try {
+                        reg.registerToServer(ip, port);
+                    } catch (ConnectionException ex) {
+                        log.log(Level.WARNING, "Could not connect to server with {0}, port {1}.", new Object[]{ip.getHostAddress(), port});
+                    }
                 }
             } catch (IOException ex) {
                 result = false;

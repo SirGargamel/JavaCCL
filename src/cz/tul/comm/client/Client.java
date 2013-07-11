@@ -2,7 +2,7 @@ package cz.tul.comm.client;
 
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
-import cz.tul.comm.exceptions.TimeoutException;
+import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.job.client.AssignmentListener;
 import cz.tul.comm.socket.ListenerRegistrator;
@@ -27,7 +27,7 @@ public interface Client extends IService {
     /**
      * Deregister client from current server.
      */
-    void deregisterFromServer();
+    void deregisterFromServer() throws ConnectionException;
 
     /**
      * Export history as is to XML file.
@@ -56,7 +56,7 @@ public interface Client extends IService {
      */
     boolean isServerUp();
 
-    boolean registerToServer(final InetAddress address);
+    boolean registerToServer(final InetAddress address) throws ConnectionException;
 
     /**
      * Try to register to server at given address and port.
@@ -65,7 +65,7 @@ public interface Client extends IService {
      * @param port target port
      * @return true if registration has been successfull
      */
-    boolean registerToServer(final InetAddress address, final int port);
+    boolean registerToServer(final InetAddress address, final int port) throws ConnectionException;
 
     /**
      * Send data to server.
@@ -73,16 +73,16 @@ public interface Client extends IService {
      * @param data data for sending
      * @return true for successfull data sending
      */
-    Object sendDataToServer(final Object data) throws TimeoutException;
+    Object sendDataToServer(final Object data) throws ConnectionException;
 
-    Object sendDataToServer(final Object data, final int timeout) throws TimeoutException;
+    Object sendDataToServer(final Object data, final int timeout) throws ConnectionException;
 
-    Object sendDataToClient(final UUID clientId, final Object data) throws UnknownHostException, IllegalArgumentException, TimeoutException;
+    Object sendDataToClient(final UUID clientId, final Object data) throws UnknownHostException, IllegalArgumentException, ConnectionException;
 
-    Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException, IllegalArgumentException, TimeoutException;
+    Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException, IllegalArgumentException, ConnectionException;
 
     /**
      * Request an extra job from server.
      */
-    void requestAssignment();
+    void requestAssignment() throws ConnectionException;
 }

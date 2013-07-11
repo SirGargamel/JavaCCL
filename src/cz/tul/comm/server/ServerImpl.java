@@ -4,6 +4,7 @@ import cz.tul.comm.ComponentSwitches;
 import cz.tul.comm.Constants;
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.job.server.Job;
@@ -101,7 +102,7 @@ public final class ServerImpl implements IService, Server {
     }
 
     @Override
-    public Communicator registerClient(final InetAddress adress) {
+    public Communicator registerClient(final InetAddress adress) throws ConnectionException {
         log.log(Level.INFO, "Registering new client on IP{0} on default port", adress);
         return clients.registerClient(adress, Constants.DEFAULT_PORT);
     }

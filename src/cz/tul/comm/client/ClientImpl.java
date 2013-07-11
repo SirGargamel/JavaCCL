@@ -8,7 +8,7 @@ import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.CommunicatorImpl;
 import cz.tul.comm.communicator.CommunicatorInner;
 import cz.tul.comm.communicator.Status;
-import cz.tul.comm.exceptions.TimeoutException;
+import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.history.sorting.DefaultSorter;
@@ -97,7 +97,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
             public void run() {
                 try {
                     sendDataToServer(new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGOUT, comm.getSourceId()));
-                } catch (TimeoutException ex) {
+                } catch (ConnectionException ex) {
                     log.warning("Server connection timed out.");
                 }
                 stopService();
@@ -106,12 +106,12 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
-    public boolean registerToServer(final InetAddress address) {
+    public boolean registerToServer(final InetAddress address) throws ConnectionException {
         return registerToServer(address, Constants.DEFAULT_PORT);
     }
 
     @Override
-    public boolean registerToServer(final InetAddress address, final int port) {
+    public boolean registerToServer(final InetAddress address, final int port) throws ConnectionException {
         log.log(Level.CONFIG, "Registering new server IP and port - {0}:{1}", new Object[]{address.getHostAddress(), port});
         boolean result = false;
         comm = CommunicatorImpl.initNewCommunicator(address, port);
@@ -137,7 +137,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
-    public void deregisterFromServer() throws TimeoutException {
+    public void deregisterFromServer() throws ConnectionException {
         final Message m = new Message(MessageHeaders.LOGOUT, comm.getTargetId());
         sendDataToServer(m);
         comm = null;
@@ -155,12 +155,12 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
-    public Object sendDataToServer(final Object data) throws TimeoutException {
+    public Object sendDataToServer(final Object data) throws ConnectionException {
         return sendDataToServer(data, TIMEOUT);
     }
 
     @Override
-    public Object sendDataToServer(final Object data, final int timeout) throws TimeoutException {
+    public Object sendDataToServer(final Object data, final int timeout) throws ConnectionException {
         log.log(Level.INFO, "Sending data to server - {0}", data.toString());
         if (comm == null) {
             throw new NullPointerException("No server communicator set.");
@@ -226,7 +226,11 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
                 sdd.start();
             } else if (ComponentSwitches.useClientAutoConnectLocalhost && !isServerUp()) {
                 log.info("Could not init server discovery, trying to connect to local host.");
-                registerToServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
+                try {
+                    registerToServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
+                } catch (ConnectionException ex) {
+                    log.info("Could not reach server at localhost on default port.");
+                }
             }
         }
     }
@@ -259,7 +263,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
-    public void requestAssignment() {
+    public void requestAssignment() throws ConnectionException {
         jm.requestAssignment();
     }
 
@@ -276,7 +280,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
-    public Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException, IllegalArgumentException, TimeoutException {
+    public Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException, IllegalArgumentException, ConnectionException {
         // ask server for IP and port
         final Message serverQuestion = new Message(Constants.ID_SYS_MSG, MessageHeaders.CLIENT_IP_PORT_QUESTION, clientId);
         final Object clientIpPort = sendDataToServer(serverQuestion);
@@ -295,7 +299,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
-    public Object sendDataToClient(UUID clientId, Object data) throws UnknownHostException, IllegalArgumentException, TimeoutException {
+    public Object sendDataToClient(UUID clientId, Object data) throws UnknownHostException, IllegalArgumentException, ConnectionException {
         return sendDataToClient(clientId, data, TIMEOUT);
     }
 

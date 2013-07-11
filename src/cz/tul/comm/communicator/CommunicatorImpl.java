@@ -3,7 +3,7 @@ package cz.tul.comm.communicator;
 import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.Utils;
-import cz.tul.comm.exceptions.TimeoutException;
+import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
@@ -109,12 +109,12 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     }
 
     @Override
-    public Object sendData(final Object data) throws IllegalArgumentException, TimeoutException {
+    public Object sendData(final Object data) throws IllegalArgumentException, ConnectionException {
         return sendData(data, MSG_SEND_TIMEOUT);
     }
 
     @Override
-    public Object sendData(final Object data, final int timeout) throws IllegalArgumentException, TimeoutException {
+    public Object sendData(final Object data, final int timeout) throws IllegalArgumentException, ConnectionException {
         if (!Utils.checkSerialization(data)) {
             throw new IllegalArgumentException("Data for sending (and all of its members) must be serializable (eg. implement Serializable or Externalizable interface.)");
         }
@@ -148,7 +148,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         return response;
     }
 
-    private Object pushDataToOnlineClient(final DataPacket dp, final int timeout) {
+    private Object pushDataToOnlineClient(final DataPacket dp, final int timeout) throws ConnectionException {
         Object response = dummy;
         try (final Socket s = new Socket(address, port)) {
             s.setSoTimeout(timeout);
@@ -169,7 +169,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                 response = GenericResponses.UNKNOWN_DATA;
             }
         } catch (SocketTimeoutException ex) {
-            throw new TimeoutException("Online clienet did not respond in time");
+            throw new ConnectionException("Online clienet did not respond in time");
         } catch (IOException ex) {
             log.log(Level.WARNING, "Cannot write to output socket.", ex);
         }
@@ -193,11 +193,16 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             }
             stat = checkStatus();
             if (stat.equals(Status.ONLINE)) {
-                Object response = pushDataToOnlineClient(question, timeout);
-                if (response != dummy) {
-                    unsentData.remove(question);
-                    responses.put(question, response);
+                try {
+                    Object response = pushDataToOnlineClient(question, timeout);
+                    if (response != dummy) {
+                        unsentData.remove(question);
+                        responses.put(question, response);
+                    }
+                } catch (ConnectionException ex) {
+                    log.warning("Online client conneciton timed out.");
                 }
+
             }
             dif = Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - startTime;
         }

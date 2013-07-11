@@ -2,6 +2,7 @@ package cz.tul.comm.server;
 
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.job.server.Job;
 import cz.tul.comm.job.server.JobManager;
@@ -67,7 +68,7 @@ public interface Server extends IService {
      * @param adress client IP
      * @return
      */
-    Communicator registerClient(final InetAddress adress);
+    Communicator registerClient(final InetAddress adress) throws ConnectionException;
 
     /**
      * Submit new job for computation

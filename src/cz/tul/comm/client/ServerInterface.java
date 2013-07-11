@@ -1,6 +1,7 @@
 package cz.tul.comm.client;
 
 import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.exceptions.ConnectionException;
 import java.net.InetAddress;
 import java.util.UUID;
 
@@ -17,14 +18,14 @@ public interface ServerInterface {
      * @param port server port
      * @return true for successfull registration 
      */
-    boolean registerToServer(final InetAddress address, final int port);
+    boolean registerToServer(final InetAddress address, final int port) throws ConnectionException;
     
     void setServerInfo(final InetAddress address, final int port, final UUID clientId);
 
     /**
      * Send server info that client no longer wants to participate.
      */
-    void deregisterFromServer();
+    void deregisterFromServer() throws ConnectionException;
 
     /**
      * Test if the server reachable.

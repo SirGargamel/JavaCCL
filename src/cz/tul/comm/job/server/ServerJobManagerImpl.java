@@ -4,6 +4,7 @@ import cz.tul.comm.GenericResponses;
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.Status;
+import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.job.JobMessageHeaders;
 import cz.tul.comm.job.JobStatus;
 import cz.tul.comm.job.JobTask;
@@ -130,16 +131,24 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
         for (List<AssignmentRecord> l : jobsWaitingAssignment.values()) {
             for (AssignmentRecord ar : l) {
                 ssjob = ar.getJob();
-                ssjob.cancelJob();
-                storeJobAction(ssjob.getId(), null, JobMessageHeaders.JOB_CANCEL);
+                try {
+                    ssjob.cancelJob();
+                } catch (ConnectionException ex) {
+                    log.log(Level.WARNING, "Could not contact client with ID {0} for job cancelation.", owners.get(ssjob).getTargetId());
+                }
+                storeJobAction(ssjob.getId(), owners.get(ssjob).getTargetId(), JobMessageHeaders.JOB_CANCEL);
             }
         }
         jobsWaitingAssignment.clear();
 
         for (List<ServerSideJob> l : jobComputing.values()) {
             for (ServerSideJob ssj : l) {
-                ssj.cancelJob();
-                storeJobAction(ssj.getId(), null, JobMessageHeaders.JOB_CANCEL);
+                try {
+                    ssj.cancelJob();
+                } catch (ConnectionException ex) {
+                    log.log(Level.WARNING, "Could not contact client with ID {0} for job cancelation.", owners.get(ssj).getTargetId());
+                }
+                storeJobAction(ssj.getId(), owners.get(ssj).getTargetId(), JobMessageHeaders.JOB_CANCEL);
             }
         }
         jobComputing.clear();
@@ -290,20 +299,23 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
     }
 
     private void assignJob(final ServerSideJob job, final Communicator comm) {
-        listenerRegistrator.setIdListener(job.getId(), this, true);
-        List<AssignmentRecord> l = jobsWaitingAssignment.get(comm);
-        if (l == null) {
-            l = new ArrayList<>(1);
-            jobsWaitingAssignment.put(comm, l);
+        try {
+            listenerRegistrator.setIdListener(job.getId(), this, true);
+            List<AssignmentRecord> l = jobsWaitingAssignment.get(comm);
+            if (l == null) {
+                l = new ArrayList<>(1);
+                jobsWaitingAssignment.put(comm, l);
+            }
+            l.add(createNewAssignmentRecord(job));
+            job.setStatus(JobStatus.SENT);
+            storeJobAction(job.getId(), comm.getTargetId(), JobMessageHeaders.JOB_TASK);
+            submitJob(job, comm);
+        } catch (ConnectionException ex) {
+            log.log(Level.WARNING, "Failed to assign job to client with ID {0}", comm.getTargetId());
         }
-        l.add(createNewAssignmentRecord(job));
-        storeClientOnlineStatus(comm);
-        job.setStatus(JobStatus.SENT);
-        storeJobAction(job.getId(), comm.getTargetId(), JobMessageHeaders.JOB_TASK);
-        submitJob(job, comm);
     }
 
-    private void submitJob(final ServerSideJob ssj, final Communicator comm) {
+    private void submitJob(final ServerSideJob ssj, final Communicator comm) throws ConnectionException {
         final JobTask jt = new JobTask(ssj.getId(), JobMessageHeaders.JOB_TASK, ssj.getTask());
         final Object response;
         response = comm.sendData(jt);
@@ -339,12 +351,24 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
         for (ServerSideJob ssj : reassign) {
             // check client, then resend or give to another
             comm = owners.get(ssj);
-            ssj.cancelJob();
+            try {
+                ssj.cancelJob();
+            } catch (ConnectionException ex) {
+                log.log(Level.WARNING, "Could not contact client with ID {0} for job cancelation.", comm.getTargetId());
+            }
             storeJobAction(ssj.getId(), comm.getTargetId(), JobMessageHeaders.JOB_CANCEL);
             if (isClientOnline(comm)) {
                 log.log(Level.CONFIG, "Job with id {0} has been sent again to client with id {1} for confirmation.", new Object[]{ssj.getId(), comm.getTargetId()});
                 storeJobAction(ssj.getId(), comm.getTargetId(), JobMessageHeaders.JOB_TASK);
-                submitJob(ssj, comm);
+                try {
+                    submitJob(ssj, comm);
+                } catch (ConnectionException ex) {
+                    log.warning("Failed to resend job to online client.");
+                    jobsWaitingAssignment.remove(comm);
+                    if (!jobQueue.contains(ssj)) {
+                        jobQueue.addFirst(ssj);
+                    }
+                }
             } else {
                 log.log(Level.CONFIG, "Job with id {0} hasnt been accepted in time, so it was cancelled and returned to queue.", new Object[]{ssj.getId(), MAX_JOB_ASSIGN_TIME});
                 jobsWaitingAssignment.remove(comm);
@@ -369,7 +393,11 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                         final List<AssignmentRecord> reassignedList = jobsWaitingAssignment.get(comm);
                         for (AssignmentRecord reassigned : reassignedList) {
                             ssj = reassigned.getJob();
-                            ssj.cancelJob();
+                            try {
+                                ssj.cancelJob();
+                            } catch (ConnectionException ex) {
+                                log.log(Level.WARNING, "Could not contact client with ID {0} for job cancelation.", comm.getTargetId());
+                            }
                             storeJobAction(ssj.getId(), comm.getTargetId(), JobMessageHeaders.JOB_CANCEL);
                             if (!jobQueue.contains(ssj)) {
                                 jobQueue.addFirst(ssj);
@@ -542,7 +570,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
     }
 
     @Override
-    public void cancelJob(ServerSideJob job) {
+    public void cancelJob(ServerSideJob job) throws ConnectionException {
         JobStatus s = job.getStatus();
         if (s == JobStatus.SENT || s == JobStatus.ACCEPTED) {
             Communicator comm = owners.get(job);

@@ -2,6 +2,7 @@ package cz.tul.comm.job.client;
 
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.client.ServerInterface;
+import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.job.JobMessageHeaders;
 import cz.tul.comm.job.JobTask;
 import cz.tul.comm.socket.queue.Identifiable;
@@ -38,30 +39,30 @@ public class ClientJobManagerImpl implements Listener, ClientJobManager {
     }
 
     @Override
-    public void submitResult(final UUID jobId, final Object result) {
+    public void submitResult(final UUID jobId, final Object result) throws ConnectionException {
         sendDataToServer(jobId, JobMessageHeaders.JOB_RESULT, result);
     }
 
     @Override
-    public void cancelJob(final UUID jobId) {
+    public void cancelJob(final UUID jobId) throws ConnectionException {
         sendDataToServer(jobId, JobMessageHeaders.JOB_CANCEL, null);
     }
 
     @Override
-    public void acceptJob(final UUID jobId) {
+    public void acceptJob(final UUID jobId) throws ConnectionException {
         sendDataToServer(jobId, JobMessageHeaders.JOB_ACCEPT, null);
     }
 
     @Override
-    public Object requestData(final UUID jobId, final Object dataId) {
+    public Object requestData(final UUID jobId, final Object dataId) throws ConnectionException {
         return sendDataToServer(jobId, JobMessageHeaders.JOB_DATA_REQUEST, dataId);
     }
 
-    public void requestAssignment() {
+    public void requestAssignment() throws ConnectionException {
         sendDataToServer(null, JobMessageHeaders.JOB_REQUEST, server.getServerComm().getTargetId());
     }
 
-    private Object sendDataToServer(final UUID jobId, final String header, final Object result) {
+    private Object sendDataToServer(final UUID jobId, final String header, final Object result) throws ConnectionException {
         waitForSever();
         final JobTask jt = new JobTask(jobId, header, result);
         return server.getServerComm().sendData(jt);

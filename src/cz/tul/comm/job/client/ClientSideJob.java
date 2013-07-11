@@ -1,5 +1,6 @@
 package cz.tul.comm.job.client;
 
+import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.job.JobStatus;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -36,25 +37,25 @@ public class ClientSideJob implements Assignment {
     }    
 
     @Override
-    public Object requestData(Object dataId) {
+    public Object requestData(Object dataId) throws ConnectionException {
         return jobManager.requestData(jobId, dataId);
     }
 
     @Override
-    public void submitResult(Object result) {        
+    public void submitResult(Object result) throws ConnectionException {        
         isDone = true;
         jobStatus = JobStatus.FINISHED;
         jobManager.submitResult(jobId, result);
     }
 
     @Override
-    public Object getTask() {
+    public Object getTask() throws ConnectionException {
         jobManager.acceptJob(jobId);
         return task;
     }
 
     @Override
-    public void cancel(final String reason) {
+    public void cancel(final String reason) throws ConnectionException {
         jobStatus = JobStatus.CANCELED;
         jobManager.cancelJob(jobId);
     }

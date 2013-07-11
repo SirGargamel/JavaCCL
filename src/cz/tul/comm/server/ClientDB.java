@@ -4,6 +4,7 @@ import cz.tul.comm.Constants;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.CommunicatorImpl;
 import cz.tul.comm.communicator.CommunicatorInner;
+import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
@@ -40,7 +41,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
     }
 
     @Override
-    public Communicator registerClient(final InetAddress address, final int port) throws IllegalArgumentException {
+    public Communicator registerClient(final InetAddress address, final int port) throws IllegalArgumentException, ConnectionException {
         CommunicatorInner cc = CommunicatorImpl.initNewCommunicator(address, port);
         if (cc != null) {
             cc.registerHistory(hm);

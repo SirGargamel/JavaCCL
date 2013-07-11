@@ -1,6 +1,7 @@
 package cz.tul.comm.job.server;
 
 import cz.tul.comm.Utils;
+import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.job.JobStatus;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -61,7 +62,7 @@ public class ServerSideJob implements Job {
     }
 
     @Override
-    public void cancelJob() {
+    public void cancelJob() throws ConnectionException {
         jcm.cancelJob(this);
         jobStatus = JobStatus.CANCELED;
         log.log(Level.CONFIG, "Job with ID {0} has been cancelled by server.", jobId);

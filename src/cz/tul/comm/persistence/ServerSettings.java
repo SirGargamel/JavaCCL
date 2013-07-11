@@ -1,6 +1,7 @@
 package cz.tul.comm.persistence;
 
 import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.server.ClientManager;
 import java.io.File;
 import java.io.IOException;
@@ -42,12 +43,15 @@ public class ServerSettings implements Serializable {
                 for (String f : fields.keySet()) {
                     switch (f) {
                         case FIELD_NAME_CLIENT:
+                            String[] split = fields.get(f).split(IP_PORT_SPLITTER);
                             try {
-                                String[] split = fields.get(f).split(IP_PORT_SPLITTER);
+
                                 clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1]));
                             } catch (UnknownHostException | NumberFormatException | ArrayIndexOutOfBoundsException ex) {
                                 result = false;
                                 log.log(Level.WARNING, "Unkonwn host found in settings", ex);
+                            } catch (ConnectionException ex) {
+                                log.log(Level.WARNING, "Could not connect client with IP {0} on port {1}.", new Object[]{split[0], split[1]});
                             }
                             break;
                         default:

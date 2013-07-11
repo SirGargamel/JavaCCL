@@ -2,6 +2,7 @@ package cz.tul.comm.server;
 
 import cz.tul.comm.socket.ClientLister;
 import cz.tul.comm.communicator.Communicator;
+import cz.tul.comm.exceptions.ConnectionException;
 import java.net.InetAddress;
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public interface ClientManager extends ClientLister {
      * @param port client port
      * @return {@link CommunicatorImpl} for client communication
      */
-    Communicator registerClient(final InetAddress adress, final int port) throws IllegalArgumentException;
+    Communicator registerClient(final InetAddress adress, final int port) throws IllegalArgumentException, ConnectionException;
     
     Communicator addClient(final InetAddress address, final int port, final UUID clientId);
 
