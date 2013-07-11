@@ -296,7 +296,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
 
     @Override
     public Object sendDataToClient(UUID clientId, Object data) throws UnknownHostException, IllegalArgumentException, TimeoutException {
-        return sendDataToClient(clientId, data, 0);
+        return sendDataToClient(clientId, data, TIMEOUT);
     }
 
     @Override
