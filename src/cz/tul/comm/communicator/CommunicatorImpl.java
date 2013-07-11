@@ -184,7 +184,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         } else {
             time = Integer.MAX_VALUE;
         }
-        
+
         final long startTime = Calendar.getInstance(Locale.getDefault()).getTimeInMillis();
         long dif = Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - startTime;
         while (!responses.containsKey(question) && (dif <= time)) {
@@ -201,7 +201,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             }
             dif = Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - startTime;
         }
-        
+
         if (unsentData.contains(question)) {
             unsentData.remove(question);
         }
@@ -230,7 +230,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                 Object response = in.readObject();
-                if (targetId != null && targetId.equals(response)) {
+                if ((targetId != null && targetId.equals(response))
+                        || targetId == null && response == null) {
                     stat = Status.ONLINE;
                 } else {
                     log.log(Level.FINE, "STATUS_CHECK response received for another ID. {0} , {1}", new Object[]{response, targetId});
