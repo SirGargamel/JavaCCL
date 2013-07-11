@@ -40,7 +40,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class ServerJobManagerImpl extends Thread implements IService, Listener, JobManager, JobCancelManager {
+public class ServerJobManagerImpl extends Thread implements IService, Listener, ServerJobManager, JobCancelManager {
 
     private static final Logger log = Logger.getLogger(ServerJobManagerImpl.class.getName());
     private static final int WAIT_TIME = 1_000;
@@ -188,11 +188,15 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
         while (!jobQueue.isEmpty() && isAnyClientFree(clients)) {
             job = jobQueue.poll();
             comm = pickClient(job.getId(), clients);
-            if (comm != null) {
+            if (comm != null && assignJob(job, comm)) {
                 log.log(Level.CONFIG, "Job with ID {0} assigned to client with ID {1}.", new Object[]{job.getId(), comm.getTargetId()});
-                assignJob(job, comm);
             } else {
                 putBack.add(job);
+                if (comm != null) {
+                    log.log(Level.WARNING, "Failed to assign job to client with ID {0}", comm.getTargetId());
+                } else {
+                    log.log(Level.WARNING, "Failed to pick client even after checking if any client is aviable.");
+                }
             }
         }
 
@@ -298,7 +302,8 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
         lastTimeOnline.put(comm, Calendar.getInstance());
     }
 
-    private void assignJob(final ServerSideJob job, final Communicator comm) {
+    private boolean assignJob(final ServerSideJob job, final Communicator comm) {
+        boolean result;
         try {
             listenerRegistrator.setIdListener(job.getId(), this, true);
             List<AssignmentRecord> l = jobsWaitingAssignment.get(comm);
@@ -306,14 +311,28 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                 l = new ArrayList<>(1);
                 jobsWaitingAssignment.put(comm, l);
             }
-            l.add(createNewAssignmentRecord(job));
+            l.add(new AssignmentRecord(job, Calendar.getInstance(Locale.getDefault())));
             job.setStatus(JobStatus.SENT);
             storeJobAction(job.getId(), comm.getTargetId(), JobMessageHeaders.JOB_TASK);
             submitJob(job, comm);
+            result = true;
         } catch (ConnectionException ex) {
-            log.log(Level.WARNING, "Failed to assign job to client with ID {0}", comm.getTargetId());
+            List<AssignmentRecord> l = jobsWaitingAssignment.get(comm);
+            if (l != null) {
+                final Iterator<AssignmentRecord> it = l.iterator();                
+                while (it.hasNext()) {                    
+                    if (it.next().getJob() == job) {
+                        it.remove();
+                    }
+                }                
+            }
+            job.setStatus(JobStatus.SUBMITTED);
+            storeJobAction(job.getId(), null, JobMessageHeaders.JOB_TASK);            
+            return false;
         }
-    }
+
+        return result;
+    }        
 
     private void submitJob(final ServerSideJob ssj, final Communicator comm) throws ConnectionException {
         final JobTask jt = new JobTask(ssj.getId(), JobMessageHeaders.JOB_TASK, ssj.getTask());
@@ -613,9 +632,5 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
         public Calendar getAssignTime() {
             return assignTime;
         }
-    }
-
-    private static AssignmentRecord createNewAssignmentRecord(final ServerSideJob ssj) {
-        return new AssignmentRecord(ssj, Calendar.getInstance(Locale.getDefault()));
     }
 }
