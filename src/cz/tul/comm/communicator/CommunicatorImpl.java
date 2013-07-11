@@ -3,6 +3,7 @@ package cz.tul.comm.communicator;
 import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.Utils;
+import cz.tul.comm.exceptions.TimeoutException;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
@@ -108,12 +109,12 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     }
 
     @Override
-    public Object sendData(final Object data) throws IllegalArgumentException, SocketTimeoutException {
+    public Object sendData(final Object data) throws IllegalArgumentException, TimeoutException {
         return sendData(data, MSG_SEND_TIMEOUT);
     }
 
     @Override
-    public Object sendData(final Object data, final int timeout) throws IllegalArgumentException, SocketTimeoutException {
+    public Object sendData(final Object data, final int timeout) throws IllegalArgumentException, TimeoutException {
         if (!Utils.checkSerialization(data)) {
             throw new IllegalArgumentException("Data for sending (and all of its members) must be serializable (eg. implement Serializable or Externalizable interface.)");
         }
@@ -167,6 +168,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                 log.log(Level.WARNING, "Unknown class object received.", ex);
                 response = GenericResponses.UNKNOWN_DATA;
             }
+        } catch (SocketTimeoutException ex) {
+            throw new TimeoutException("Online clienet did not respond in time");
         } catch (IOException ex) {
             log.log(Level.WARNING, "Cannot write to output socket.", ex);
         }

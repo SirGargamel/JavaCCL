@@ -8,6 +8,7 @@ import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.CommunicatorImpl;
 import cz.tul.comm.communicator.CommunicatorInner;
 import cz.tul.comm.communicator.Status;
+import cz.tul.comm.exceptions.TimeoutException;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.history.sorting.DefaultSorter;
@@ -23,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -97,7 +97,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
             public void run() {
                 try {
                     sendDataToServer(new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGOUT, comm.getSourceId()));
-                } catch (SocketTimeoutException ex) {
+                } catch (TimeoutException ex) {
                     log.warning("Server connection timed out.");
                 }
                 stopService();
@@ -137,14 +137,10 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
-    public void deregisterFromServer() {
+    public void deregisterFromServer() throws TimeoutException {
         final Message m = new Message(MessageHeaders.LOGOUT, comm.getTargetId());
-        try {
-            sendDataToServer(m);
-            comm = null;
-        } catch (SocketTimeoutException ex) {
-            log.warning("Server connection timed out.");
-        }
+        sendDataToServer(m);
+        comm = null;
     }
 
     @Override
@@ -159,12 +155,12 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
-    public Object sendDataToServer(final Object data) throws SocketTimeoutException {
+    public Object sendDataToServer(final Object data) throws TimeoutException {
         return sendDataToServer(data, TIMEOUT);
     }
 
     @Override
-    public Object sendDataToServer(final Object data, final int timeout) throws SocketTimeoutException {
+    public Object sendDataToServer(final Object data, final int timeout) throws TimeoutException {
         log.log(Level.INFO, "Sending data to server - {0}", data.toString());
         if (comm == null) {
             throw new NullPointerException("No server communicator set.");
@@ -280,7 +276,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
-    public Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException, IllegalArgumentException, SocketTimeoutException {
+    public Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException, IllegalArgumentException, TimeoutException {
         // ask server for IP and port
         final Message serverQuestion = new Message(Constants.ID_SYS_MSG, MessageHeaders.CLIENT_IP_PORT_QUESTION, clientId);
         final Object clientIpPort = sendDataToServer(serverQuestion);
@@ -299,7 +295,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
-    public Object sendDataToClient(UUID clientId, Object data) throws UnknownHostException, IllegalArgumentException, SocketTimeoutException {
+    public Object sendDataToClient(UUID clientId, Object data) throws UnknownHostException, IllegalArgumentException, TimeoutException {
         return sendDataToClient(clientId, data, 0);
     }
 
