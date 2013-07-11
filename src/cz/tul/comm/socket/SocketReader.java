@@ -77,7 +77,8 @@ class SocketReader extends Observable implements Runnable {
             if (dataIn instanceof DataPacket) {
                 final DataPacket dp = (DataPacket) dataIn;
                 dp.setSourceIP(ip);
-                sendReply(ip, dataIn, dataRead, dpHandler.handleDataPacket(dp));
+                final Object response = dpHandler.handleDataPacket(dp);
+                sendReply(ip, dataIn, dataRead, response);
             } else if (dataIn instanceof Message) {
                 final Message m = (Message) dataIn;
                 switch (m.getHeader()) {
