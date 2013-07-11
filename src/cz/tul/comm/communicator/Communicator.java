@@ -44,7 +44,7 @@ public interface Communicator {
      * @param data data for sending (must implement Serializable interface)
      * @return true for successfull send
      */
-    Object sendData(final Object data) throws IllegalArgumentException;
+    Object sendData(final Object data) throws IllegalArgumentException, SocketTimeoutException;
 
     /**
      * Send data to given target.

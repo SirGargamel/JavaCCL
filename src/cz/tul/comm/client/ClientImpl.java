@@ -95,7 +95,11 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                sendDataToServer(new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGOUT, comm.getSourceId()));
+                try {
+                    sendDataToServer(new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGOUT, comm.getSourceId()));
+                } catch (SocketTimeoutException ex) {
+                    log.warning("Server connection timed out.");
+                }
                 stopService();
             }
         }));
@@ -135,8 +139,12 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     @Override
     public void deregisterFromServer() {
         final Message m = new Message(MessageHeaders.LOGOUT, comm.getTargetId());
-        sendDataToServer(m);
-        comm = null;
+        try {
+            sendDataToServer(m);
+            comm = null;
+        } catch (SocketTimeoutException ex) {
+            log.warning("Server connection timed out.");
+        }
     }
 
     @Override
@@ -151,7 +159,12 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
-    public Object sendDataToServer(final Object data) {
+    public Object sendDataToServer(final Object data) throws SocketTimeoutException {
+        return sendDataToServer(data, TIMEOUT);
+    }
+
+    @Override
+    public Object sendDataToServer(final Object data, final int timeout) throws SocketTimeoutException {
         log.log(Level.INFO, "Sending data to server - {0}", data.toString());
         if (comm == null) {
             throw new NullPointerException("No server communicator set.");
@@ -160,12 +173,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
                 log.info("Server could not be contacted.");
                 return null;
             } else {
-                try {
-                    return comm.sendData(data, TIMEOUT);
-                } catch (SocketTimeoutException ex) {
-                    log.log(Level.INFO, "Server is not responding to request.");
-                    return null;
-                }
+                return comm.sendData(data, TIMEOUT);
             }
         }
     }

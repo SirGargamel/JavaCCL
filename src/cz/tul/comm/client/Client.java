@@ -57,7 +57,7 @@ public interface Client extends IService {
     boolean isServerUp();
 
     boolean registerToServer(final InetAddress address);
-    
+
     /**
      * Try to register to server at given address and port.
      *
@@ -65,7 +65,7 @@ public interface Client extends IService {
      * @param port target port
      * @return true if registration has been successfull
      */
-    boolean registerToServer(final InetAddress address, final int port);        
+    boolean registerToServer(final InetAddress address, final int port);
 
     /**
      * Send data to server.
@@ -73,10 +73,12 @@ public interface Client extends IService {
      * @param data data for sending
      * @return true for successfull data sending
      */
-    Object sendDataToServer(final Object data);
+    Object sendDataToServer(final Object data) throws SocketTimeoutException;
+
+    Object sendDataToServer(final Object data, final int timeout) throws SocketTimeoutException;
 
     Object sendDataToClient(final UUID clientId, final Object data) throws UnknownHostException, IllegalArgumentException, SocketTimeoutException;
-    
+
     Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException, IllegalArgumentException, SocketTimeoutException;
 
     /**

@@ -57,8 +57,10 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
         return c;
     }
-    private final int TIMEOUT = 100;
+    private final int MSG_SEND_TIMEOUT = 5000;
+    private final int STATUS_CHECK_TIMEOUT = 200;
     private final int STATUS_CHECK_INTERVAL = 500;
+    private final int REPONSE_CHECK_INTERVAL = 100;
     private final InetAddress address;
     private final int port;
     private final Queue<DataPacket> unsentData;
@@ -106,13 +108,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     }
 
     @Override
-    public Object sendData(final Object data) throws IllegalArgumentException {
-        try {
-            return sendData(data, 0);
-        } catch (SocketTimeoutException ex) {
-            log.log(Level.WARNING, "Socket timedou even with no timeout set..", address.getHostAddress());
-            return null;
-        }
+    public Object sendData(final Object data) throws IllegalArgumentException, SocketTimeoutException {
+        return sendData(data, MSG_SEND_TIMEOUT);
     }
 
     @Override
@@ -189,7 +186,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         long dif = Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - startTime;
         while (!responses.containsKey(question) && (dif <= time)) {
             synchronized (this) {
-                this.wait(TIMEOUT);
+                this.wait(REPONSE_CHECK_INTERVAL);
             }
             stat = checkStatus();
             if (stat.equals(Status.ONLINE)) {
@@ -221,7 +218,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         Status stat = Status.OFFLINE;
 
         try (final Socket s = new Socket(address, port)) {
-            s.setSoTimeout(TIMEOUT);
+            s.setSoTimeout(STATUS_CHECK_TIMEOUT);
 
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
 
