@@ -16,6 +16,8 @@ import java.util.UUID;
  * @author Petr Ječmen
  */
 public interface Client extends IService {
+    
+    UUID getLocalID();
 
     /**
      * Atach interface that will handle assignment computation.
