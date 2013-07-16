@@ -96,7 +96,9 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
             @Override
             public void run() {
                 try {
-                    sendDataToServer(new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGOUT, comm.getSourceId()));
+                    if (comm != null) {
+                        sendDataToServer(new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGOUT, comm.getSourceId()));
+                    }
                 } catch (ConnectionException ex) {
                     log.warning("Server connection timed out.");
                 }
@@ -237,7 +239,9 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
 
     @Override
     public void stopService() {
-        serverSocket.stopService();
+        if (serverSocket != null) {
+            serverSocket.stopService();
+        }
         if (sdd != null) {
             sdd.stopService();
         }

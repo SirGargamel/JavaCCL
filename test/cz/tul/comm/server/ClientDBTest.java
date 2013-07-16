@@ -2,6 +2,7 @@ package cz.tul.comm.server;
 
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.CommunicatorInner;
+import cz.tul.comm.exceptions.ConnectionException;
 import java.net.InetAddress;
 import java.util.Collection;
 import java.util.HashSet;
@@ -28,11 +29,17 @@ public class ClientDBTest {
 
         InetAddress address = InetAddress.getLoopbackAddress();
         int port = 5000;
-        Communicator result = instance.registerClient(address, port);
 
-        assertEquals(address, result.getAddress());
-        assertEquals(port, result.getPort());
-        assertEquals(1, instance.getClients().size());
+        try {
+            Communicator result = instance.registerClient(address, port);
+
+            assertNotNull(result);
+            assertEquals(address, result.getAddress());
+            assertEquals(port, result.getPort());
+            assertEquals(1, instance.getClients().size());
+        } catch (ConnectionException ex) {
+            fail("Failed to register client on server - " + ex);
+        }
     }
 
     /**
@@ -43,19 +50,23 @@ public class ClientDBTest {
         System.out.println("deregisterClient");
         ClientDB instance = new ClientDB();
 
-        CommunicatorInner comm = (CommunicatorInner) instance.registerClient(InetAddress.getLoopbackAddress(), 5000);
-        UUID id = UUID.randomUUID();
-        comm.setTargetId(id);
+        try {
+            CommunicatorInner comm = (CommunicatorInner) instance.registerClient(InetAddress.getLoopbackAddress(), 5000);
+            UUID id = UUID.randomUUID();
+            comm.setTargetId(id);
 
-        instance.registerClient(InetAddress.getLoopbackAddress(), 5001);
+            instance.registerClient(InetAddress.getLoopbackAddress(), 5001);
 
-        assertEquals(2, instance.getClients().size());
+            assertEquals(2, instance.getClients().size());
 
-        instance.deregisterClient(UUID.randomUUID());
-        assertEquals(2, instance.getClients().size());
+            instance.deregisterClient(UUID.randomUUID());
+            assertEquals(2, instance.getClients().size());
 
-        instance.deregisterClient(id);
-        assertEquals(1, instance.getClients().size());
+            instance.deregisterClient(id);
+            assertEquals(1, instance.getClients().size());
+        } catch (ConnectionException ex) {
+            fail("Failed to register client on server - " + ex);
+        }
     }
 
     /**
@@ -68,19 +79,23 @@ public class ClientDBTest {
         int port = 5000;
         ClientDB instance = new ClientDB();
 
-        Communicator c1 = instance.registerClient(adress, port);
+        try {
+            final Communicator c1 = instance.registerClient(adress, port);
 
-        port++;
-        Communicator c2 = instance.registerClient(adress, port);
+            port++;
+            final Communicator c2 = instance.registerClient(adress, port);
 
-        assertEquals(c2, instance.getClient(adress, port));
+            assertEquals(c2, instance.getClient(adress, port));
 
-        assertNull(instance.getClient(adress, 0));
-        assertNull(instance.getClient(null, port));
-        assertNull(instance.getClient(null, 0));
+            assertNull(instance.getClient(adress, 0));
+            assertNull(instance.getClient(null, port));
+            assertNull(instance.getClient(null, 0));
 
-        port--;
-        assertEquals(c1, instance.getClient(adress, port));
+            port--;
+            assertEquals(c1, instance.getClient(adress, port));
+        } catch (ConnectionException ex) {
+            fail("Failed to register client on server - " + ex);
+        }
     }
 
     /**
@@ -88,18 +103,21 @@ public class ClientDBTest {
      */
     @Test
     public void testGetClient_UUID() {
-        System.out.println("getClient");
-        UUID id = UUID.randomUUID();
+        System.out.println("getClient");        
         ClientDB instance = new ClientDB();
 
-        CommunicatorInner c1 = (CommunicatorInner) instance.registerClient(InetAddress.getLoopbackAddress(), 5000);
-        c1.setTargetId(id);
-        Communicator c2 = instance.registerClient(InetAddress.getLoopbackAddress(), 5001);
+        try {
+            CommunicatorInner c1 = (CommunicatorInner) instance.registerClient(InetAddress.getLoopbackAddress(), 5000);            
 
-        assertEquals(c1, instance.getClient(id));        
+            instance.registerClient(InetAddress.getLoopbackAddress(), 5001);
 
-        assertNull(instance.getClient(UUID.randomUUID()));
-        assertNull(instance.getClient(null));
+            assertEquals(c1, instance.getClient(c1.getTargetId()));
+
+            assertNull(instance.getClient(UUID.randomUUID()));
+            assertNull(instance.getClient(null));
+        } catch (ConnectionException ex) {
+            fail("Failed to register client on server - " + ex);
+        }
     }
 
     /**
@@ -109,15 +127,24 @@ public class ClientDBTest {
     public void testGetClients() {
         System.out.println("getClients");
         ClientDB instance = new ClientDB();
-        
-        Communicator c1 = instance.registerClient(InetAddress.getLoopbackAddress(), 5000);
-        Communicator c2 = instance.registerClient(InetAddress.getLoopbackAddress(), 5000);
-        Communicator c3 = instance.registerClient(InetAddress.getLoopbackAddress(), 5001);
-        
-        Collection<Communicator> expResult = new HashSet(2);
+
+        Communicator c1 = null;
+        Communicator c2 = null;
+        Communicator c3 = null;
+
+        try {
+            c1 = instance.registerClient(InetAddress.getLoopbackAddress(), 5000);
+            c2 = instance.registerClient(InetAddress.getLoopbackAddress(), 5000);
+            c3 = instance.registerClient(InetAddress.getLoopbackAddress(), 5001);
+        } catch (ConnectionException ex) {
+            fail("Failed to register client on server - " + ex);
+        }
+
+        final Collection<Communicator> expResult = new HashSet(3);
         expResult.add(c1);
+        expResult.add(c2);
         expResult.add(c3);
-        Collection<Communicator> result = instance.getClients();
+        final Collection<Communicator> result = instance.getClients();
         assertEquals(expResult, result);
     }
 
@@ -129,9 +156,13 @@ public class ClientDBTest {
         System.out.println("isIdAllowed");
         UUID id = UUID.randomUUID();
         ClientDB instance = new ClientDB();
-        CommunicatorInner comm = (CommunicatorInner) instance.registerClient(InetAddress.getLoopbackAddress(), 5000);
-        comm.setTargetId(id);
-        assertTrue(instance.isIdAllowed(id));
-        assertFalse(instance.isIdAllowed(UUID.randomUUID()));
+        try {
+            CommunicatorInner comm = (CommunicatorInner) instance.registerClient(InetAddress.getLoopbackAddress(), 5000);
+            comm.setTargetId(id);
+            assertTrue(instance.isIdAllowed(id));
+            assertFalse(instance.isIdAllowed(UUID.randomUUID()));
+        } catch (ConnectionException ex) {
+            fail("Failed to register client on server - " + ex);
+        }
     }
 }

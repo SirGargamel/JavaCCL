@@ -69,14 +69,17 @@ public class ClientJobManagerImpl implements Listener, ClientJobManager {
     }
 
     private void waitForSever() {
-        while (!server.isServerUp()) {
-            synchronized (this) {
-                try {
-                    this.wait(WAIT_TIME);
-                } catch (InterruptedException ex) {
-                    log.log(Level.WARNING, "Waiting for server being aviable for data request has been interrupted.", ex);
+        if (!server.isServerUp()) {
+            log.fine("Waiting for server to become online.");
+            do {
+                synchronized (this) {
+                    try {
+                        this.wait(WAIT_TIME);
+                    } catch (InterruptedException ex) {
+                        log.log(Level.WARNING, "Waiting for server being aviable for data request has been interrupted.", ex);
+                    }
                 }
-            }
+            } while (!server.isServerUp());
         }
     }
 

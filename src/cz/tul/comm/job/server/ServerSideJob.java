@@ -63,9 +63,10 @@ public class ServerSideJob implements Job {
 
     @Override
     public void cancelJob() throws ConnectionException {
+        log.log(Level.CONFIG, "Canceling job with ID {0}.", jobId);
         jcm.cancelJob(this);
         jobStatus = JobStatus.CANCELED;
-        log.log(Level.CONFIG, "Job with ID {0} has been cancelled by server.", jobId);
+        
     }
 
     /**

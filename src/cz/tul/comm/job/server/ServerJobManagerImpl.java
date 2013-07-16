@@ -112,15 +112,28 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
 
     @Override
     public void waitForAllJobs() {
-        while (!jobQueue.isEmpty() && !jobsWaitingAssignment.isEmpty()) {
+        while (!allJobsDone()) {
             synchronized (this) {
                 try {
-                    this.wait();
+                    this.wait(WAIT_TIME);
                 } catch (InterruptedException ex) {
                     log.log(Level.WARNING, "Waiting for all jobs to complete failed.", ex);
                 }
             }
         }
+    }
+    
+    private boolean allJobsDone() {
+        boolean result = true;
+        
+        for (Job j : allJobs) {
+            if (!j.getStatus().equals(JobStatus.FINISHED)) {
+                result = false;
+                break;
+            }
+        }
+        
+        return result;
     }
 
     @Override
@@ -175,6 +188,90 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                     this.wait(WAIT_TIME);
                 } catch (InterruptedException ex) {
                     log.log(Level.WARNING, "Waiting of JobManager has been interrupted.", ex);
+                }
+            }
+        }
+    }
+    
+    private void checkAssignedJobs() {
+        final long time = Calendar.getInstance().getTimeInMillis();
+        final Set<ServerSideJob> reassign = new HashSet<>();
+
+        long dif;
+        Iterator<AssignmentRecord> it;
+        AssignmentRecord ar;
+        for (Entry<Communicator, List<AssignmentRecord>> e : jobsWaitingAssignment.entrySet()) {
+            it = e.getValue().iterator();
+            while (it.hasNext()) {
+                ar = it.next();
+                dif = time - ar.getAssignTime().getTimeInMillis();
+                if (dif > MAX_JOB_ASSIGN_TIME) {
+                    reassign.add(ar.getJob());
+                    it.remove();
+                }
+            }
+        }
+
+        Communicator comm;
+        for (ServerSideJob ssj : reassign) {
+            // check client, then resend or give to another
+            comm = owners.get(ssj);
+            try {
+                ssj.cancelJob();
+            } catch (ConnectionException ex) {
+                log.log(Level.WARNING, "Could not contact client with ID {0} for job cancelation.", comm.getTargetId());
+            }
+            storeJobAction(ssj.getId(), comm.getTargetId(), JobMessageHeaders.JOB_CANCEL);
+            if (isClientOnline(comm)) {
+                log.log(Level.CONFIG, "Job with id {0} has been sent again to client with id {1} for confirmation.", new Object[]{ssj.getId(), comm.getTargetId()});
+                storeJobAction(ssj.getId(), comm.getTargetId(), JobMessageHeaders.JOB_TASK);
+                try {
+                    submitJob(ssj, comm);
+                } catch (ConnectionException ex) {
+                    log.warning("Failed to resend job to online client.");
+                    jobsWaitingAssignment.remove(comm);
+                    if (!jobQueue.contains(ssj)) {
+                        jobQueue.addFirst(ssj);
+                    }
+                }
+            } else {
+                log.log(Level.CONFIG, "Job with id {0} hasnt been accepted in time, so it was cancelled and returned to queue.", new Object[]{ssj.getId(), MAX_JOB_ASSIGN_TIME});
+                jobsWaitingAssignment.remove(comm);
+                if (!jobQueue.contains(ssj)) {
+                    jobQueue.addFirst(ssj);
+                }
+            }
+        }
+    }
+
+    private void checkClientStatuses() {
+        ServerSideJob ssj;
+
+        for (Communicator comm : jobsWaitingAssignment.keySet()) {
+            if (!isClientOnline(comm)) {
+                final Calendar actualTime = Calendar.getInstance();
+                final Calendar lastOnline = lastTimeOnline.get(comm);
+                if (lastOnline != null) {
+                    final long dif = actualTime.getTimeInMillis() - lastOnline.getTimeInMillis();
+                    if (dif > MAX_CLIENT_NA_TIME) {
+                        log.log(Level.CONFIG, "Client with id {0} is not reachable, its task has been cancelled and returned to queue.", comm.getTargetId());
+                        final List<AssignmentRecord> reassignedList = jobsWaitingAssignment.get(comm);
+                        for (AssignmentRecord reassigned : reassignedList) {
+                            ssj = reassigned.getJob();
+                            try {
+                                ssj.cancelJob();
+                            } catch (ConnectionException ex) {
+                                log.log(Level.WARNING, "Could not contact client with ID {0} for job cancelation.", comm.getTargetId());
+                            }
+                            storeJobAction(ssj.getId(), comm.getTargetId(), JobMessageHeaders.JOB_CANCEL);
+                            if (!jobQueue.contains(ssj)) {
+                                jobQueue.addFirst(ssj);
+                            }
+                        }
+                        jobsWaitingAssignment.remove(comm);
+                    }
+                } else {
+                    log.severe("No online time recorder for job communicator.");
                 }
             }
         }
@@ -345,91 +442,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
             ssj.cancelJob();
         }
 
-    }
-
-    private void checkAssignedJobs() {
-        final long time = Calendar.getInstance().getTimeInMillis();
-        final Set<ServerSideJob> reassign = new HashSet<>();
-
-        long dif;
-        Iterator<AssignmentRecord> it;
-        AssignmentRecord ar;
-        for (Entry<Communicator, List<AssignmentRecord>> e : jobsWaitingAssignment.entrySet()) {
-            it = e.getValue().iterator();
-            while (it.hasNext()) {
-                ar = it.next();
-                dif = time - ar.getAssignTime().getTimeInMillis();
-                if (dif > MAX_JOB_ASSIGN_TIME) {
-                    reassign.add(ar.getJob());
-                    it.remove();
-                }
-            }
-        }
-
-        Communicator comm;
-        for (ServerSideJob ssj : reassign) {
-            // check client, then resend or give to another
-            comm = owners.get(ssj);
-            try {
-                ssj.cancelJob();
-            } catch (ConnectionException ex) {
-                log.log(Level.WARNING, "Could not contact client with ID {0} for job cancelation.", comm.getTargetId());
-            }
-            storeJobAction(ssj.getId(), comm.getTargetId(), JobMessageHeaders.JOB_CANCEL);
-            if (isClientOnline(comm)) {
-                log.log(Level.CONFIG, "Job with id {0} has been sent again to client with id {1} for confirmation.", new Object[]{ssj.getId(), comm.getTargetId()});
-                storeJobAction(ssj.getId(), comm.getTargetId(), JobMessageHeaders.JOB_TASK);
-                try {
-                    submitJob(ssj, comm);
-                } catch (ConnectionException ex) {
-                    log.warning("Failed to resend job to online client.");
-                    jobsWaitingAssignment.remove(comm);
-                    if (!jobQueue.contains(ssj)) {
-                        jobQueue.addFirst(ssj);
-                    }
-                }
-            } else {
-                log.log(Level.CONFIG, "Job with id {0} hasnt been accepted in time, so it was cancelled and returned to queue.", new Object[]{ssj.getId(), MAX_JOB_ASSIGN_TIME});
-                jobsWaitingAssignment.remove(comm);
-                if (!jobQueue.contains(ssj)) {
-                    jobQueue.addFirst(ssj);
-                }
-            }
-        }
-    }
-
-    private void checkClientStatuses() {
-        ServerSideJob ssj;
-
-        for (Communicator comm : jobsWaitingAssignment.keySet()) {
-            if (!isClientOnline(comm)) {
-                final Calendar actualTime = Calendar.getInstance();
-                final Calendar lastOnline = lastTimeOnline.get(comm);
-                if (lastOnline != null) {
-                    final long dif = actualTime.getTimeInMillis() - lastOnline.getTimeInMillis();
-                    if (dif > MAX_CLIENT_NA_TIME) {
-                        log.log(Level.CONFIG, "Client with id {0} is not reachable, its task has been cancelled and returned to queue.", comm.getTargetId());
-                        final List<AssignmentRecord> reassignedList = jobsWaitingAssignment.get(comm);
-                        for (AssignmentRecord reassigned : reassignedList) {
-                            ssj = reassigned.getJob();
-                            try {
-                                ssj.cancelJob();
-                            } catch (ConnectionException ex) {
-                                log.log(Level.WARNING, "Could not contact client with ID {0} for job cancelation.", comm.getTargetId());
-                            }
-                            storeJobAction(ssj.getId(), comm.getTargetId(), JobMessageHeaders.JOB_CANCEL);
-                            if (!jobQueue.contains(ssj)) {
-                                jobQueue.addFirst(ssj);
-                            }
-                        }
-                        jobsWaitingAssignment.remove(comm);
-                    }
-                } else {
-                    log.severe("No online time recorder for job communicator.");
-                }
-            }
-        }
-    }
+    }    
 
     @Override
     public void stopService() {
@@ -455,7 +468,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                 case JobMessageHeaders.JOB_CANCEL:
                     return cancelJob(id);
                 case JobMessageHeaders.JOB_RESULT:
-                    return finishJob(id);
+                    return finishJob(jt);
                 case JobMessageHeaders.JOB_DATA_REQUEST:
                     return dataStorage.requestData(jt.getTask());
                 case JobMessageHeaders.JOB_REQUEST:
@@ -502,7 +515,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                     l.add(ssj);
 
                     ssj.setStatus(JobStatus.ACCEPTED);
-                    log.log(Level.FINE, "Job with ID {0} has been accepted.", id);
+                    log.log(Level.CONFIG, "Job with ID {0} has been accepted.", id);
                     storeJobAction(ssj.getId(), e.getKey().getTargetId(), JobMessageHeaders.JOB_ACCEPT);
                     return GenericResponses.OK;
                 }
@@ -543,7 +556,9 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
         return GenericResponses.UUID_UNKNOWN;
     }
 
-    private Object finishJob(final UUID id) {
+    private Object finishJob(final JobTask jt) {
+        final UUID id = jt.getJobId();
+        
         ServerSideJob ssj;
         Entry<Communicator, List<ServerSideJob>> e;
         List<ServerSideJob> list;
@@ -561,6 +576,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                     if (list.isEmpty()) {
                         itEntry.remove();
                     }
+                    ssj.setResult(jt.getTask());
                     ssj.setStatus(JobStatus.FINISHED);
                     log.log(Level.CONFIG, "Job with ID {0} has been computed succefully.", id);
                     storeJobAction(ssj.getId(), e.getKey().getTargetId(), JobMessageHeaders.JOB_RESULT);

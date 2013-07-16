@@ -157,7 +157,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
             out.writeObject(dp);
             out.flush();
-            log.log(Level.CONFIG, "Data sent to {0}:{1} - [{2}]", new Object[]{getAddress().getHostAddress(), getPort(), dp.getData().toString()});
+            log.log(Level.CONFIG, "Data sent to client with ID {0} - [{1}]", new Object[]{getTargetId(), dp.getData().toString()});
 
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                 response = in.readObject();
@@ -331,7 +331,13 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     public boolean equals(Object o) {
         if (o instanceof CommunicatorImpl) {
             CommunicatorImpl cc = (CommunicatorImpl) o;
-            return (cc.getAddress().equals(address) && cc.getPort() == port);
+            UUID id = getSourceId();
+            if (id != null) {
+                return (cc.getTargetId().equals(getTargetId()));
+            } else {
+                return this == cc;
+            }
+            
         }
         return false;
     }
