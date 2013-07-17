@@ -176,7 +176,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         return response;
     }
 
-    private Object waitForResponse(final DataPacket question, final int timeout) throws InterruptedException {
+    private Object waitForResponse(final DataPacket question, final int timeout) throws InterruptedException, ConnectionException {
         Status stat;
         final int time;
         if (timeout > 0) {
@@ -214,7 +214,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         if (responses.containsKey(question)) {
             return responses.get(question);
         } else {
-            return GenericResponses.ERROR;
+            throw new ConnectionException("Client is not reachable.");
         }
     }
 
