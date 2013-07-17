@@ -115,48 +115,4 @@ public class MessagingTest {
             Logger.getLogger(MessagingTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
-    @Test
-    public void testSendDataToClient() {
-        final Client c2 = ClientImpl.initNewClient();
-
-        try {
-            assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
-            assertTrue(c2.registerToServer(InetAddress.getLoopbackAddress()));
-        } catch (ConnectionException ex) {
-            fail("Registration of any of the clients failed - " + ex);
-        }
-
-        final UUID id = UUID.randomUUID();
-        final String testData = "testData";
-        final Object msg = new Message(id, "header", testData);
-
-        c2.getListenerRegistrator().setIdListener(id, new Listener() {
-            @Override
-            public Object receiveData(Identifiable data) {                
-                assertTrue(data instanceof Message);
-
-                Message m = (Message) data;
-                
-                assertEquals(testData, m.getData().toString());
-                
-                StringBuilder sb = new StringBuilder(m.getData().toString());
-                sb.reverse();                
-
-                return sb.toString();
-            }
-        }, true);
-
-        try {
-            final Object response = c.sendDataToClient(c2.getLocalID(), msg);
-            final String expected = new StringBuffer(testData).reverse().toString();
-            assertEquals(
-                    expected,
-                    response.toString());
-        } catch (ConnectionException ex) {
-            fail("Communication failed - " + ex);
-        } catch (UnknownHostException ex) {
-            fail("Wrong clint ID used - " + ex);
-        }
-    }
 }

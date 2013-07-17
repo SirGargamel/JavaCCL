@@ -77,11 +77,7 @@ public interface Client extends IService {
      */
     Object sendDataToServer(final Object data) throws ConnectionException;
 
-    Object sendDataToServer(final Object data, final int timeout) throws ConnectionException;
-
-    Object sendDataToClient(final UUID clientId, final Object data) throws UnknownHostException, IllegalArgumentException, ConnectionException;
-
-    Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException, IllegalArgumentException, ConnectionException;    
+    Object sendDataToServer(final Object data, final int timeout) throws ConnectionException;    
     
     boolean setMaxNumberOfConcurrentAssignments(final int assignmentCount);
 }

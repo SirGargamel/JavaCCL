@@ -20,6 +20,5 @@ public interface MessageHeaders {
      * check
      */
     String STATUS_CHECK = "statusCheck";
-    String MSG_PULL_REQUEST = "msgPullRequest";
-    String CLIENT_IP_PORT_QUESTION = "clientIpPortQuestion";
+    String MSG_PULL_REQUEST = "msgPullRequest";    
 }

@@ -208,7 +208,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                 }
                 if (!allowed) {
                     log.log(Level.FINE, "Data with null id received and its not a sys msg [{0}].", data.toString());
-                    return GenericResponses.ILLEGAL_DATA;
+                    return GenericResponses.UUID_NOT_ALLOWED;
                 }
             } else if (!idFilter.isTargetIdValid(dp.getTargetID())) {
                 log.log(Level.FINE, "Received data not for this client - client id is {0}, data packet [{1}]", new Object[]{clientId, dp.toString()});

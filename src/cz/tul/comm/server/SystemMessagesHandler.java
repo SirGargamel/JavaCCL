@@ -2,8 +2,6 @@ package cz.tul.comm.server;
 
 import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
-import cz.tul.comm.communicator.Communicator;
-import cz.tul.comm.communicator.CommunicatorInner;
 import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
@@ -70,15 +68,6 @@ public class SystemMessagesHandler implements Listener {
                         }
                     case MessageHeaders.STATUS_CHECK:
                         return Constants.ID_SERVER;
-                    case MessageHeaders.CLIENT_IP_PORT_QUESTION:
-                        UUID clientid = (UUID) m.getData();
-                        Communicator comm = clientManager.getClient(clientid);
-                        if (comm != null) {
-                            String response = comm.getAddress().getHostAddress().concat(Constants.DELIMITER).concat(String.valueOf(comm.getPort()));
-                            return response;
-                        } else {
-                            return GenericResponses.UUID_UNKNOWN;
-                        }
                     default:
                         return GenericResponses.UNKNOWN_DATA;
                 }

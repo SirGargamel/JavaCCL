@@ -282,30 +282,6 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
-    public Object sendDataToClient(final UUID clientId, final Object data, final int timeout) throws UnknownHostException, IllegalArgumentException, ConnectionException {
-        // ask server for IP and port
-        final Message serverQuestion = new Message(Constants.ID_SYS_MSG, MessageHeaders.CLIENT_IP_PORT_QUESTION, clientId);
-        final Object clientIpPort = sendDataToServer(serverQuestion);
-        if (clientIpPort instanceof String) {
-            final String ipPort = (String) clientIpPort;
-            String[] split = ipPort.split(Constants.DELIMITER);
-            final InetAddress ip = InetAddress.getByName(split[0]);
-            final int port = Integer.valueOf(split[1]);
-            // create Comm to client
-            final Communicator c = CommunicatorImpl.initNewCommunicator(ip, port);
-            // send data to client and return result        
-            return c.sendData(data, timeout);
-        } else {
-            throw new IllegalArgumentException("Illegal client id used - " + clientId.toString());
-        }
-    }
-
-    @Override
-    public Object sendDataToClient(UUID clientId, Object data) throws UnknownHostException, IllegalArgumentException, ConnectionException {
-        return sendDataToClient(clientId, data, TIMEOUT);
-    }
-
-    @Override
     public boolean isTargetIdValid(UUID id) {
         if (id != null) {
             if (comm != null) {
