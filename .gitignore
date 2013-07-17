@@ -12,4 +12,4 @@
 /src/cz/tul/comm/tester/virtual
 # system logs
 systemLog.xml*
-jacocoexec*
+jacoco.exec*
