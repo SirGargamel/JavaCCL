@@ -22,7 +22,7 @@ public interface JobMessageHeaders {
     /**
      * Submit job result.
      */
-    String JOB_RESULT = "jobResult";
-    String JOB_REQUEST = "jobRequest";
+    String JOB_RESULT = "jobResult";    
     String JOB_TASK = "jobTask";
+    String JOB_COUNT = "jobCount";
 }

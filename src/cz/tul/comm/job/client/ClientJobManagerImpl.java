@@ -58,10 +58,6 @@ public class ClientJobManagerImpl implements Listener, ClientJobManager {
         return sendDataToServer(jobId, JobMessageHeaders.JOB_DATA_REQUEST, dataId);
     }
 
-    public void requestAssignment() throws ConnectionException {
-        sendDataToServer(null, JobMessageHeaders.JOB_REQUEST, server.getServerComm().getTargetId());
-    }
-
     private Object sendDataToServer(final UUID jobId, final String header, final Object result) throws ConnectionException {
         waitForSever();
         final JobTask jt = new JobTask(jobId, header, result);

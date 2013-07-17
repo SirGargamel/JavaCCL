@@ -5,9 +5,11 @@ import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.Status;
 import cz.tul.comm.exceptions.ConnectionException;
+import cz.tul.comm.job.JobCount;
 import cz.tul.comm.job.JobMessageHeaders;
 import cz.tul.comm.job.JobStatus;
 import cz.tul.comm.job.JobTask;
+import cz.tul.comm.messaging.Message;
 import cz.tul.comm.server.ClientManager;
 import cz.tul.comm.server.DataStorage;
 import cz.tul.comm.socket.ListenerRegistrator;
@@ -17,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,6 +57,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
     private final Map<Communicator, List<AssignmentRecord>> jobsWaitingAssignment;
     private final Map<Communicator, List<ServerSideJob>> jobComputing;
     private final Map<Communicator, Calendar> lastTimeOnline;
+    private final Map<Communicator, Integer> jobCount;
     private final Map<ServerSideJob, Communicator> owners;
     private final Collection<Job> allJobs;
     private final Collection<Job> allJobsOuter;
@@ -77,6 +81,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
         allJobsOuter = Collections.unmodifiableCollection(allJobs);
         jobHistory = new HashMap<>();
         owners = new HashMap<>();
+        jobCount = new HashMap<>();
 
         run = true;
     }
@@ -100,15 +105,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
         wakeUp();
 
         return result;
-    }
-
-    public void requestJob(final Communicator comm) {
-        if (isClientOnline(comm)) {
-            final ServerSideJob ssj = jobQueue.poll();
-            log.log(Level.CONFIG, "Job with ID {0} assigned to client with ID {1} after request.", new Object[]{ssj.getId(), comm.getTargetId()});
-            assignJob(ssj, comm);
-        }
-    }
+    }    
 
     @Override
     public void waitForAllJobs() {
@@ -122,17 +119,17 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
             }
         }
     }
-    
+
     private boolean allJobsDone() {
         boolean result = true;
-        
+
         for (Job j : allJobs) {
             if (!j.getStatus().equals(JobStatus.FINISHED)) {
                 result = false;
                 break;
             }
         }
-        
+
         return result;
     }
 
@@ -192,7 +189,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
             }
         }
     }
-    
+
     private void checkAssignedJobs() {
         final long time = Calendar.getInstance().getTimeInMillis();
         final Set<ServerSideJob> reassign = new HashSet<>();
@@ -312,19 +309,52 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
     }
 
     private boolean isClientFree(final Communicator comm) {
-        return isClientOnline(comm)
-                && jobsWaitingAssignment.get(comm) == null
-                && jobComputing.get(comm) == null;
+        boolean result = false;
+        if (isClientOnline(comm)) {            
+            int count = countActiveJobs(comm);
+            
+            final int maxCount;
+            if (jobCount.containsKey(comm)) {
+                maxCount = jobCount.get(comm);
+            } else {
+                maxCount = 1;
+            }
+            
+            return (count < maxCount);
+        }                                
+        
+        return result;
+    }
+    
+    private int countActiveJobs(final Communicator comm) {
+        int count = 0;
+        final List<AssignmentRecord> jobsWaiting = jobsWaitingAssignment.get(comm);
+        if (jobsWaiting != null) {
+            count += jobsWaiting.size();
+        }
+        final List<ServerSideJob> jobsComputing = jobComputing.get(comm);
+        if (jobsComputing != null) {
+            count += jobsComputing.size();
+        }
+        return count;
     }
 
     private Communicator pickClient(final UUID jobId, final Collection<Communicator> clients) {
-        final Collection<Communicator> candidates = new LinkedList<>();
+        final List<Communicator> candidates = new LinkedList<>();
         // pick online only
         for (Communicator comm : clients) {
             if (isClientFree(comm)) {
                 candidates.add(comm);
             }
         }
+        Collections.sort(candidates, new Comparator<Communicator>() {
+
+            @Override
+            public int compare(Communicator o1, Communicator o2) {
+                return (countActiveJobs(o1) - countActiveJobs(o2));
+            }
+            
+        });
         // 1st round - no actions with job before
         List<JobAction> actionList = jobHistory.get(jobId);
         for (Communicator comm : candidates) {
@@ -333,7 +363,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
             }
             return comm;
         }
-        // 2nd round - longest tim from last cancel
+        // 2nd round - longest time from last cancel
         Calendar cal;
         final SortedMap<Calendar, Communicator> cancelTimes = new TreeMap<>();
         for (Communicator comm : candidates) {
@@ -416,20 +446,20 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
         } catch (ConnectionException ex) {
             List<AssignmentRecord> l = jobsWaitingAssignment.get(comm);
             if (l != null) {
-                final Iterator<AssignmentRecord> it = l.iterator();                
-                while (it.hasNext()) {                    
+                final Iterator<AssignmentRecord> it = l.iterator();
+                while (it.hasNext()) {
                     if (it.next().getJob() == job) {
                         it.remove();
                     }
-                }                
+                }
             }
             job.setStatus(JobStatus.SUBMITTED);
-            storeJobAction(job.getId(), null, JobMessageHeaders.JOB_TASK);            
+            storeJobAction(job.getId(), null, JobMessageHeaders.JOB_TASK);
             return false;
         }
 
         return result;
-    }        
+    }
 
     private void submitJob(final ServerSideJob ssj, final Communicator comm) throws ConnectionException {
         final JobTask jt = new JobTask(ssj.getId(), JobMessageHeaders.JOB_TASK, ssj.getTask());
@@ -442,7 +472,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
             ssj.cancelJob();
         }
 
-    }    
+    }
 
     @Override
     public void stopService() {
@@ -470,16 +500,21 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                 case JobMessageHeaders.JOB_RESULT:
                     return finishJob(jt);
                 case JobMessageHeaders.JOB_DATA_REQUEST:
-                    return dataStorage.requestData(jt.getTask());
-                case JobMessageHeaders.JOB_REQUEST:
-                    final Object cid = jt.getTask();
-                    if (cid instanceof UUID) {
-                        final UUID clientId = (UUID) cid;
-                        requestJob(clientManager.getClient(clientId));
-                        return GenericResponses.OK;
-                    } else {
-                        return GenericResponses.ILLEGAL_DATA;
+                    return dataStorage.requestData(jt.getTask());                
+                default:
+                    return GenericResponses.UNKNOWN_DATA;
+            }
+        } else if (data instanceof Message) {
+            final Message m = (Message) data;
+
+            switch (m.getHeader()) {
+                case JobMessageHeaders.JOB_COUNT:
+                    Object count = m.getData();
+                    if (count instanceof JobCount) {
+                        JobCount jc = (JobCount) count;
+                        jobCount.put(clientManager.getClient(jc.getClientId()), jc.getJobCount());                        
                     }
+                    return GenericResponses.OK;
                 default:
                     return GenericResponses.UNKNOWN_DATA;
             }
@@ -558,7 +593,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
 
     private Object finishJob(final JobTask jt) {
         final UUID id = jt.getJobId();
-        
+
         ServerSideJob ssj;
         Entry<Communicator, List<ServerSideJob>> e;
         List<ServerSideJob> list;
@@ -629,7 +664,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                     break;
             }
         }
-    }
+    }    
 
     private static class AssignmentRecord {
 

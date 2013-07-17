@@ -3,6 +3,7 @@ package cz.tul.comm.client;
 import cz.tul.comm.socket.ClientLister;
 import cz.tul.comm.ComponentSwitches;
 import cz.tul.comm.Constants;
+import cz.tul.comm.GenericResponses;
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.CommunicatorImpl;
@@ -12,6 +13,8 @@ import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.history.sorting.DefaultSorter;
+import cz.tul.comm.job.JobCount;
+import cz.tul.comm.job.JobMessageHeaders;
 import cz.tul.comm.job.client.AssignmentListener;
 import cz.tul.comm.job.client.ClientJobManagerImpl;
 import cz.tul.comm.messaging.Message;
@@ -267,11 +270,6 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
 
     @Override
-    public void requestAssignment() throws ConnectionException {
-        jm.requestAssignment();
-    }
-
-    @Override
     public int getLocalSocketPort() {
         return serverSocket.getPort();
     }
@@ -331,5 +329,22 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         } else {
             return null;
         }
+    }
+
+    @Override
+    public boolean setMaxNumberOfConcurrentAssignments(final int assignmentCount) {
+        final Message m = new Message(
+                Constants.ID_JOB_MANAGER, 
+                JobMessageHeaders.JOB_COUNT, 
+                new JobCount(getLocalID(), assignmentCount));
+        
+        try {
+            final Object response = sendDataToServer(m);
+            return GenericResponses.OK.equals(response);
+        } catch (ConnectionException ex) {
+            log.log(Level.WARNING, "Communication with server failed - {0}", ex);
+            return false;
+        }
+
     }
 }
