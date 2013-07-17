@@ -87,7 +87,7 @@ class SocketReader extends Observable implements Runnable {
                         break;
                     default:
                         log.log(Level.WARNING, "Received Message with unidentifined header - {0}", new Object[]{m.toString()});
-                        sendReply(ip, dataIn, dataRead, GenericResponses.UNKNOWN_DATA);
+                        sendReply(ip, dataIn, dataRead, GenericResponses.ILLEGAL_HEADER);
                         break;
                 }
             } else {
@@ -96,7 +96,7 @@ class SocketReader extends Observable implements Runnable {
             }
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error reading data from socket.", ex);
-            sendReply(ip, dataIn, dataRead, GenericResponses.ERROR);
+            sendReply(ip, dataIn, dataRead, GenericResponses.CONNECTION_ERROR);
         } catch (ClassNotFoundException ex) {
             log.log(Level.WARNING, "Invalid data received from sender.", ex);
             sendReply(ip, dataIn, dataRead, GenericResponses.ILLEGAL_DATA);

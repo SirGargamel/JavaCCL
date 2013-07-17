@@ -105,7 +105,7 @@ public class ClientJobManagerImpl implements Listener, ClientJobManager {
                     });
                     return GenericResponses.OK;
                 default:
-                    return GenericResponses.UNKNOWN_DATA;
+                    return GenericResponses.ILLEGAL_HEADER;
             }
         } else {
             return GenericResponses.ILLEGAL_DATA;

@@ -502,7 +502,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                 case JobMessageHeaders.JOB_DATA_REQUEST:
                     return dataStorage.requestData(jt.getTask());                
                 default:
-                    return GenericResponses.UNKNOWN_DATA;
+                    return GenericResponses.ILLEGAL_HEADER;
             }
         } else if (data instanceof Message) {
             final Message m = (Message) data;
@@ -516,7 +516,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                     }
                     return GenericResponses.OK;
                 default:
-                    return GenericResponses.UNKNOWN_DATA;
+                    return GenericResponses.ILLEGAL_HEADER;
             }
         } else {
             return GenericResponses.ILLEGAL_DATA;

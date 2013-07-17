@@ -56,6 +56,9 @@ class SystemMessageHandler implements Listener {
                             log.log(Level.WARNING, "Illegal data received with LOGIN message - [{0}].", mData.toString());
                         }
                         break;
+                    default:
+                        result = GenericResponses.ILLEGAL_HEADER;
+                        break;
                 }
             }
         }

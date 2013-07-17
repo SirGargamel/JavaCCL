@@ -69,7 +69,7 @@ public class SystemMessagesHandler implements Listener {
                     case MessageHeaders.STATUS_CHECK:
                         return Constants.ID_SERVER;
                     default:
-                        return GenericResponses.UNKNOWN_DATA;
+                        return GenericResponses.ILLEGAL_HEADER;
                 }
             } else {
                 log.log(Level.WARNING, "Invalid data received - {0}", innerData.toString());

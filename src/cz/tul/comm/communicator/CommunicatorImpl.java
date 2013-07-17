@@ -126,7 +126,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
         if (stat.equals(Status.ONLINE)) {
             response = pushDataToOnlineClient(dp, timeout);
-            if (response != GenericResponses.ILLEGAL_TARGET_ID && response != GenericResponses.UUID_NOT_ALLOWED) {
+            if (response != GenericResponses.ILLEGAL_TARGET_ID 
+                    && response != GenericResponses.UUID_NOT_ALLOWED) {
                 readAndReply = true;
             }
         } else {
@@ -166,7 +167,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                 log.log(Level.WARNING, "Error receiving response from output socket", ex);
             } catch (ClassNotFoundException ex) {
                 log.log(Level.WARNING, "Unknown class object received.", ex);
-                response = GenericResponses.UNKNOWN_DATA;
+                response = GenericResponses.ILLEGAL_DATA;
             }
         } catch (SocketTimeoutException ex) {
             throw new ConnectionException("Online clienet did not respond in time");
