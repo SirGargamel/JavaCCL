@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
@@ -44,6 +43,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
 
     private static final Logger log = Logger.getLogger(ClientImpl.class.getName());
     private static final int TIMEOUT = 5000;
+    private static final String SETTINGS_NAME = "clientSettings.xml";
 
     /**
      * Create and initialize new instance of client at given port.
@@ -216,13 +216,13 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jm, true);
 
         if (ComponentSwitches.useSettings) {
-            if (!ClientSettings.deserialize(this)) {
+            if (!ClientSettings.deserialize(new File(SETTINGS_NAME), this)) {
                 log.warning("Error loading client settings.");
             }
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    ClientSettings.serialize(comm);
+                    ClientSettings.serialize(new File(SETTINGS_NAME), comm);
                 }
             }));
         }

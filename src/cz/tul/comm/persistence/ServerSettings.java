@@ -22,7 +22,6 @@ import org.xml.sax.SAXException;
 public class ServerSettings implements Serializable {
 
     private static final Logger log = Logger.getLogger(ServerSettings.class.getName());
-    private static final String SERIALIZATION_NAME = "serverSettings.xml";
     private static final String IP_PORT_SPLITTER = ":";
     private static final String FIELD_NAME_CLIENT = "client";
 
@@ -32,21 +31,21 @@ public class ServerSettings implements Serializable {
      * @param clientManager interface for managing clients
      * @return true for successfull load
      */
-    public static boolean deserialize(final ClientManager clientManager) {
+    public static boolean deserialize(final File settingsFile, final ClientManager clientManager) {
         log.log(Level.CONFIG, "Deserializing server settings.");
         boolean result = true;
 
-        File s = new File(SERIALIZATION_NAME);
-        if (s.exists()) {
+        if (settingsFile.canRead()) {
             try {
-                Map<String, String> fields = SimpleXMLFile.loadSimpleXMLFile(s);
+                Map<String, String> fields = SimpleXMLSettingsFile.loadSimpleXMLFile(settingsFile);
                 for (String f : fields.keySet()) {
                     switch (f) {
                         case FIELD_NAME_CLIENT:
                             String[] split = fields.get(f).split(IP_PORT_SPLITTER);
                             try {
-
-                                clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1]));
+                                if (clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1])) == null) {
+                                    result = false;
+                                }
                             } catch (UnknownHostException | NumberFormatException | ArrayIndexOutOfBoundsException ex) {
                                 result = false;
                                 log.log(Level.WARNING, "Unkonwn host found in settings", ex);
@@ -61,7 +60,7 @@ public class ServerSettings implements Serializable {
                 }
             } catch (IOException ex) {
                 result = false;
-                log.log(Level.WARNING, "Error accessing server settings at " + SERIALIZATION_NAME + ".", ex);
+                log.log(Level.WARNING, "Error accessing server settings at " + settingsFile.getAbsolutePath() + ".", ex);
             } catch (SAXException ex) {
                 result = false;
                 log.log(Level.WARNING, "Wrong format of input XML.", ex);
@@ -79,9 +78,9 @@ public class ServerSettings implements Serializable {
      * @param clientManager interface for managing clients
      * @return true for successfull save
      */
-    public static boolean serialize(final ClientManager clientManager) {
+    public static boolean serialize(final File settingsFile, final ClientManager clientManager) {
         log.log(Level.CONFIG, "Serializing server settings.");
-        final SimpleXMLFile xml = new SimpleXMLFile();
+        final SimpleXMLSettingsFile xml = new SimpleXMLSettingsFile();
 
         final Collection<Communicator> comms = clientManager.getClients();
         StringBuilder sb = new StringBuilder();
@@ -95,9 +94,9 @@ public class ServerSettings implements Serializable {
 
         boolean result = false;
         try {
-            result = xml.storeXML(new File(SERIALIZATION_NAME));
+            result = xml.storeXML(settingsFile);
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error accessing server settings at " + SERIALIZATION_NAME + ".", ex);
+            log.log(Level.WARNING, "Error accessing server settings at " + settingsFile.getAbsolutePath() + ".", ex);
         }
 
         return result;

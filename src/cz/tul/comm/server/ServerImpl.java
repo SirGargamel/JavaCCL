@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 public final class ServerImpl implements IService, Server {
 
     private static final Logger log = Logger.getLogger(ServerImpl.class.getName());
+    private static final String SETTINGS_NAME = "serverSettings.xml";
 
     /**
      * Create and initialize new instance of server.
@@ -161,13 +162,13 @@ public final class ServerImpl implements IService, Server {
 
     void start() {
         if (ComponentSwitches.useSettings) {
-            if (!ServerSettings.deserialize(clients)) {
+            if (!ServerSettings.deserialize(new File(SETTINGS_NAME), clients)) {
                 log.warning("Error loading server settings.");
             }
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    ServerSettings.serialize(clients);
+                    ServerSettings.serialize(new File(SETTINGS_NAME), clients);
                 }
             }));
         }

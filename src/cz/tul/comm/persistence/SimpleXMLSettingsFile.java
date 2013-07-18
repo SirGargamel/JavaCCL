@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -27,9 +29,10 @@ import org.xml.sax.SAXException;
  *
  * @author Petr Ječmen
  */
-public class SimpleXMLFile {
+public class SimpleXMLSettingsFile {
 
-    private static final Logger log = Logger.getLogger(SimpleXMLFile.class.getName());
+    private static final Logger log = Logger.getLogger(SimpleXMLSettingsFile.class.getName());
+    private static final String SETTINGS_NODE_NAME = "settings";
 
     /**
      * Load contents of a simple XML file.
@@ -51,27 +54,38 @@ public class SimpleXMLFile {
             //read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
             doc.getDocumentElement().normalize();
 
-            NodeList nList = doc.getChildNodes();
-            for (int temp = 0; temp < nList.getLength(); temp++) {
-                Node nNode = nList.item(temp);
-
-                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-                    Element eElement = (Element) nNode;
+            Queue<Node> nodesForParsing = new ConcurrentLinkedQueue<>();            
+            addAllChildNodes(nodesForParsing, doc.getElementsByTagName(SETTINGS_NODE_NAME));
+            
+            Node node;
+            while (!nodesForParsing.isEmpty()) {
+                node = nodesForParsing.poll();
+                
+                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eElement = (Element) node;
                     fields.put(eElement.getTagName(), eElement.getTextContent());
                 }
-            }
+                
+                addAllChildNodes(nodesForParsing, node.getChildNodes());
+            }                        
         } catch (ParserConfigurationException ex) {
             log.log(Level.SEVERE, "Illegal parser config used.", ex);
         }
 
         return fields;
     }
+    
+    private static void addAllChildNodes(final Queue processingQueue, final NodeList nodes) {        
+        for (int i = 0; i < nodes.getLength(); i++) {
+            processingQueue.add(nodes.item(i));
+        }
+    }
     private final Map<String, String> fields;
 
     /**
      * Init fresh instance of XML file.
      */
-    public SimpleXMLFile() {
+    public SimpleXMLSettingsFile() {
         this.fields = new HashMap<>();
     }
 
@@ -121,7 +135,7 @@ public class SimpleXMLFile {
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
             DOMSource source = new DOMSource(doc);
             StreamResult out = new StreamResult(target);
-            transformer.transform(source, out);
+            transformer.transform(source, out);            
 
             result = true;
         } catch (ParserConfigurationException ex) {

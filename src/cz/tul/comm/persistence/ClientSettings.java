@@ -23,9 +23,8 @@ import org.xml.sax.SAXException;
 public class ClientSettings {
 
     private static final Logger log = Logger.getLogger(ClientSettings.class.getName());
-    private static final String SERIALIZATION_NAME = "clientSettings.xml";
     private static final String IP_PORT_SPLITTER = ":";
-    private static final String FIELD_NAME_SERVER = "serverIp";
+    private static final String FIELD_NAME_SERVER = "server";
 
     /**
      * Save client settings to disk.
@@ -33,23 +32,24 @@ public class ClientSettings {
      * @param reg server parameters registrator
      * @return true for successfull deserialization
      */
-    public static boolean deserialize(final ServerInterface reg) {
+    public static boolean deserialize(final File settingsFile, final ServerInterface reg) {
         log.log(Level.CONFIG, "Deserializing client settings.");
         boolean result = true;
 
-        File s = new File(SERIALIZATION_NAME);
-        if (s.exists()) {
+        if (settingsFile.canRead()) {
             InetAddress ip = null;
             int port = Constants.DEFAULT_PORT;
             try {
-                Map<String, String> fields = SimpleXMLFile.loadSimpleXMLFile(s);
+                Map<String, String> fields = SimpleXMLSettingsFile.loadSimpleXMLFile(settingsFile);
                 for (String f : fields.keySet()) {
                     switch (f) {
                         case FIELD_NAME_SERVER:
                             try {
                                 String[] split = fields.get(f).split(IP_PORT_SPLITTER);
                                 ip = InetAddress.getByName(split[0]);
-                                port = Integer.valueOf(split[1]);
+                                if (split.length > 1) {
+                                    port = Integer.valueOf(split[1]);
+                                }
                             } catch (UnknownHostException ex) {
                                 result = false;
                                 log.log(Level.WARNING, "Unkonwn server ip found in settings", ex);
@@ -76,7 +76,7 @@ public class ClientSettings {
                 }
             } catch (IOException ex) {
                 result = false;
-                log.log(Level.WARNING, "Error accessing client settings at " + SERIALIZATION_NAME + ".", ex);
+                log.log(Level.WARNING, "Error accessing client settings at " + settingsFile.getAbsolutePath() + ".", ex);
             } catch (SAXException ex) {
                 result = false;
                 log.log(Level.WARNING, "Wrong format of input XML.", ex);
@@ -94,16 +94,10 @@ public class ClientSettings {
      * @param serverCommunicator server communicator
      * @return true for successfull save
      */
-    public static boolean serialize(final Communicator serverCommunicator) {
+    public static boolean serialize(final File settingsFile, final Communicator serverCommunicator) {
         log.log(Level.CONFIG, "Serializing client settings.");
 
-//        final ClientSettings s = new ClientSettings();
-//
-//        s.serverAdress = composeServerAddress(serverCommunicator.getAddress(), serverCommunicator.getPort());
-//
-//        return SerializationUtils.saveItemToDiscAsXML(new File(SERIALIZATION_NAME), s);
-
-        SimpleXMLFile xml = new SimpleXMLFile();
+        SimpleXMLSettingsFile xml = new SimpleXMLSettingsFile();
 
         xml.addField(
                 FIELD_NAME_SERVER,
@@ -111,9 +105,9 @@ public class ClientSettings {
 
         boolean result = false;
         try {
-            result = xml.storeXML(new File(SERIALIZATION_NAME));
+            result = xml.storeXML(settingsFile);
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error accessing client settings at " + SERIALIZATION_NAME + ".", ex);
+            log.log(Level.WARNING, "Error accessing client settings at " + settingsFile.getAbsolutePath() + ".", ex);
         }
 
         return result;
