@@ -16,10 +16,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Before;
 
 /**
  *
@@ -38,10 +40,7 @@ public class SettingsTest {
     }
 
     @BeforeClass
-    public static void setUpClass() {
-        s = ServerImpl.initNewServer();
-        c = ClientImpl.initNewClient(CLIENT_PORT);
-
+    public static void setUpClass() {        
         discovery = ComponentSwitches.useClientDiscovery;
         ComponentSwitches.useClientDiscovery = false;
 
@@ -65,11 +64,25 @@ public class SettingsTest {
 
     @AfterClass
     public static void tearDownClass() {
+        serializationTarget.delete();
+        
         c.stopService();
         s.stopService();
 
         ComponentSwitches.useClientDiscovery = discovery;
         ComponentSwitches.useClientAutoConnectLocalhost = autoconnect;
+    }
+    
+    @Before
+    public void setUp() {                
+        s = ServerImpl.initNewServer();
+        c = ClientImpl.initNewClient(CLIENT_PORT);
+    }
+    
+    @After
+    public void tearDown() {
+        c.stopService();
+        s.stopService();
     }
 
     @Test
@@ -91,7 +104,7 @@ public class SettingsTest {
         s.stopService();
         s = ServerImpl.initNewServer();
         try {
-            s.getClientManager().registerClient(InetAddress.getLoopbackAddress(), 5253);
+            s.getClientManager().registerClient(InetAddress.getLoopbackAddress(), CLIENT_PORT);
         } catch (IllegalArgumentException ex) {
             fail("Illegal arguments used");
         } catch (ConnectionException ex) {
