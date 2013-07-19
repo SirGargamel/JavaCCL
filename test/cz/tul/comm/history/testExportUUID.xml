@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<History>
+  <Group UUID="550e8400-e29b-41d4-a716-446655440000">
+    <Record>
+      <IPSource></IPSource>
+      <IPDestination>127.0.0.1</IPDestination>
+      <Time>2013-07-19 14:13:12:152 CEST</Time>
+      <Accepted>true</Accepted>
+      <Message>
+        <UUID>550e8400-e29b-41d4-a716-446655440000</UUID>
+        <Header>Header</Header>
+        <String>data1</String>
+      </Message>
+      <GenericResponses>NOT_HANDLED_DIRECTLY</GenericResponses>
+    </Record>
+    <Record>
+      <IPSource>127.0.0.1</IPSource>
+      <IPDestination></IPDestination>
+      <Time>2013-07-19 14:13:12:162 CEST</Time>
+      <Accepted>true</Accepted>
+      <Message>
+        <UUID>550e8400-e29b-41d4-a716-446655440000</UUID>
+        <Header>Header</Header>
+        <String>dataBack</String>
+      </Message>
+      <GenericResponses>NOT_HANDLED_DIRECTLY</GenericResponses>
+    </Record>
+  </Group>
+  <Group UUID="550e8400-e29b-41d4-a716-446655440111">
+    <Record>
+      <IPSource></IPSource>
+      <IPDestination>127.0.0.1</IPDestination>
+      <Time>2013-07-19 14:13:12:192 CEST</Time>
+      <Accepted>true</Accepted>
+      <Message>
+        <UUID>550e8400-e29b-41d4-a716-446655440111</UUID>
+        <Header>Header</Header>
+        <String>data2</String>
+      </Message>
+      <GenericResponses>NOT_HANDLED_DIRECTLY</GenericResponses>
+    </Record>
+  </Group>
+</History>

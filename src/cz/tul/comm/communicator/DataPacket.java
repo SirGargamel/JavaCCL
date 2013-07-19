@@ -61,21 +61,17 @@ public class DataPacket implements Serializable, Identifiable {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("[");
-        if (sourceID != null) {
-            sb.append("from ");
+        final StringBuilder sb = new StringBuilder();        
+        if (sourceID != null) {            
             sb.append(sourceID.toString());
         }        
         if (targetID != null) {
-            sb.append(" to ");
+            sb.append(" - ");
             sb.append(targetID.toString());
         }
-        if (data != null) {
-            sb.append(" - ");
+        sb.append(" - [");
+        if (data != null) {            
             sb.append(data.toString());
-        } else {
-            sb.append(", no data");
         }
         sb.append("]");
         return sb.toString();

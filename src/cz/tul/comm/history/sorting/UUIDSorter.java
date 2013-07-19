@@ -13,7 +13,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * Extracts only Job messages and groups them according to ID.
+ * Extracts messages and groups them according to their IDs.
  *
  * @author Petr Ječmen
  */
@@ -25,8 +25,7 @@ public class UUIDSorter extends HistorySorter {
     public List<Element> sortHistory(final Collection<HistoryRecord> records, final Document doc) {
         log.fine("Sotring messages by UUID.");
 
-        // group Nodex by UUID
-        // and search for job tasks
+        // group Nodes by UUID        
         final SortedMap<UUID, List<HistoryRecord>> idGroups = new TreeMap<>();
         List<HistoryRecord> l;
         Message m;

@@ -8,9 +8,8 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -54,14 +53,14 @@ public class History implements HistoryManager {
 
         transformer.transform(source, output);
     }
-    private final Set<HistoryRecord> records;
+    private final List<HistoryRecord> records;
     private final InetAddress localHost;
 
     /**
      * New instance of History conainer.
      */
     public History() {
-        records = Collections.synchronizedSet(new HashSet<HistoryRecord>());
+        records = Collections.synchronizedList(new LinkedList<HistoryRecord>());
 
         InetAddress local;
         try {
@@ -99,10 +98,11 @@ public class History implements HistoryManager {
         try {
             final Document doc = prepareDocument();
             final Element rootElement = doc.createElement("History");
+            doc.appendChild(rootElement);
             final List<Element> data = sorter.sortHistory(records, doc);
             for (Element e : data) {
                 rootElement.appendChild(e);
-            }
+            }            
             exportDocumentToXML(target, doc);
             result = true;
 
@@ -122,5 +122,9 @@ public class History implements HistoryManager {
     public void registerExporter(final ExportUnit eu) {
         Exporter.registerExporterUnit(eu);
         log.log(Level.FINE, "New export unit registered - {0}", eu.getClass().getCanonicalName());
+    }
+
+    public List<HistoryRecord> getRecords() {
+        return records;
     }
 }

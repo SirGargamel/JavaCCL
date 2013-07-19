@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<History>
+  <In>
+    <Record>
+      <IPSource></IPSource>
+      <IPDestination>127.0.0.1</IPDestination>
+      <Time>2013-07-19 14:15:52:723 CEST</Time>
+      <Accepted>true</Accepted>
+      <String>dataOut</String>
+      <GenericResponses>OK</GenericResponses>
+    </Record>
+  </In>
+  <Out>
+    <Record>
+      <IPSource>127.0.0.1</IPSource>
+      <IPDestination></IPDestination>
+      <Time>2013-07-19 14:15:52:823 CEST</Time>
+      <Accepted>true</Accepted>
+      <GenericResponses>ILLEGAL_DATA</GenericResponses>
+      <String>0000-0000</String>
+    </Record>
+    <Record>
+      <IPSource>127.0.0.1</IPSource>
+      <IPDestination></IPDestination>
+      <Time>2013-07-19 14:15:53:73 CEST</Time>
+      <Accepted>false</Accepted>
+      <String>dataIn2</String>
+      <String>response</String>
+    </Record>
+  </Out>
+</History>

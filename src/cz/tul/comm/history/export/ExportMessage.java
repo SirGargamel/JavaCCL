@@ -35,7 +35,9 @@ public class ExportMessage implements ExportUnit {
 
             appendStringDataToNode(result, doc, "UUID", m.getId().toString());
             appendStringDataToNode(result, doc, "Header", m.getHeader());
-            result.appendChild(Exporter.exportObject(m.getData(), doc));
+            if (m.getData() != null) {
+                result.appendChild(Exporter.exportObject(m.getData(), doc));
+            }
         }
 
         return result;

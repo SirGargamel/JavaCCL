@@ -121,6 +121,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         boolean result = false;
         comm = CommunicatorImpl.initNewCommunicator(address, port);
         comm.setTargetId(Constants.ID_SERVER);
+        comm.registerHistory(history);
         final Message login = new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGIN, serverSocket.getPort());
         final Object id = comm.sendData(login);
         if (id instanceof UUID) {
@@ -139,6 +140,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         comm = CommunicatorImpl.initNewCommunicator(address, port);
         comm.setTargetId(Constants.ID_SERVER);
         comm.setSourceId(clientId);
+        comm.registerHistory(history);
     }
 
     @Override

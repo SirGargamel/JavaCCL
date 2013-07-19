@@ -77,6 +77,7 @@ public final class ServerImpl implements IService, Server {
         history = new History();
 
         clients = new ClientDB();
+        clients.registerHistory(history);
 
         serverSocket = ServerSocket.createServerSocket(port, clients, clients);
         serverSocket.registerHistory(history);
