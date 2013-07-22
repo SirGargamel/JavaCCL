@@ -466,7 +466,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
         final Object response;
         response = comm.sendData(jt);
         owners.put(ssj, comm);
-        if (response != null && response.equals(GenericResponses.OK)) {
+        if (GenericResponses.OK.equals(response)) {
             ssj.setStatus(JobStatus.SENT);
         } else {
             ssj.cancelJob();

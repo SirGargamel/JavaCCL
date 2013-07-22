@@ -117,19 +117,27 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
 
     @Override
     public boolean registerToServer(final InetAddress address, final int port) throws ConnectionException {
+        final CommunicatorInner oldComm = comm;
+
         log.log(Level.CONFIG, "Registering new server IP and port - {0}:{1}", new Object[]{address.getHostAddress(), port});
         boolean result = false;
         comm = CommunicatorImpl.initNewCommunicator(address, port);
         comm.setTargetId(Constants.ID_SERVER);
         comm.registerHistory(history);
         final Message login = new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGIN, serverSocket.getPort());
-        final Object id = comm.sendData(login);
-        if (id instanceof UUID) {
-            comm.setSourceId(((UUID) id));
-            result = true;
-            log.log(Level.INFO, "Client has been registered to new server, new ID has been received - {0}", comm.getSourceId());
-        } else {
-            log.log(Level.WARNING, "Invalid response received - {0}", id.toString());
+        try {
+            final Object id = comm.sendData(login);
+            if (id instanceof UUID) {
+                comm.setSourceId(((UUID) id));
+                result = true;
+                log.log(Level.INFO, "Client has been registered to new server, new ID has been received - {0}", comm.getSourceId());
+            } else {
+                comm = oldComm;
+                log.log(Level.WARNING, "Invalid response received - {0}", id.toString());
+            }
+        } catch (ConnectionException ex) {
+            comm = oldComm;
+            throw ex;
         }
 
         return result;
@@ -312,10 +320,10 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     @Override
     public boolean setMaxNumberOfConcurrentAssignments(final int assignmentCount) {
         final Message m = new Message(
-                Constants.ID_JOB_MANAGER, 
-                JobMessageHeaders.JOB_COUNT, 
+                Constants.ID_JOB_MANAGER,
+                JobMessageHeaders.JOB_COUNT,
                 new JobCount(getLocalID(), assignmentCount));
-        
+
         try {
             final Object response = sendDataToServer(m);
             return GenericResponses.OK.equals(response);

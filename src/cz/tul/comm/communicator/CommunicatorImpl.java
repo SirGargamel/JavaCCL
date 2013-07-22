@@ -48,15 +48,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
      * @return created and initializaed instance of CommunicatorImpl
      */
     public static CommunicatorInner initNewCommunicator(final InetAddress address, final int port) {
-        CommunicatorImpl c;
-        try {
-            c = new CommunicatorImpl(address, port);
-        } catch (IllegalArgumentException ex) {
-            log.log(Level.WARNING, "Illegal arguments used for Communicator creation.", ex);
-            return null;
-        }
-
-        return c;
+        return new CommunicatorImpl(address, port);
     }
     private final int MSG_SEND_TIMEOUT = 5000;
     private final int STATUS_CHECK_TIMEOUT = 200;
@@ -126,8 +118,13 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
         if (stat.equals(Status.ONLINE)) {
             response = pushDataToOnlineClient(dp, timeout);
-            if (response != GenericResponses.ILLEGAL_TARGET_ID 
-                    && response != GenericResponses.UUID_NOT_ALLOWED) {
+            if (response == GenericResponses.ILLEGAL_TARGET_ID) {
+                throw new ConnectionException("Data sent to illegal target, check Communicator config.");
+            } else if (response == GenericResponses.UUID_NOT_ALLOWED) {
+                throw new ConnectionException("Target is not accepting data from this Communicator.");
+            } else if (response == GenericResponses.CONNECTION_ERROR) {
+                throw new ConnectionException("Connection to client failed.");
+            } else {
                 readAndReply = true;
             }
         } else {
@@ -338,7 +335,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             } else {
                 return this == cc;
             }
-            
+
         }
         return false;
     }
