@@ -1,5 +1,6 @@
-package cz.tul.comm;
+package cz.tul.comm.messaging;
 
+import cz.tul.comm.GenericResponses;
 import cz.tul.comm.client.Client;
 import cz.tul.comm.client.ClientImpl;
 import cz.tul.comm.exceptions.ConnectionException;
