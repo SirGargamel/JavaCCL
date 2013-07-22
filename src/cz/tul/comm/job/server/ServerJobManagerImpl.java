@@ -123,8 +123,11 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
     private boolean allJobsDone() {
         boolean result = true;
 
+        JobStatus js;
         for (Job j : allJobs) {
-            if (!j.getStatus().equals(JobStatus.FINISHED)) {
+            js = j.getStatus();
+            if (!(JobStatus.FINISHED.equals(js)
+                    || JobStatus.CANCELED.equals(js))) {
                 result = false;
                 break;
             }
@@ -377,8 +380,8 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
         if (actionList == null || comm == null) {
             return false;
         }
-        
-        for (JobAction ja : actionList) {            
+
+        for (JobAction ja : actionList) {
             if (comm.getTargetId().equals(ja.getOwnerId())) {
                 return true;
             }
@@ -648,6 +651,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                     jobComputing.get(comm).remove(job);
                     break;
             }
+            storeJobAction(job.getId(), comm.getTargetId(), JobMessageHeaders.JOB_CANCEL);
         }
     }
 

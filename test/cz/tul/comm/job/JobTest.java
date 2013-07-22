@@ -18,7 +18,6 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -664,8 +663,6 @@ public class JobTest {
 
         assertEquals(cnt, counter.getCount());
 
-        System.out.println("Not accepting client done.");
-
         //canceling client
         failingClient.setAssignmentListener(new AssignmentListener() {
             @Override
@@ -726,6 +723,86 @@ public class JobTest {
             failingClient.stopService();
         } catch (InterruptedException ex) {
             fail("Failed to wait before client goes offline.");
+        }
+
+        s.getJobManager().waitForAllJobs();
+
+        for (Job j : jobs) {
+            assertEquals(GenericResponses.OK, j.getResult(true));
+        }
+
+        assertEquals(cnt, counter.getCount());
+    }
+
+    @Test
+    public void testCancelFromServer() {
+        final Counter counter = new Counter();
+
+        c.setAssignmentListener(new AssignmentListener() {
+            boolean run = true;
+
+            @Override
+            public void receiveTask(Assignment task) {
+                try {
+                    Object tsk = task.getTask();
+
+                    if (!(tsk instanceof Integer)) {
+                        fail("Illegal task received");
+                    }
+
+                    Integer count = (Integer) tsk;
+
+                    if (!run) {
+                        return;
+                    }
+
+                    synchronized (JobTest.this) {
+                        JobTest.this.wait(count);
+                    }
+
+                    if (!run) {
+                        return;
+                    }
+
+                    counter.add(count);
+                    task.submitResult(GenericResponses.OK);
+                } catch (ConnectionException ex) {
+                    fail("Connection to server failed - " + ex);
+                } catch (InterruptedException ex) {
+                    fail("Waiting has been interrupted - " + ex);
+                }
+            }
+
+            @Override
+            public void cancelTask(Assignment task) {
+                run = false;
+            }
+        });
+
+        int cnt = 0, val;
+        Random rnd = new Random();
+        final int jobCount = rnd.nextInt(5) + 5;
+        Set<Job> jobs = new HashSet<>(jobCount);
+        for (int i = 0; i < jobCount; i++) {
+            val = (rnd.nextInt(4) + 2) * 20;
+            cnt += val;
+            jobs.add(s.submitJob(val));
+        }
+        Job jobForCancelation = s.submitJob(250);
+
+        while (!JobStatus.ACCEPTED.equals(jobForCancelation.getStatus())) {
+            try {
+                synchronized (this) {
+                    this.wait(10);
+                }
+            } catch (InterruptedException ex) {
+                fail("Waiting for cancelation failed.");
+            }
+        }
+        try {
+            jobForCancelation.cancelJob();
+        } catch (ConnectionException ex) {
+            fail("Failed to cancel the job.");
         }
 
         s.getJobManager().waitForAllJobs();

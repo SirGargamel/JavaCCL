@@ -66,7 +66,6 @@ public class ServerSideJob implements Job {
         log.log(Level.CONFIG, "Canceling job with ID {0}.", jobId);
         jcm.cancelJob(this);
         jobStatus = JobStatus.CANCELED;
-        
     }
 
     /**
