@@ -105,7 +105,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
         wakeUp();
 
         return result;
-    }    
+    }
 
     @Override
     public void waitForAllJobs() {
@@ -175,9 +175,9 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
     public void run() {
         log.fine("JobManager has been started.");
         while (run) {
+            checkAssignedJobs();
+            checkClientStatuses();
             if (!jobQueue.isEmpty()) {
-                checkAssignedJobs();
-                checkClientStatuses();
                 assignJobs();
             }
             synchronized (this) {
@@ -219,24 +219,11 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                 log.log(Level.WARNING, "Could not contact client with ID {0} for job cancelation.", comm.getTargetId());
             }
             storeJobAction(ssj.getId(), comm.getTargetId(), JobMessageHeaders.JOB_CANCEL);
-            if (isClientOnline(comm)) {
-                log.log(Level.CONFIG, "Job with id {0} has been sent again to client with id {1} for confirmation.", new Object[]{ssj.getId(), comm.getTargetId()});
-                storeJobAction(ssj.getId(), comm.getTargetId(), JobMessageHeaders.JOB_TASK);
-                try {
-                    submitJob(ssj, comm);
-                } catch (ConnectionException ex) {
-                    log.warning("Failed to resend job to online client.");
-                    jobsWaitingAssignment.remove(comm);
-                    if (!jobQueue.contains(ssj)) {
-                        jobQueue.addFirst(ssj);
-                    }
-                }
-            } else {
-                log.log(Level.CONFIG, "Job with id {0} hasnt been accepted in time, so it was cancelled and returned to queue.", new Object[]{ssj.getId(), MAX_JOB_ASSIGN_TIME});
-                jobsWaitingAssignment.remove(comm);
-                if (!jobQueue.contains(ssj)) {
-                    jobQueue.addFirst(ssj);
-                }
+
+            log.log(Level.CONFIG, "Job with id {0} hasnt been accepted in time, so it was cancelled and returned to queue.", new Object[]{ssj.getId(), MAX_JOB_ASSIGN_TIME});
+            jobsWaitingAssignment.remove(comm);
+            if (!jobQueue.contains(ssj)) {
+                jobQueue.addFirst(ssj);
             }
         }
     }
@@ -310,22 +297,22 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
 
     private boolean isClientFree(final Communicator comm) {
         boolean result = false;
-        if (isClientOnline(comm)) {            
+        if (isClientOnline(comm)) {
             int count = countActiveJobs(comm);
-            
+
             final int maxCount;
             if (jobCount.containsKey(comm)) {
                 maxCount = jobCount.get(comm);
             } else {
                 maxCount = 1;
             }
-            
+
             return (count < maxCount);
-        }                                
-        
+        }
+
         return result;
     }
-    
+
     private int countActiveJobs(final Communicator comm) {
         int count = 0;
         final List<AssignmentRecord> jobsWaiting = jobsWaitingAssignment.get(comm);
@@ -348,12 +335,10 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
             }
         }
         Collections.sort(candidates, new Comparator<Communicator>() {
-
             @Override
             public int compare(Communicator o1, Communicator o2) {
                 return (countActiveJobs(o1) - countActiveJobs(o2));
             }
-            
         });
         // 1st round - no actions with job before
         List<JobAction> actionList = jobHistory.get(jobId);
@@ -389,12 +374,12 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
     }
 
     private boolean isCommPresent(final List<JobAction> actionList, final Communicator comm) {
-        if (actionList == null) {
+        if (actionList == null || comm == null) {
             return false;
         }
-
-        for (JobAction ja : actionList) {
-            if (ja.getOwnerId().equals(comm.getTargetId())) {
+        
+        for (JobAction ja : actionList) {            
+            if (comm.getTargetId().equals(ja.getOwnerId())) {
                 return true;
             }
         }
@@ -500,7 +485,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                 case JobMessageHeaders.JOB_RESULT:
                     return finishJob(jt);
                 case JobMessageHeaders.JOB_DATA_REQUEST:
-                    return dataStorage.requestData(jt.getTask());                
+                    return dataStorage.requestData(jt.getTask());
                 default:
                     return GenericResponses.ILLEGAL_HEADER;
             }
@@ -512,7 +497,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                     Object count = m.getData();
                     if (count instanceof JobCount) {
                         JobCount jc = (JobCount) count;
-                        jobCount.put(clientManager.getClient(jc.getClientId()), jc.getJobCount());                        
+                        jobCount.put(clientManager.getClient(jc.getClientId()), jc.getJobCount());
                     }
                     return GenericResponses.OK;
                 default:
@@ -664,7 +649,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener, 
                     break;
             }
         }
-    }    
+    }
 
     private static class AssignmentRecord {
 
