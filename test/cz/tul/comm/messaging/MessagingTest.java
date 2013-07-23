@@ -8,6 +8,7 @@ import cz.tul.comm.communicator.CommunicatorImpl;
 import cz.tul.comm.communicator.CommunicatorInner;
 import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.exceptions.ConnectionException;
+import cz.tul.comm.exceptions.ConnectionExceptionCause;
 import cz.tul.comm.server.Server;
 import cz.tul.comm.server.ServerImpl;
 import cz.tul.comm.socket.queue.Identifiable;
@@ -71,7 +72,7 @@ public class MessagingTest {
             comm.sendData("data");
             fail("Should have failed, because this communicator is not registered.");
         } catch (ConnectionException ex) {
-            // everything is fine
+            assertEquals(ConnectionExceptionCause.UUID_NOT_ALLOWED, ex.getExceptionCause());
         }
     }
 
