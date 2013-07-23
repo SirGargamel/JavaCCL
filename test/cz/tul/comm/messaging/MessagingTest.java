@@ -4,6 +4,8 @@ import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.client.Client;
 import cz.tul.comm.client.ClientImpl;
+import cz.tul.comm.communicator.CommunicatorImpl;
+import cz.tul.comm.communicator.CommunicatorInner;
 import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.server.Server;
@@ -52,7 +54,7 @@ public class MessagingTest {
         }
 
         try {
-            c.deregisterFromServer();
+            c.deregisterFromServer();            
         } catch (ConnectionException ex) {
             fail("Client deregistration failed.");
         }
@@ -61,6 +63,15 @@ public class MessagingTest {
             assertNotNull(s.getClientManager().registerClient(InetAddress.getLoopbackAddress(), PORT_CLIENT));
         } catch (ConnectionException ex) {
             fail("Registration from server to client failed - " + ex);
+        }
+        
+        try {
+            CommunicatorInner comm = (CommunicatorInner) CommunicatorImpl.initNewCommunicator(InetAddress.getLoopbackAddress(), 5252);
+            comm.setTargetId(Constants.ID_SERVER);
+            comm.sendData("data");
+            fail("Should have failed, because this communicator is not registered.");
+        } catch (ConnectionException ex) {
+            // everything is fine
         }
     }
 
