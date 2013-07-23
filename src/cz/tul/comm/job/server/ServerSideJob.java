@@ -40,7 +40,7 @@ public class ServerSideJob implements Job {
     @Override
     public Object getResult(final boolean blockingGet) {
         if (blockingGet) {
-            while (result == null) {
+            while (!JobStatus.FINISHED.equals(jobStatus)) {
                 synchronized (this) {
                     try {
                         this.wait();
