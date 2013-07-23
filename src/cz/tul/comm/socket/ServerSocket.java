@@ -223,10 +223,12 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
             log.log(Level.CONFIG, "Data [{0}] received, forwarding to listeners.", data.toString());
         }
 
+        boolean sysMsg = false;
         if (data instanceof Identifiable) {
             final Identifiable iData = (Identifiable) data;
             final Object id = iData.getId();
             if (id.equals(Constants.ID_SYS_MSG)) { // not pretty !!!
+                sysMsg = true;
                 result = listenersId.get(id).receiveData(dp);
             } else if (listenersId.containsKey(id)) {
                 result = listenersId.get(id).receiveData(iData);
@@ -243,14 +245,16 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
             }
         }
 
-        exec.submit(new Runnable() {
-            @Override
-            public void run() {
-                for (Observer o : dataListeners) {
-                    o.update(null, dp);
+        if (!sysMsg) {
+            exec.submit(new Runnable() {
+                @Override
+                public void run() {
+                    for (Observer o : dataListeners) {
+                        o.update(null, dp);
+                    }
                 }
-            }
-        });
+            });
+        }
 
         return result;
     }

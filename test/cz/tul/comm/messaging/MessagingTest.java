@@ -10,6 +10,8 @@ import cz.tul.comm.server.ServerImpl;
 import cz.tul.comm.socket.queue.Identifiable;
 import cz.tul.comm.socket.queue.Listener;
 import java.net.InetAddress;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -153,6 +155,72 @@ public class MessagingTest {
         try {
             assertEquals(reverseHeader, c.sendDataToServer(m));
             assertEquals(GenericResponses.OK, c.sendDataToServer(header));
+        } catch (ConnectionException ex) {
+            fail("Communication failed - " + ex);
+        }
+    }
+
+    @Test
+    public void testMessageObserver() {
+        try {
+            assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
+        } catch (ConnectionException ex) {
+            fail("Registration from client to server failed - " + ex);
+        }
+
+        final StringBuilder sbServer = new StringBuilder();
+        final StringBuilder sbClient = new StringBuilder();
+
+        s.getListenerRegistrator().addMessageObserver(new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                if (arg instanceof DataPacket) {
+                    DataPacket dp = (DataPacket) arg;
+
+                    if (dp.getData() instanceof Message) {
+                        final Message m = (Message) dp.getData();
+                        sbServer.append(m.getHeader());
+                        sbServer.reverse();
+                    } else {
+                        sbServer.append(GenericResponses.OK);
+                    }
+                }
+            }
+        });
+        c.getListenerRegistrator().addMessageObserver(new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                if (arg instanceof DataPacket) {
+                    DataPacket dp = (DataPacket) arg;
+
+                    if (dp.getData() instanceof Message) {
+                        final Message m = (Message) dp.getData();
+                        sbClient.append(m.getHeader());
+                        sbClient.reverse();
+                    } else {
+                        sbClient.append(GenericResponses.OK);
+                    }
+                }
+            }
+        });
+
+        try {
+            final String header = "abcdefg";
+            final Message m = new Message(header, "data");
+            final StringBuilder expected = new StringBuilder();
+
+            c.sendDataToServer(m);
+            s.getClient(c.getLocalID()).sendData(m);
+            expected.append(header);
+            expected.reverse();
+            assertEquals(expected.toString(), sbServer.toString());
+            assertEquals(expected.toString(), sbClient.toString());
+
+            c.sendDataToServer(header);
+            s.getClient(c.getLocalID()).sendData(header);
+            expected.append(GenericResponses.OK);
+            assertEquals(expected.toString(), sbServer.toString());
+            assertEquals(expected.toString(), sbClient.toString());
         } catch (ConnectionException ex) {
             fail("Communication failed - " + ex);
         }
