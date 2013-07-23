@@ -3,7 +3,7 @@ package cz.tul.comm.client;
 import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.communicator.CommunicatorInner;
-import cz.tul.comm.communicator.DataPacket;
+import cz.tul.comm.communicator.DataPacketImpl;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.socket.IDFilter;
@@ -33,8 +33,8 @@ class SystemMessageHandler implements Listener {
     public Object receiveData(Identifiable data) {
         Object result = GenericResponses.ILLEGAL_DATA;
 
-        if (data instanceof DataPacket) {
-            final DataPacket dp = (DataPacket) data;
+        if (data instanceof DataPacketImpl) {
+            final DataPacketImpl dp = (DataPacketImpl) data;
             final Object innerData = dp.getData();
             if (innerData instanceof Message) {
                 final Message m = (Message) innerData;

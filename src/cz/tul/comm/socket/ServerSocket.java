@@ -230,8 +230,10 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                 result = listenersId.get(id).receiveData(dp);
             } else if (listenersId.containsKey(id)) {
                 result = listenersId.get(id).receiveData(iData);
+            } else if (listenersClient.containsKey(clientId)) {
+                result = listenersClient.get(clientId).receiveData(dp);
             } else {
-                dataStorageId.storeData((Identifiable) data);
+                dataStorageId.storeData(dp);
             }
         } else {
             if (listenersClient.containsKey(clientId)) {

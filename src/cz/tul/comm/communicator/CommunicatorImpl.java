@@ -114,7 +114,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         boolean readAndReply = false;
         Object response = dummy;
         Status stat = getStatus();
-        DataPacket dp = new DataPacket(sourceId, targetId, data);
+        DataPacket dp = new DataPacketImpl(sourceId, targetId, data);
 
         if (stat.equals(Status.ONLINE)) {
             response = pushDataToOnlineClient(dp, timeout);
@@ -220,7 +220,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     public Status checkStatus() {
         boolean result = false;
         final Object data = new Message(Constants.ID_SYS_MSG, MessageHeaders.STATUS_CHECK, null);
-        final DataPacket dp = new DataPacket(sourceId, targetId, data);
+        final DataPacket dp = new DataPacketImpl(sourceId, targetId, data);
         Status stat = Status.OFFLINE;
 
         try (final Socket s = new Socket(address, port)) {

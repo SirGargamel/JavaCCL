@@ -2,7 +2,7 @@ package cz.tul.comm.server;
 
 import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
-import cz.tul.comm.communicator.DataPacket;
+import cz.tul.comm.communicator.DataPacketImpl;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
 import cz.tul.comm.socket.queue.Identifiable;
@@ -35,8 +35,8 @@ public class SystemMessagesHandler implements Listener {
 
     @Override
     public Object receiveData(Identifiable data) {
-        if (data instanceof DataPacket) {
-            final DataPacket dp = (DataPacket) data;
+        if (data instanceof DataPacketImpl) {
+            final DataPacketImpl dp = (DataPacketImpl) data;
             final Object innerData = dp.getData();
             if (innerData instanceof Message) {
                 final Message m = (Message) innerData;

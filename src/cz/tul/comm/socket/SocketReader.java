@@ -1,7 +1,7 @@
 package cz.tul.comm.socket;
 
 import cz.tul.comm.GenericResponses;
-import cz.tul.comm.communicator.DataPacket;
+import cz.tul.comm.communicator.DataPacketImpl;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
@@ -74,8 +74,8 @@ class SocketReader extends Observable implements Runnable {
             dataIn = in.readObject();
             dataRead = true;
 
-            if (dataIn instanceof DataPacket) {
-                final DataPacket dp = (DataPacket) dataIn;
+            if (dataIn instanceof DataPacketImpl) {
+                final DataPacketImpl dp = (DataPacketImpl) dataIn;
                 dp.setSourceIP(ip);
                 final Object response = dpHandler.handleDataPacket(dp);
                 sendReply(ip, dp.getData(), dataRead, response);
