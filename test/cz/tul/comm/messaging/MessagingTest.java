@@ -4,13 +4,11 @@ import cz.tul.comm.GenericResponses;
 import cz.tul.comm.client.Client;
 import cz.tul.comm.client.ClientImpl;
 import cz.tul.comm.exceptions.ConnectionException;
-import cz.tul.comm.messaging.Message;
 import cz.tul.comm.server.Server;
 import cz.tul.comm.server.ServerImpl;
 import cz.tul.comm.socket.queue.Identifiable;
 import cz.tul.comm.socket.queue.Listener;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,7 +61,7 @@ public class MessagingTest {
     }
 
     @Test
-    public void testMessaging() {
+    public void testIdMessaging() {
         try {
             assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
         } catch (ConnectionException ex) {
@@ -92,7 +90,6 @@ public class MessagingTest {
                 return result;
             }
         }, true);
-
         s.getListenerRegistrator().setIdListener(id, new Listener() {
             @Override
             public Object receiveData(Identifiable data) {
@@ -108,10 +105,18 @@ public class MessagingTest {
                 return result;
             }
         }, true);
+        
         try {
             assertNotNull(s.getClient(c.getLocalID()).sendData(new Message(id, msgHeader, msgToClient)));
             assertNotNull(c.getServerComm().sendData(new Message(id, msgHeader, msgToServer)));
             assertEquals(msgToClient.concat(msgToServer), sb.toString());
+        } catch (ConnectionException ex) {
+            Logger.getLogger(MessagingTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        c.getListenerRegistrator().removeIdListener(id);
+        try {
+            assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, s.getClient(c.getLocalID()).sendData(new Message(id, msgHeader, msgToClient)));        
         } catch (ConnectionException ex) {
             Logger.getLogger(MessagingTest.class.getName()).log(Level.SEVERE, null, ex);
         }
