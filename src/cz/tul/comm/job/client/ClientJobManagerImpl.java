@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class ClientJobManagerImpl implements Listener, ClientJobManager {
+public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobManager {
 
     private static final Logger log = Logger.getLogger(ClientJobManagerImpl.class.getName());
     private static final int WAIT_TIME = 500;

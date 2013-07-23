@@ -2,7 +2,6 @@ package cz.tul.comm.client;
 
 import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
-import cz.tul.comm.communicator.CommunicatorInner;
 import cz.tul.comm.communicator.DataPacketImpl;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.MessageHeaders;
@@ -18,7 +17,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-class SystemMessageHandler implements Listener {
+class SystemMessageHandler implements Listener<Identifiable> {
 
     private static final Logger log = Logger.getLogger(SystemMessageHandler.class.getName());
     private final IDFilter idFIlter;

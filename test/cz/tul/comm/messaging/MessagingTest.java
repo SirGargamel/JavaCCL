@@ -76,7 +76,7 @@ public class MessagingTest {
 
         final StringBuilder sb = new StringBuilder();
 
-        c.getListenerRegistrator().setIdListener(id, new Listener() {
+        c.getListenerRegistrator().setIdListener(id, new Listener<Identifiable>() {
             @Override
             public Object receiveData(Identifiable data) {
                 Object result = null;
@@ -91,7 +91,7 @@ public class MessagingTest {
                 return result;
             }
         }, true);
-        s.getListenerRegistrator().setIdListener(id, new Listener() {
+        s.getListenerRegistrator().setIdListener(id, new Listener<Identifiable>() {
             @Override
             public Object receiveData(Identifiable data) {
                 Object result = null;
@@ -131,23 +131,16 @@ public class MessagingTest {
             fail("Registration from client to server failed - " + ex);
         }
 
-        s.getListenerRegistrator().setClientListener(c.getLocalID(), new Listener() {
+        s.getListenerRegistrator().setClientListener(c.getLocalID(), new Listener<DataPacket>() {
             @Override
-            public Object receiveData(Identifiable data) {
-                if (data instanceof DataPacket) {
-                    DataPacket dp = (DataPacket) data;
-
-                    if (dp.getData() instanceof Message) {
-                        final Message m = (Message) dp.getData();
-                        StringBuilder sb = new StringBuilder(m.getHeader());
-                        return sb.reverse().toString();
-                    } else {
-                        return GenericResponses.OK;
-                    }
+            public Object receiveData(DataPacket data) {
+                if (data.getData() instanceof Message) {
+                    final Message m = (Message) data.getData();
+                    StringBuilder sb = new StringBuilder(m.getHeader());
+                    return sb.reverse().toString();
                 } else {
-                    return GenericResponses.ILLEGAL_DATA;
+                    return GenericResponses.OK;
                 }
-
             }
         }, true);
 

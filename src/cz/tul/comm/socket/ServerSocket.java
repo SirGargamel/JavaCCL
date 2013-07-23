@@ -53,8 +53,8 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     private final java.net.ServerSocket socket;
     private final IDFilter idFilter;
     private final ExecutorService exec;
-    private final Map<UUID, Listener> listenersClient;
-    private final Map<Object, Listener> listenersId;
+    private final Map<UUID, Listener<DataPacket>> listenersClient;
+    private final Map<Object, Listener<Identifiable>> listenersId;
     private final ObjectQueue<DataPacket> dataStorageClient;
     private final ObjectQueue<Identifiable> dataStorageId;
     private final Set<Observer> dataListeners;
@@ -76,7 +76,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     }
 
     @Override
-    public Queue<DataPacket> setClientListener(final UUID clientId, final Listener dataListener, final boolean wantsPushNotifications) {
+    public Queue<DataPacket> setClientListener(final UUID clientId, final Listener<DataPacket> dataListener, final boolean wantsPushNotifications) {
         log.log(Level.FINE, "Added new listener {0} for ID {1}", new Object[]{dataListener.toString(), clientId});
         if (wantsPushNotifications) {
             listenersClient.put(clientId, dataListener);
@@ -99,7 +99,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     }
 
     @Override
-    public Queue<Identifiable> setIdListener(final Object id, final Listener idListener, final boolean wantsPushNotifications) {
+    public Queue<Identifiable> setIdListener(final Object id, final Listener<Identifiable> idListener, final boolean wantsPushNotifications) {
         log.log(Level.FINE, "Added new listener {0} for ID {1}", new Object[]{idListener.toString(), id.toString()});
         if (wantsPushNotifications) {
             listenersId.put(id, idListener);

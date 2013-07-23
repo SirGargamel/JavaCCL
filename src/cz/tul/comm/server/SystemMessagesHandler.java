@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class SystemMessagesHandler implements Listener {
+public class SystemMessagesHandler implements Listener<Identifiable> {
 
     private static final Logger log = Logger.getLogger(SystemMessagesHandler.class.getName());
     private final ClientManager clientManager;

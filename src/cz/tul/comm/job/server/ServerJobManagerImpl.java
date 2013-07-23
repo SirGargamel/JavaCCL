@@ -43,7 +43,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class ServerJobManagerImpl extends Thread implements IService, Listener, ServerJobManager, JobCancelManager {
+public class ServerJobManagerImpl extends Thread implements IService, Listener<Identifiable>, ServerJobManager, JobCancelManager {
 
     private static final Logger log = Logger.getLogger(ServerJobManagerImpl.class.getName());
     private static final int WAIT_TIME = 1_000;

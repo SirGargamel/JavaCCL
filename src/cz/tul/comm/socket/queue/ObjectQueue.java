@@ -42,7 +42,7 @@ public class ObjectQueue<O extends Identifiable> {
      * arrival
      * @return data queue, which will be used for storing data with given ID
      */
-    public Queue<O> setListener(final Object id, final Listener owner) {
+    public Queue<O> setListener(final Object id, final Listener<O> owner) {
         final Queue<O> result = new ConcurrentLinkedQueue<>();
 
         if (id != null) {
