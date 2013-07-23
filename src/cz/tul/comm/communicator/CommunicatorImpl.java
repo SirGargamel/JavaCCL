@@ -120,11 +120,11 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         if (stat.equals(Status.ONLINE)) {
             response = pushDataToOnlineClient(dp, timeout);
             if (response == GenericResponses.ILLEGAL_TARGET_ID) {
-                throw new ConnectionException("Data sent to illegal target, check Communicator config.", ConnectionExceptionCause.WRONG_TARGET);
+                throw new ConnectionException(ConnectionExceptionCause.WRONG_TARGET);
             } else if (response == GenericResponses.UUID_NOT_ALLOWED) {
-                throw new ConnectionException("Target is not accepting data from this Communicator.", ConnectionExceptionCause.UUID_NOT_ALLOWED);
+                throw new ConnectionException(ConnectionExceptionCause.UUID_NOT_ALLOWED);
             } else if (response == GenericResponses.CONNECTION_ERROR) {
-                throw new ConnectionException("Connection to client failed.", ConnectionExceptionCause.CONNECTION_ERROR);
+                throw new ConnectionException(ConnectionExceptionCause.CONNECTION_ERROR);
             } else {
                 readAndReply = true;
             }
@@ -168,7 +168,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                 response = GenericResponses.ILLEGAL_DATA;
             }
         } catch (SocketTimeoutException ex) {
-            throw new ConnectionException("Online clienet did not respond in time", ConnectionExceptionCause.TIMEOUT);
+            throw new ConnectionException(ConnectionExceptionCause.TIMEOUT);
         } catch (IOException ex) {
             log.log(Level.WARNING, "Cannot write to output socket.", ex);
         }
@@ -213,7 +213,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         if (responses.containsKey(question)) {
             return responses.get(question);
         } else {
-            throw new ConnectionException("Client is not reachable.", ConnectionExceptionCause.TIMEOUT);
+            throw new ConnectionException(ConnectionExceptionCause.TIMEOUT);
         }
     }
 
