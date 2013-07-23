@@ -79,6 +79,10 @@ public class MessagePullDaemon extends Thread implements IService {
 
             comms = clientLister.getClients();
             for (Communicator comm : comms) {
+                if (!run) {
+                    break;
+                }
+                
                 if (comm instanceof CommunicatorInner) {
                     commI = (CommunicatorInner) comm;
                     final UUID id = commI.getSourceId();
