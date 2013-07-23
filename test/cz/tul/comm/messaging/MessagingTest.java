@@ -3,6 +3,7 @@ package cz.tul.comm.messaging;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.client.Client;
 import cz.tul.comm.client.ClientImpl;
+import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.server.Server;
 import cz.tul.comm.server.ServerImpl;
@@ -105,7 +106,7 @@ public class MessagingTest {
                 return result;
             }
         }, true);
-        
+
         try {
             assertNotNull(s.getClient(c.getLocalID()).sendData(new Message(id, msgHeader, msgToClient)));
             assertNotNull(c.getServerComm().sendData(new Message(id, msgHeader, msgToServer)));
@@ -113,12 +114,54 @@ public class MessagingTest {
         } catch (ConnectionException ex) {
             Logger.getLogger(MessagingTest.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         c.getListenerRegistrator().removeIdListener(id);
         try {
-            assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, s.getClient(c.getLocalID()).sendData(new Message(id, msgHeader, msgToClient)));        
+            assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, s.getClient(c.getLocalID()).sendData(new Message(id, msgHeader, msgToClient)));
         } catch (ConnectionException ex) {
             Logger.getLogger(MessagingTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Test
+    public void testClientMessaging() {
+        try {
+            assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
+        } catch (ConnectionException ex) {
+            fail("Registration from client to server failed - " + ex);
+        }
+
+        s.getListenerRegistrator().setClientListener(c.getLocalID(), new Listener() {
+            @Override
+            public Object receiveData(Identifiable data) {
+                if (data instanceof DataPacket) {
+                    DataPacket dp = (DataPacket) data;
+
+                    if (dp.getData() instanceof Message) {
+                        final Message m = (Message) dp.getData();
+                        StringBuilder sb = new StringBuilder(m.getHeader());
+                        return sb.reverse().toString();
+                    } else {
+                        return GenericResponses.OK;
+                    }
+                } else {
+                    return GenericResponses.ILLEGAL_DATA;
+                }
+
+            }
+        }, true);
+
+        final String header = "abcdefg";
+        final Message m = new Message(header, "data");
+
+        final StringBuilder sb = new StringBuilder(header);
+        final String reverseHeader = sb.reverse().toString();
+
+        try {
+            assertEquals(reverseHeader, c.sendDataToServer(m));
+            assertEquals(GenericResponses.OK, c.sendDataToServer(header));
+        } catch (ConnectionException ex) {
+            fail("Communication failed - " + ex);
         }
     }
 }
