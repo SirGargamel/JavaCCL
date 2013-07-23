@@ -1,5 +1,6 @@
 package cz.tul.comm.messaging;
 
+import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.client.Client;
 import cz.tul.comm.client.ClientImpl;
@@ -145,6 +146,18 @@ public class MessagingTest {
                 }
             }
         }, true);
+        c.getListenerRegistrator().setClientListener(Constants.ID_SERVER, new Listener<DataPacket>() {
+            @Override
+            public Object receiveData(DataPacket data) {
+                if (data.getData() instanceof Message) {
+                    final Message m = (Message) data.getData();
+                    StringBuilder sb = new StringBuilder(m.getHeader());
+                    return sb.reverse().toString();
+                } else {
+                    return GenericResponses.OK;
+                }
+            }
+        }, true);
 
         final String header = "abcdefg";
         final Message m = new Message(header, "data");
@@ -155,6 +168,9 @@ public class MessagingTest {
         try {
             assertEquals(reverseHeader, c.sendDataToServer(m));
             assertEquals(GenericResponses.OK, c.sendDataToServer(header));
+            
+            assertEquals(reverseHeader, s.getClient(c.getLocalID()).sendData(m));
+            assertEquals(GenericResponses.OK, s.getClient(c.getLocalID()).sendData(header));
         } catch (ConnectionException ex) {
             fail("Communication failed - " + ex);
         }
