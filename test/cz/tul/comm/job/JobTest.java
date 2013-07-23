@@ -14,7 +14,9 @@ import cz.tul.comm.server.Server;
 import cz.tul.comm.server.ServerImpl;
 import cz.tul.comm.socket.ServerSocket;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
@@ -55,15 +57,19 @@ public class JobTest {
             s = ServerImpl.initNewServer();
             c = ClientImpl.initNewClient(5253);
             c.registerToServer(InetAddress.getLoopbackAddress());
-        } catch (ConnectionException ex) {
+        } catch (ConnectionException | NullPointerException ex) {
             fail("Initialization failed - " + ex);
         }
     }
 
     @After
     public void tearDown() {
-        c.stopService();
-        s.stopService();
+        if (c != null) {
+            c.stopService();
+        }
+        if (s != null) {
+            s.stopService();
+        }
     }
 
     @Test
@@ -322,6 +328,7 @@ public class JobTest {
 
         final int clientCount = rnd.nextInt(5) + 2;
         Client cl;
+        List<Client> clients = new ArrayList<>(clientCount);
         for (int i = 0; i < clientCount; i++) {
             try {
                 cl = ClientImpl.initNewClient();
@@ -359,6 +366,7 @@ public class JobTest {
                         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                     }
                 });
+                clients.add(cl);
             } catch (ConnectionException ex) {
                 fail("Initialization of one of the clients failed - " + ex);
             }
@@ -381,6 +389,10 @@ public class JobTest {
 
         assertEquals(cnt, counter.getCount());
         assertEquals(clientCount, computingClients.size());
+        
+        for (Client client : clients) {
+            client.stopService();
+        }
     }
 
     @Test
@@ -410,6 +422,7 @@ public class JobTest {
 
         final int clientCount = rnd.nextInt(5) + 2;
         Client cl;
+        List<Client> clients = new ArrayList<>(clientCount);
         for (int i = 0; i < clientCount; i++) {
             try {
                 cl = ClientImpl.initNewClient();
@@ -454,6 +467,7 @@ public class JobTest {
                         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                     }
                 });
+                clients.add(cl);
             } catch (ConnectionException ex) {
                 fail("Initialization of one of the clients failed - " + ex);
             }
@@ -479,6 +493,10 @@ public class JobTest {
         assertEquals(clientCount, computingClients.size());
 
         assertEquals(jobCount, requestCounter.getCount());
+        
+        for (Client client : clients) {
+            client.stopService();
+        }
     }
 
     @Test
@@ -528,6 +546,7 @@ public class JobTest {
 
         final int clientCount = rnd.nextInt(2) + 1;
         Client cl;
+        List<Client> clients = new ArrayList<>(clientCount);
         for (int i = 0; i < clientCount; i++) {
             try {
                 cl = ClientImpl.initNewClient();
@@ -565,6 +584,7 @@ public class JobTest {
                         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                     }
                 });
+                clients.add(cl);
             } catch (ConnectionException ex) {
                 fail("Initialization of one of the clients failed - " + ex);
             }
@@ -588,6 +608,10 @@ public class JobTest {
         assertEquals(cnt, counter.getCount());
         assertEquals(clientCount + 1, computingClients.size());
         assertEquals(concurrentCount, concurrentCounter.getMax());
+        
+        for (Client client : clients) {
+            client.stopService();
+        }
     }
 
     @Test
@@ -732,6 +756,8 @@ public class JobTest {
         }
 
         assertEquals(cnt, counter.getCount());
+        
+        failingClient.stopService();
     }
 
     @Test
