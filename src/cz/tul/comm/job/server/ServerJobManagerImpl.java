@@ -122,12 +122,9 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
 
     private boolean allJobsDone() {
         boolean result = true;
-
-        JobStatus js;
-        for (Job j : allJobs) {
-            js = j.getStatus();
-            if (!(JobStatus.FINISHED.equals(js)
-                    || JobStatus.CANCELED.equals(js))) {
+        
+        for (Job j : allJobs) {            
+            if (!j.isDone()) {
                 result = false;
                 break;
             }
