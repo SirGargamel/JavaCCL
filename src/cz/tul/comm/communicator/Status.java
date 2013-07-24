@@ -15,9 +15,4 @@ public enum Status {
      * Client is aviable.
      */
     ONLINE,
-    /**
-     * Client is not directly reachable, but is able to create connection to
-     * this client and retrieve undelivered messages (only those that havent timedout).
-     */
-    PASSIVE,
 }
