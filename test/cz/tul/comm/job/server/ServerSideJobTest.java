@@ -1,6 +1,7 @@
 package cz.tul.comm.job.server;
 
 import cz.tul.comm.job.JobStatus;
+import java.awt.image.BufferedImage;
 import java.util.Timer;
 import java.util.TimerTask;
 import org.junit.Test;
@@ -16,6 +17,13 @@ public class ServerSideJobTest {
     public void testGetTask() {
         System.out.println("getTask");
 
+        try {
+            ServerSideJob job = new ServerSideJob(new BufferedImage(1, 1, 1), null);
+            fail("Should have failed because of unserializeable task.");
+        } catch (IllegalArgumentException ex) {
+            // expected
+        }
+        
         String task = "task";
         ServerSideJob job = new ServerSideJob(task, null);
         assertEquals(task, job.getTask());
