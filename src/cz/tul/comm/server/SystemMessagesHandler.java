@@ -72,11 +72,19 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                         return GenericResponses.ILLEGAL_HEADER;
                 }
             } else {
-                log.log(Level.WARNING, "Invalid data received - {0}", innerData.toString());
+                if (innerData != null) {
+                    log.log(Level.WARNING, "Invalid data received - {0}", innerData.toString());
+                } else {
+                    log.log(Level.WARNING, "Received NULL inner data.");
+                }
                 return GenericResponses.ILLEGAL_DATA;
             }
         } else {
-            log.log(Level.WARNING, "Invalid data received - {0}", data.toString());
+            if (data != null) {
+                log.log(Level.WARNING, "Invalid data received - {0}", data.toString());
+            } else {
+                log.log(Level.WARNING, "Received NULL data.");
+            }
             return GenericResponses.ILLEGAL_DATA;
         }
     }
