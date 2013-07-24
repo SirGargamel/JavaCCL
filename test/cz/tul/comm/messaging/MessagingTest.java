@@ -48,6 +48,8 @@ public class MessagingTest {
 
     @Test
     public void testRegistration() {
+        System.out.println("testRegistration");
+        
         try {
             assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
         } catch (ConnectionException ex) {
@@ -78,6 +80,8 @@ public class MessagingTest {
 
     @Test
     public void testIdMessaging() {
+        System.out.println("testIdMessaging");
+        
         try {
             assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
         } catch (ConnectionException ex) {
@@ -140,6 +144,8 @@ public class MessagingTest {
 
     @Test
     public void testClientMessaging() {
+        System.out.println("testClientMessaging");
+        
         try {
             assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
         } catch (ConnectionException ex) {
@@ -190,6 +196,8 @@ public class MessagingTest {
 
     @Test
     public void testMessageObserver() {
+        System.out.println("testMessageObserver");
+        
         try {
             assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
         } catch (ConnectionException ex) {
@@ -251,6 +259,26 @@ public class MessagingTest {
             assertEquals(expected.toString(), sbClient.toString());
         } catch (ConnectionException ex) {
             fail("Communication failed - " + ex);
+        }
+    }
+    
+    @Test
+    public void testMessageInvalidTarget() {
+        System.out.println("testMessageInvalidTarget");
+        
+        try {
+            assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
+        } catch (ConnectionException ex) {
+            fail("Registration from client to server failed - " + ex);
+        }
+        
+        try {
+            CommunicatorInner comm = (CommunicatorInner) c.getServerComm();
+            comm.setTargetId(UUID.randomUUID());
+            comm.sendData("data");
+            fail("Should have failed, because this communicator has illegal target ID.");
+        } catch (ConnectionException ex) {
+            assertEquals(ConnectionExceptionCause.WRONG_TARGET, ex.getExceptionCause());
         }
     }
 }
