@@ -596,8 +596,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                     if (list.isEmpty()) {
                         itEntry.remove();
                     }
-                    ssj.setResult(jt.getTask());
-                    ssj.setStatus(JobStatus.FINISHED);
+                    ssj.setResult(jt.getTask());                    
                     log.log(Level.CONFIG, "Job with ID {0} has been computed succefully.", id);
                     storeJobAction(ssj.getId(), e.getKey().getTargetId(), JobMessageHeaders.JOB_RESULT);
                     wakeUp();

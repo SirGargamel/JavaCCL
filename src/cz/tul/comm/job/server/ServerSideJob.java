@@ -56,6 +56,7 @@ public class ServerSideJob implements Job {
 
     public void setResult(Object result) {
         this.result = result;
+        setStatus(JobStatus.FINISHED);
         synchronized (this) {
             this.notify();
         }
