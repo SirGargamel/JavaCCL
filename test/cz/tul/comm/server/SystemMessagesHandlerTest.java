@@ -23,6 +23,12 @@ public class SystemMessagesHandlerTest {
     public void testReceiveData() {
         System.out.println("receiveData");
 
+        try {
+            final SystemMessagesHandler instance = new SystemMessagesHandler(null);
+            fail("Should have failed because of NULL client manager.");
+        } catch (NullPointerException ex) {
+        }
+
         ClientMan cm = new ClientMan();
         SystemMessagesHandler instance = new SystemMessagesHandler(cm);
 
@@ -64,12 +70,11 @@ public class SystemMessagesHandlerTest {
         dp = new DataPacketImpl(null, null, new Object());
         result = instance.receiveData(dp);
         assertEquals(GenericResponses.ILLEGAL_DATA, result);
-        
+
         result = instance.receiveData(null);
         assertEquals(GenericResponses.ILLEGAL_DATA, result);
-        
-        result = instance.receiveData(new Identifiable() {
 
+        result = instance.receiveData(new Identifiable() {
             @Override
             public Object getId() {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
