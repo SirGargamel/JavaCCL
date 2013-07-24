@@ -49,7 +49,7 @@ public class MessagingTest {
     @Test
     public void testRegistration() {
         System.out.println("testRegistration");
-        
+
         try {
             assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
         } catch (ConnectionException ex) {
@@ -57,7 +57,7 @@ public class MessagingTest {
         }
 
         try {
-            c.deregisterFromServer();            
+            c.deregisterFromServer();
         } catch (ConnectionException ex) {
             fail("Client deregistration failed.");
         }
@@ -67,7 +67,7 @@ public class MessagingTest {
         } catch (ConnectionException ex) {
             fail("Registration from server to client failed - " + ex);
         }
-        
+
         try {
             CommunicatorInner comm = (CommunicatorInner) CommunicatorImpl.initNewCommunicator(InetAddress.getLoopbackAddress(), 5252);
             comm.setTargetId(Constants.ID_SERVER);
@@ -81,7 +81,7 @@ public class MessagingTest {
     @Test
     public void testIdMessaging() {
         System.out.println("testIdMessaging");
-        
+
         try {
             assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
         } catch (ConnectionException ex) {
@@ -145,7 +145,7 @@ public class MessagingTest {
     @Test
     public void testClientMessaging() {
         System.out.println("testClientMessaging");
-        
+
         try {
             assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
         } catch (ConnectionException ex) {
@@ -186,18 +186,25 @@ public class MessagingTest {
         try {
             assertEquals(reverseHeader, c.sendDataToServer(m));
             assertEquals(GenericResponses.OK, c.sendDataToServer(header));
-            
+
             assertEquals(reverseHeader, s.getClient(c.getLocalID()).sendData(m));
             assertEquals(GenericResponses.OK, s.getClient(c.getLocalID()).sendData(header));
         } catch (ConnectionException ex) {
             fail("Communication failed - " + ex);
+        }
+
+        c.getListenerRegistrator().removeClientListener(Constants.ID_SERVER);
+        try {
+            assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, s.getClient(c.getLocalID()).sendData(m));
+        } catch (ConnectionException ex) {
+            Logger.getLogger(MessagingTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     @Test
     public void testMessageObserver() {
         System.out.println("testMessageObserver");
-        
+
         try {
             assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
         } catch (ConnectionException ex) {
@@ -223,7 +230,7 @@ public class MessagingTest {
                 }
             }
         });
-        c.getListenerRegistrator().addMessageObserver(new Observer() {
+        final Observer o = new Observer() {
             @Override
             public void update(Observable o, Object arg) {
                 if (arg instanceof DataPacket) {
@@ -238,40 +245,57 @@ public class MessagingTest {
                     }
                 }
             }
-        });
+        };
+        c.getListenerRegistrator().addMessageObserver(o);
 
         try {
             final String header = "abcdefg";
             final Message m = new Message(header, "data");
             final StringBuilder expected = new StringBuilder();
 
-            c.sendDataToServer(m);
-            s.getClient(c.getLocalID()).sendData(m);
+            assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, c.sendDataToServer(m));
+            assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, s.getClient(c.getLocalID()).sendData(m));
             expected.append(header);
             expected.reverse();
+
+            synchronized (this) {
+                this.wait(10);
+            }
+
             assertEquals(expected.toString(), sbServer.toString());
             assertEquals(expected.toString(), sbClient.toString());
 
-            c.sendDataToServer(header);
-            s.getClient(c.getLocalID()).sendData(header);
+            assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, c.sendDataToServer(header));
+            assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, s.getClient(c.getLocalID()).sendData(header));
             expected.append(GenericResponses.OK);
+            
+            synchronized (this) {
+                this.wait(10);
+            }
+            
             assertEquals(expected.toString(), sbServer.toString());
+            assertEquals(expected.toString(), sbClient.toString());
+
+            c.getListenerRegistrator().removeMessageObserver(o);
+            s.getClient(c.getLocalID()).sendData(m);
             assertEquals(expected.toString(), sbClient.toString());
         } catch (ConnectionException ex) {
             fail("Communication failed - " + ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MessagingTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     @Test
     public void testMessageInvalidTarget() {
         System.out.println("testMessageInvalidTarget");
-        
+
         try {
             assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
         } catch (ConnectionException ex) {
             fail("Registration from client to server failed - " + ex);
         }
-        
+
         try {
             CommunicatorInner comm = (CommunicatorInner) c.getServerComm();
             comm.setTargetId(UUID.randomUUID());
