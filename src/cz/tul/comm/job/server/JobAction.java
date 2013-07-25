@@ -11,7 +11,7 @@ import java.util.UUID;
  */
 public class JobAction {
 
-    private final UUID jobId;
+    private final Job job;
     private final Calendar actionTime;
     private final UUID ownerId;
     private final String actionDescription;
@@ -21,8 +21,8 @@ public class JobAction {
      * @param owner job owner
      * @param msgHeader action description
      */
-    public JobAction(final UUID jobId, final UUID ownerId, final String msgHeader) {
-        this.jobId = jobId;
+    public JobAction(final Job job, final UUID ownerId, final String msgHeader) {
+        this.job = job;
         this.ownerId = ownerId;
         this.actionDescription = msgHeader;
         this.actionTime = Calendar.getInstance(Locale.getDefault());
@@ -32,7 +32,7 @@ public class JobAction {
      * @return jobs ID
      */
     public UUID getJobId() {
-        return jobId;
+        return job.getId();
     }
 
     /**
