@@ -8,6 +8,6 @@ import cz.tul.comm.exceptions.ConnectionException;
  */
 public interface JobCancelManager {
 
-    void cancelJob(final ServerSideJob job) throws ConnectionException;
+    void cancelJobByServer(final ServerSideJob job) throws ConnectionException;
     
 }
