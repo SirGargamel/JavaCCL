@@ -16,6 +16,7 @@ import cz.tul.comm.socket.queue.Listener;
 import java.net.InetAddress;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Queue;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -136,7 +137,69 @@ public class MessagingTest {
 
         c.getListenerRegistrator().removeIdListener(id);
         try {
-            assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, s.getClient(c.getLocalID()).sendData(new Message(id, msgHeader, msgToClient)));
+            assertEquals(GenericResponses.NOT_HANDLED, s.getClient(c.getLocalID()).sendData(new Message(id, msgHeader, msgToClient)));
+        } catch (ConnectionException ex) {
+            Logger.getLogger(MessagingTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Test
+    public void testIdMessagingNoPush() {
+        System.out.println("testIdMessagingNoPush");
+
+        try {
+            assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
+        } catch (ConnectionException ex) {
+            fail("Registration from client to server failed - " + ex);
+        }
+
+        final UUID id = UUID.randomUUID();
+        final String msgToClient = "testDataToClient";
+        final String msgToServer = "testDataToServer";
+        final String msgHeader = "header";        
+
+        Queue<Identifiable> clientQueue = c.getListenerRegistrator().setIdListener(id, new Listener<Identifiable>() {
+            @Override
+            public Object receiveData(Identifiable data) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        }, false);
+        Queue<Identifiable> serverQueue = s.getListenerRegistrator().setIdListener(id, new Listener<Identifiable>() {
+            @Override
+            public Object receiveData(Identifiable data) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        }, false);
+
+        try {
+            Message m = new Message(id, msgHeader, msgToClient);
+            assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, s.getClient(c.getLocalID()).sendData(m));
+            assertEquals(1, clientQueue.size());
+            Identifiable data = clientQueue.poll();
+            if (data instanceof DataPacket) {
+                DataPacket dp = (DataPacket) data;                
+                assertEquals(m, dp.getData());
+            } else {
+                fail("Illegal data inside data packet.");
+            }
+
+            m = new Message(id, msgHeader, msgToServer);
+            assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, c.getServerComm().sendData(m));
+            assertEquals(1, serverQueue.size());
+            data = serverQueue.poll();
+            if (data instanceof DataPacket) {
+                DataPacket dp = (DataPacket) data;
+                assertEquals(m, dp.getData());
+            } else {
+                fail("Illegal data inside data packet.");
+            }
+        } catch (ConnectionException ex) {
+            fail("Communication failed.");
+        }
+
+        c.getListenerRegistrator().removeIdListener(id);
+        try {
+            assertEquals(GenericResponses.NOT_HANDLED, s.getClient(c.getLocalID()).sendData(new Message(id, msgHeader, msgToClient)));
         } catch (ConnectionException ex) {
             Logger.getLogger(MessagingTest.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -195,7 +258,69 @@ public class MessagingTest {
 
         c.getListenerRegistrator().removeClientListener(Constants.ID_SERVER);
         try {
+            assertEquals(GenericResponses.NOT_HANDLED, s.getClient(c.getLocalID()).sendData(m));
+        } catch (ConnectionException ex) {
+            Logger.getLogger(MessagingTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Test
+    public void testClientMessagingNoPush() {
+        System.out.println("testClientMessagingNoPush");
+
+        try {
+            assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
+        } catch (ConnectionException ex) {
+            fail("Registration from client to server failed - " + ex);
+        }
+
+        Queue<DataPacket> serverQueue = s.getListenerRegistrator().setClientListener(c.getLocalID(), new Listener<DataPacket>() {
+            @Override
+            public Object receiveData(DataPacket data) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        }, false);
+        Queue<DataPacket> clientQueue = c.getListenerRegistrator().setClientListener(Constants.ID_SERVER, new Listener<DataPacket>() {
+            @Override
+            public Object receiveData(DataPacket data) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        }, false);
+
+        final String header = "abcdefg";
+        final Message m = new Message(header, "data");
+
+        try {
+            assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, c.sendDataToServer(m));
+            assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, c.sendDataToServer(header));
+            assertEquals(2, serverQueue.size());
+            DataPacket dp = serverQueue.poll();
+            if (dp.getData() instanceof Message) {
+                assertEquals(m, dp.getData());
+            } else {
+                fail("Illegal data inside data packet.");
+            }
+            dp = serverQueue.poll();
+            assertEquals(header, dp.getData());
+
             assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, s.getClient(c.getLocalID()).sendData(m));
+            assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, s.getClient(c.getLocalID()).sendData(header));
+            assertEquals(2, clientQueue.size());
+            dp = clientQueue.poll();
+            if (dp.getData() instanceof Message) {
+                assertEquals(m, dp.getData());
+            } else {
+                fail("Illegal data inside data packet.");
+            }
+            dp = clientQueue.poll();
+            assertEquals(header, dp.getData());
+        } catch (ConnectionException ex) {
+            fail("Communication failed - " + ex);
+        }
+
+        c.getListenerRegistrator().removeClientListener(Constants.ID_SERVER);
+        try {
+            assertEquals(GenericResponses.NOT_HANDLED, s.getClient(c.getLocalID()).sendData(m));
         } catch (ConnectionException ex) {
             Logger.getLogger(MessagingTest.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -253,7 +378,7 @@ public class MessagingTest {
             final Message m = new Message(header, "data");
             final StringBuilder expected = new StringBuilder();
 
-            assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, c.sendDataToServer(m));
+            assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, c.sendDataToServer(m,100000));
             assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, s.getClient(c.getLocalID()).sendData(m));
             expected.append(header);
             expected.reverse();
@@ -268,11 +393,11 @@ public class MessagingTest {
             assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, c.sendDataToServer(header));
             assertEquals(GenericResponses.NOT_HANDLED_DIRECTLY, s.getClient(c.getLocalID()).sendData(header));
             expected.append(GenericResponses.OK);
-            
+
             synchronized (this) {
                 this.wait(10);
             }
-            
+
             assertEquals(expected.toString(), sbServer.toString());
             assertEquals(expected.toString(), sbClient.toString());
 

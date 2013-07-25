@@ -11,7 +11,7 @@
         <Header>Header</Header>
         <String>data1</String>
       </Message>
-      <GenericResponses>NOT_HANDLED_DIRECTLY</GenericResponses>
+      <GenericResponses>NOT_HANDLED</GenericResponses>
     </Record>
     <Record>
       <IPSource>127.0.0.1</IPSource>
@@ -23,7 +23,7 @@
         <Header>Header</Header>
         <String>dataBack</String>
       </Message>
-      <GenericResponses>NOT_HANDLED_DIRECTLY</GenericResponses>
+      <GenericResponses>NOT_HANDLED</GenericResponses>
     </Record>
   </Group>
   <Group UUID="550e8400-e29b-41d4-a716-446655440111">
@@ -37,7 +37,7 @@
         <Header>Header</Header>
         <String>data2</String>
       </Message>
-      <GenericResponses>NOT_HANDLED_DIRECTLY</GenericResponses>
+      <GenericResponses>NOT_HANDLED</GenericResponses>
     </Record>
   </Group>
 </History>

@@ -42,15 +42,19 @@ public class ObjectQueue<O extends Identifiable> {
      * arrival
      * @return data queue, which will be used for storing data with given ID
      */
-    public Queue<O> setListener(final Object id, final Listener<O> owner) {
+    public Queue<O> prepareQueue(final Object id) {
         final Queue<O> result = new ConcurrentLinkedQueue<>();
 
         if (id != null) {
-            data.put(owner, result);
-            log.log(Level.FINE, "New listener registered - own: {1}, id:{0}", new Object[]{id.toString(), owner.toString()});
+            data.put(id, result);
+            log.log(Level.FINE, "New queue prepared for id {0}", new Object[]{id.toString()});
         }
 
         return result;
+    }
+
+    public boolean isListenerRegistered(final Object id) {
+        return data.containsKey(id);
     }
 
     /**
@@ -64,18 +68,24 @@ public class ObjectQueue<O extends Identifiable> {
         log.log(Level.FINE, "Listener deregistered for id{0}", new Object[]{id.toString()});
     }
 
+    public void storeData(final Object id, final O data) {
+        if (data != null && data.getId() != null) {
+            final Queue<O> q = this.data.get(id);
+            if (q != null) {
+                q.add(data);
+                log.log(Level.FINE, "Data [{0}] stored.", data.toString());
+            }
+        }
+    }
+
     /**
      * Store received data and alert listeners.
      *
      * @param data received data.
      */
     public void storeData(final O data) {
-        if (data != null && data.getId() != null) {
-            final Queue<O> q = this.data.get(data.getId());
-            if (q != null) {
-                q.add(data);
-                log.log(Level.FINE, "Data [{0}] stored.", data.toString());
-            }
+        if (data != null) {
+            storeData(data.getId(), data);
         }
     }
 }

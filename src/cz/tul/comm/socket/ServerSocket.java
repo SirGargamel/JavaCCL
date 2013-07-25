@@ -82,7 +82,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
             listenersClient.put(clientId, dataListener);
             return null;
         } else {
-            return dataStorageClient.setListener(clientId, dataListener);
+            return dataStorageClient.prepareQueue(clientId);
         }
 
     }
@@ -105,7 +105,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
             listenersId.put(id, idListener);
             return null;
         } else {
-            return dataStorageId.setListener(id, idListener);
+            return dataStorageId.prepareQueue(id);
         }
     }
 
@@ -194,7 +194,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     public Object handleDataPacket(final DataPacket dp) {
         final UUID clientId = dp.getSourceID();
         final Object data = dp.getData();
-        Object result = GenericResponses.NOT_HANDLED_DIRECTLY;
+        Object result = GenericResponses.NOT_HANDLED;
 
         if (idFilter != null) {
             if (clientId == null) {
@@ -234,18 +234,24 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                 result = listenersId.get(id).receiveData(iData);
             } else if (listenersClient.containsKey(clientId)) {
                 result = listenersClient.get(clientId).receiveData(dp);
-            } else {
-                dataStorageId.storeData(dp);
-            }
-        } else {
-            if (listenersClient.containsKey(clientId)) {
-                result = listenersClient.get(clientId).receiveData(dp);
-            } else {
-                dataStorageClient.storeData(dp);
+            } else if (dataStorageId.isListenerRegistered(id)) {
+                dataStorageId.storeData(id, dp);
+                result = GenericResponses.NOT_HANDLED_DIRECTLY;
             }
         }
 
-        if (!sysMsg) {
+        if (!(data instanceof Identifiable)
+                || GenericResponses.NOT_HANDLED.equals(result)) {
+            if (listenersClient.containsKey(clientId)) {
+                result = listenersClient.get(clientId).receiveData(dp);
+            } else if (dataStorageClient.isListenerRegistered(clientId)) {
+                dataStorageClient.storeData(clientId, dp);
+                result = GenericResponses.NOT_HANDLED_DIRECTLY;
+            }
+        }
+
+        if (!sysMsg && !dataListeners.isEmpty()) {
+            result = GenericResponses.NOT_HANDLED_DIRECTLY;
             exec.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -253,7 +259,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                         o.update(null, dp);
                     }
                 }
-            });
+            });            
         }
 
         return result;
