@@ -564,7 +564,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                         itEntry.remove();
                     }
                     jobQueue.addFirst(ssj);
-                    ssj.setStatus(JobStatus.CANCELED);
+                    ssj.setStatus(JobStatus.SUBMITTED);
                     log.log(Level.CONFIG, "Job with ID {0} has been cancelled.", id);
                     storeJobAction(ssj.getId(), e.getKey().getTargetId(), JobMessageHeaders.JOB_CANCEL);
                     wakeUp();
@@ -627,12 +627,13 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
     public void cancelJob(ServerSideJob job) throws ConnectionException {
         JobStatus s = job.getStatus();
         if (s == JobStatus.SENT || s == JobStatus.ACCEPTED) {
+            job.setStatus(JobStatus.CANCELED);
             Communicator comm = owners.get(job);
             JobTask jt = new JobTask(job.getId(), JobMessageHeaders.JOB_CANCEL, null);
-            comm.sendData(jt);
-            jobQueue.addFirst(job);
-
-            switch (job.getStatus()) {
+            comm.sendData(jt);            
+            storeJobAction(job.getId(), comm.getTargetId(), JobMessageHeaders.JOB_CANCEL);
+            
+            switch (s) {
                 case SENT:
                     final Iterator<AssignmentRecord> it = jobsWaitingAssignment.get(comm).iterator();
                     AssignmentRecord ar;
@@ -647,7 +648,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                     jobComputing.get(comm).remove(job);
                     break;
             }
-            storeJobAction(job.getId(), comm.getTargetId(), JobMessageHeaders.JOB_CANCEL);
+            
         }
     }
 
