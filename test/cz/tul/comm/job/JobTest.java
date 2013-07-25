@@ -785,6 +785,110 @@ public class JobTest {
     }
 
     @Test
+    public void testCancelingClients() {
+        final Counter counter = new Counter();
+        
+        c.setAssignmentListener(new AssignmentListener() {            
+            @Override
+            public void receiveTask(Assignment task) {
+                try {
+                    Object tsk = task.getTask();
+                    if (!(tsk instanceof Integer)) {
+                        fail("Illegal task received");
+                    }
+
+                    if (Math.random() < 0.25) {
+                        synchronized (JobTest.this) {
+                            JobTest.this.wait(((int) tsk) / 4);
+                        }                        
+                        task.cancel("Client cancel.");
+                    } else {
+                        Integer count = (Integer) tsk;
+                        synchronized (JobTest.this) {
+                            JobTest.this.wait(count);
+                        }
+                        counter.add(count);
+                        task.submitResult(GenericResponses.OK);
+                    }
+
+                } catch (ConnectionException ex) {
+                    fail("Connection to server failed - " + ex);
+                } catch (InterruptedException ex) {
+                    fail("Waiting has been interrupted - " + ex);
+                }
+            }
+
+            @Override
+            public void cancelTask(Assignment task) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        });
+
+        final Client failingClient = ClientImpl.initNewClient(5254);
+        try {
+            failingClient.registerToServer(InetAddress.getLoopbackAddress());
+        } catch (ConnectionException ex) {
+            fail("Failed to connect client to server - " + ex);
+        }
+        //canceling client
+        failingClient.setAssignmentListener(new AssignmentListener() {            
+            @Override
+            public void receiveTask(Assignment task) {
+                try {
+                    Object tsk = task.getTask();
+                    if (!(tsk instanceof Integer)) {
+                        fail("Illegal task received");
+                    }
+
+                    if (Math.random() < 0.25) {
+                        synchronized (JobTest.this) {
+                            JobTest.this.wait(((int) tsk) / 4);
+                        }                        
+                        task.cancel("Client cancel.");
+                    } else {
+                        Integer count = (Integer) tsk;
+                        synchronized (JobTest.this) {
+                            JobTest.this.wait(count);
+                        }
+                        counter.add(count);
+                        task.submitResult(GenericResponses.OK);
+                    }
+
+                } catch (ConnectionException ex) {
+                    fail("Connection to server failed - " + ex);
+                } catch (InterruptedException ex) {
+                    fail("Waiting has been interrupted - " + ex);
+                }
+            }
+
+            @Override
+            public void cancelTask(Assignment task) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        });
+
+        int cnt = 0, val;
+        Random rnd = new Random();
+        final int jobCount = rnd.nextInt(5) + 5;
+        Set<Job> jobs = new HashSet<>(jobCount);
+        for (int i = 0; i < jobCount; i++) {
+            val = (rnd.nextInt(4) + 1) * 10;
+            cnt += val;
+            jobs.add(s.submitJob(val));
+        }
+
+        s.getJobManager().waitForAllJobs();
+
+        for (Job j : jobs) {
+            assertEquals(GenericResponses.OK, j.getResult(true));
+        }
+
+        assertEquals(cnt, counter.getCount());
+
+        failingClient.stopService();
+    }
+
+    @Test
     public void testOfflineClient() {
         final Counter counter = new Counter();
 
