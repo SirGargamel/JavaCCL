@@ -76,15 +76,18 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     }
 
     @Override
-    public Queue<DataPacket> setClientListener(final UUID clientId, final Listener<DataPacket> dataListener, final boolean wantsPushNotifications) {
-        log.log(Level.FINE, "Added new listener {0} for ID {1}", new Object[]{dataListener.toString(), clientId});
-        if (wantsPushNotifications) {
-            listenersClient.put(clientId, dataListener);
-            return null;
+    public void setClientListener(final UUID clientId, final Listener<DataPacket> dataListener) {
+        log.log(Level.FINE, "Added new listener {0} for client with ID {1}", new Object[]{dataListener.toString(), clientId.toString()});
+        listenersClient.put(clientId, dataListener);
+    }
+
+    @Override
+    public Queue<DataPacket> getClientMessageQueue(final UUID clientId) {
+        if (dataStorageClient.isListenerRegistered(clientId)) {
+            return dataStorageClient.getDataQueue(clientId);
         } else {
             return dataStorageClient.prepareQueue(clientId);
         }
-
     }
 
     @Override
@@ -99,11 +102,15 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     }
 
     @Override
-    public Queue<Identifiable> setIdListener(final Object id, final Listener<Identifiable> idListener, final boolean wantsPushNotifications) {
+    public void setIdListener(final Object id, final Listener<Identifiable> idListener) {
         log.log(Level.FINE, "Added new listener {0} for ID {1}", new Object[]{idListener.toString(), id.toString()});
-        if (wantsPushNotifications) {
-            listenersId.put(id, idListener);
-            return null;
+        listenersId.put(id, idListener);
+    }
+
+    @Override
+    public Queue<Identifiable> getIdMessageQueue(final Object id) {
+        if (dataStorageId.isListenerRegistered(id)) {
+            return dataStorageId.getDataQueue(id);
         } else {
             return dataStorageId.prepareQueue(id);
         }
@@ -259,7 +266,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                         o.update(null, dp);
                     }
                 }
-            });            
+            });
         }
 
         return result;

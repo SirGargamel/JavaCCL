@@ -110,7 +110,7 @@ public class MessagingTest {
                 }
                 return result;
             }
-        }, true);
+        });
         s.getListenerRegistrator().setIdListener(id, new Listener<Identifiable>() {
             @Override
             public Object receiveData(Identifiable data) {
@@ -125,7 +125,7 @@ public class MessagingTest {
                 }
                 return result;
             }
-        }, true);
+        });
 
         try {
             assertNotNull(s.getClient(c.getLocalID()).sendData(new Message(id, msgHeader, msgToClient)));
@@ -158,18 +158,8 @@ public class MessagingTest {
         final String msgToServer = "testDataToServer";
         final String msgHeader = "header";        
 
-        Queue<Identifiable> clientQueue = c.getListenerRegistrator().setIdListener(id, new Listener<Identifiable>() {
-            @Override
-            public Object receiveData(Identifiable data) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-        }, false);
-        Queue<Identifiable> serverQueue = s.getListenerRegistrator().setIdListener(id, new Listener<Identifiable>() {
-            @Override
-            public Object receiveData(Identifiable data) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-        }, false);
+        final Queue<Identifiable> clientQueue = c.getListenerRegistrator().getIdMessageQueue(id);
+        final Queue<Identifiable> serverQueue = s.getListenerRegistrator().getIdMessageQueue(id);
 
         try {
             Message m = new Message(id, msgHeader, msgToClient);
@@ -226,7 +216,7 @@ public class MessagingTest {
                     return GenericResponses.OK;
                 }
             }
-        }, true);
+        });
         c.getListenerRegistrator().setClientListener(Constants.ID_SERVER, new Listener<DataPacket>() {
             @Override
             public Object receiveData(DataPacket data) {
@@ -238,7 +228,7 @@ public class MessagingTest {
                     return GenericResponses.OK;
                 }
             }
-        }, true);
+        });
 
         final String header = "abcdefg";
         final Message m = new Message(header, "data");
@@ -274,18 +264,8 @@ public class MessagingTest {
             fail("Registration from client to server failed - " + ex);
         }
 
-        Queue<DataPacket> serverQueue = s.getListenerRegistrator().setClientListener(c.getLocalID(), new Listener<DataPacket>() {
-            @Override
-            public Object receiveData(DataPacket data) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-        }, false);
-        Queue<DataPacket> clientQueue = c.getListenerRegistrator().setClientListener(Constants.ID_SERVER, new Listener<DataPacket>() {
-            @Override
-            public Object receiveData(DataPacket data) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-        }, false);
+        final Queue<DataPacket> serverQueue = s.getListenerRegistrator().getClientMessageQueue(c.getLocalID());
+        final Queue<DataPacket> clientQueue = c.getListenerRegistrator().getClientMessageQueue(Constants.ID_SERVER);
 
         final String header = "abcdefg";
         final Message m = new Message(header, "data");

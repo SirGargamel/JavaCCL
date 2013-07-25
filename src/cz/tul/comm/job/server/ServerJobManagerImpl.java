@@ -417,7 +417,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
     private boolean assignJob(final ServerSideJob job, final Communicator comm) {
         boolean result;
         try {
-            listenerRegistrator.setIdListener(job.getId(), this, true);
+            listenerRegistrator.setIdListener(job.getId(), this);
             List<AssignmentRecord> l = jobsWaitingAssignment.get(comm);
             if (l == null) {
                 l = new ArrayList<>(1);

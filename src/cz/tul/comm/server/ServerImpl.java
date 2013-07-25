@@ -83,9 +83,9 @@ public final class ServerImpl implements IService, Server {
         serverSocket.registerHistory(history);
 
         jobManager = new ServerJobManagerImpl(clients, serverSocket);
-        getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jobManager, true);
+        getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jobManager);
 
-        getListenerRegistrator().setIdListener(Constants.ID_SYS_MSG, new SystemMessagesHandler(clients), true);
+        getListenerRegistrator().setIdListener(Constants.ID_SYS_MSG, new SystemMessagesHandler(clients));
 
         if (ComponentSwitches.useClientDiscovery) {
             try {

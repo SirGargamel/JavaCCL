@@ -220,10 +220,10 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         serverSocket.registerHistory(history);
 
         csm = new SystemMessageHandler(this, this);
-        getListenerRegistrator().setIdListener(Constants.ID_SYS_MSG, csm, true);
+        getListenerRegistrator().setIdListener(Constants.ID_SYS_MSG, csm);
 
         jm = new ClientJobManagerImpl(this);
-        getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jm, true);
+        getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jm);
 
         if (ComponentSwitches.useSettings) {
             if (!ClientSettings.deserialize(new File(SETTINGS_NAME), this)) {
