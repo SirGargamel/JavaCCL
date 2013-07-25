@@ -787,8 +787,8 @@ public class JobTest {
     @Test
     public void testCancelingClients() {
         final Counter counter = new Counter();
-        
-        c.setAssignmentListener(new AssignmentListener() {            
+
+        c.setAssignmentListener(new AssignmentListener() {
             @Override
             public void receiveTask(Assignment task) {
                 try {
@@ -800,7 +800,7 @@ public class JobTest {
                     if (Math.random() < 0.25) {
                         synchronized (JobTest.this) {
                             JobTest.this.wait(((int) tsk) / 4);
-                        }                        
+                        }
                         task.cancel("Client cancel.");
                     } else {
                         Integer count = (Integer) tsk;
@@ -831,7 +831,7 @@ public class JobTest {
             fail("Failed to connect client to server - " + ex);
         }
         //canceling client
-        failingClient.setAssignmentListener(new AssignmentListener() {            
+        failingClient.setAssignmentListener(new AssignmentListener() {
             @Override
             public void receiveTask(Assignment task) {
                 try {
@@ -843,7 +843,7 @@ public class JobTest {
                     if (Math.random() < 0.25) {
                         synchronized (JobTest.this) {
                             JobTest.this.wait(((int) tsk) / 4);
-                        }                        
+                        }
                         task.cancel("Client cancel.");
                     } else {
                         Integer count = (Integer) tsk;
@@ -988,7 +988,7 @@ public class JobTest {
         s.getJobManager().waitForAllJobs();
 
         for (Job j : jobs) {
-            assertEquals(GenericResponses.OK, j.getResult(true));
+            assertEquals(j.getStatus().toString(), GenericResponses.OK, j.getResult(true));
         }
 
         assertEquals(cnt, counter.getCount());
@@ -1072,6 +1072,77 @@ public class JobTest {
         }
 
         assertEquals(cnt, counter.getCount());
+    }
+
+    @Test
+    public void testCancelAllJobs() {
+        final Counter counter = new Counter();
+
+        c.setAssignmentListener(new AssignmentListener() {
+            boolean run = true;
+
+            @Override
+            public void receiveTask(Assignment task) {
+                try {
+                    Object tsk = task.getTask();
+
+                    if (!(tsk instanceof Integer)) {
+                        fail("Illegal task received");
+                    }
+
+                    Integer count = (Integer) tsk;
+
+                    if (!run) {
+                        return;
+                    }
+
+                    synchronized (JobTest.this) {
+                        JobTest.this.wait(count);
+                    }
+
+                    if (!run) {
+                        return;
+                    }
+
+                    counter.add(count);
+                    task.submitResult(GenericResponses.OK);
+                } catch (ConnectionException ex) {
+                    fail("Connection to server failed - " + ex);
+                } catch (InterruptedException ex) {
+                    fail("Waiting has been interrupted - " + ex);
+                }
+            }
+
+            @Override
+            public void cancelTask(Assignment task) {
+                run = false;
+            }
+        });
+
+        int val;
+        Random rnd = new Random();
+        final int jobCount = rnd.nextInt(5) + 5;
+        Set<Job> jobs = new HashSet<>(jobCount);
+        for (int i = 0; i < jobCount; i++) {
+            val = (rnd.nextInt(4) + 1) * 200;
+            jobs.add(s.submitJob(val));
+        }
+
+        try {
+            synchronized (this) {
+                this.wait(10);
+            }
+        } catch (InterruptedException ex) {
+            fail("Waiting for cancelation failed.");
+        }
+
+        s.getJobManager().stopAllJobs();        
+
+        for (Job j : jobs) {
+            assertEquals(null, j.getResult(true));
+        }
+
+        assertEquals(0, counter.getCount());
     }
 
     private class Counter {

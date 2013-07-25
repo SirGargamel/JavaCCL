@@ -5,6 +5,7 @@ import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.Status;
 import cz.tul.comm.exceptions.ConnectionException;
+import cz.tul.comm.exceptions.ConnectionExceptionCause;
 import cz.tul.comm.job.JobCount;
 import cz.tul.comm.job.JobMessageHeaders;
 import cz.tul.comm.job.JobStatus;
@@ -122,8 +123,8 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
 
     private boolean allJobsDone() {
         boolean result = true;
-        
-        for (Job j : allJobs) {            
+
+        for (Job j : allJobs) {
             if (!j.isDone()) {
                 result = false;
                 break;
@@ -134,34 +135,16 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
     }
 
     @Override
-    public void stopAllJobs() {
+    public synchronized void stopAllJobs() {
         jobQueue.clear();
 
-        ServerSideJob ssjob;
-        for (List<AssignmentRecord> l : jobsWaitingAssignment.values()) {
-            for (AssignmentRecord ar : l) {
-                ssjob = ar.getJob();
-                try {
-                    ssjob.cancelJob();
-                } catch (ConnectionException ex) {
-                    log.log(Level.WARNING, "Could not contact client with ID {0} for job cancelation.", owners.get(ssjob).getTargetId());
-                }
-                storeJobAction(ssjob.getId(), owners.get(ssjob).getTargetId(), JobMessageHeaders.JOB_CANCEL);
+        for (Job j : allJobs) {
+            try {
+                j.cancelJob();
+            } catch (ConnectionException ex) {
+                log.log(Level.WARNING, "Could not contact client with ID {0} for job cancelation.", owners.get(j).getTargetId());
             }
         }
-        jobsWaitingAssignment.clear();
-
-        for (List<ServerSideJob> l : jobComputing.values()) {
-            for (ServerSideJob ssj : l) {
-                try {
-                    ssj.cancelJob();
-                } catch (ConnectionException ex) {
-                    log.log(Level.WARNING, "Could not contact client with ID {0} for job cancelation.", owners.get(ssj).getTargetId());
-                }
-                storeJobAction(ssj.getId(), owners.get(ssj).getTargetId(), JobMessageHeaders.JOB_CANCEL);
-            }
-        }
-        jobComputing.clear();
 
         lastTimeOnline.clear();
     }
@@ -215,6 +198,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
             comm = owners.get(ssj);
             try {
                 ssj.cancelJob();
+                ssj.setStatus(JobStatus.SUBMITTED);
             } catch (ConnectionException ex) {
                 log.log(Level.WARNING, "Could not contact client with ID {0} for job cancelation.", comm.getTargetId());
             }
@@ -244,6 +228,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                             ssj = reassigned.getJob();
                             try {
                                 ssj.cancelJob();
+                                ssj.setStatus(JobStatus.SUBMITTED);
                             } catch (ConnectionException ex) {
                                 log.log(Level.WARNING, "Could not contact client with ID {0} for job cancelation.", comm.getTargetId());
                             }
@@ -414,7 +399,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
         lastTimeOnline.put(comm, Calendar.getInstance());
     }
 
-    private boolean assignJob(final ServerSideJob job, final Communicator comm) {
+    private synchronized boolean assignJob(final ServerSideJob job, final Communicator comm) {
         boolean result;
         try {
             listenerRegistrator.setIdListener(job.getId(), this);
@@ -424,9 +409,9 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 jobsWaitingAssignment.put(comm, l);
             }
             l.add(new AssignmentRecord(job, Calendar.getInstance(Locale.getDefault())));
+            submitJob(job, comm);
             job.setStatus(JobStatus.SENT);
             storeJobAction(job.getId(), comm.getTargetId(), JobMessageHeaders.JOB_TASK);
-            submitJob(job, comm);
             result = true;
         } catch (ConnectionException ex) {
             List<AssignmentRecord> l = jobsWaitingAssignment.get(comm);
@@ -447,14 +432,14 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
     }
 
     private void submitJob(final ServerSideJob ssj, final Communicator comm) throws ConnectionException {
+        owners.put(ssj, comm);
         final JobTask jt = new JobTask(ssj.getId(), JobMessageHeaders.JOB_TASK, ssj.getTask());
         final Object response;
         response = comm.sendData(jt);
-        owners.put(ssj, comm);
         if (GenericResponses.OK.equals(response)) {
             ssj.setStatus(JobStatus.SENT);
         } else {
-            ssj.cancelJob();
+            throw new ConnectionException(ConnectionExceptionCause.UNKNOWN);
         }
 
     }
@@ -508,7 +493,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
         }
     }
 
-    private Object acceptJob(final UUID id) {
+    private synchronized Object acceptJob(final UUID id) {
         ServerSideJob ssj;
         Entry<Communicator, List<AssignmentRecord>> e;
         List<AssignmentRecord> list;
@@ -545,7 +530,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
         return GenericResponses.UUID_UNKNOWN;
     }
 
-    private Object cancelJob(final UUID id) {
+    private synchronized Object cancelJob(final UUID id) {
         ServerSideJob ssj;
         Entry<Communicator, List<ServerSideJob>> e;
         List<ServerSideJob> list;
@@ -576,7 +561,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
         return GenericResponses.UUID_UNKNOWN;
     }
 
-    private Object finishJob(final JobTask jt) {
+    private synchronized Object finishJob(final JobTask jt) {
         final UUID id = jt.getJobId();
 
         ServerSideJob ssj;
@@ -592,11 +577,13 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
             while (itJob.hasNext()) {
                 ssj = itJob.next();
                 if (ssj.getId().equals(id)) {
-                    itJob.remove();
-                    if (list.isEmpty()) {
-                        itEntry.remove();
+                    synchronized (jobComputing) {
+                        itJob.remove();
+                        if (list.isEmpty()) {
+                            itEntry.remove();
+                        }
                     }
-                    ssj.setResult(jt.getTask());                    
+                    ssj.setResult(jt.getTask());
                     log.log(Level.CONFIG, "Job with ID {0} has been computed succefully.", id);
                     storeJobAction(ssj.getId(), e.getKey().getTargetId(), JobMessageHeaders.JOB_RESULT);
                     wakeUp();
@@ -624,31 +611,32 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
     }
 
     @Override
-    public void cancelJob(ServerSideJob job) throws ConnectionException {
-        JobStatus s = job.getStatus();
-        if (s == JobStatus.SENT || s == JobStatus.ACCEPTED) {
-            job.setStatus(JobStatus.CANCELED);
-            Communicator comm = owners.get(job);
-            JobTask jt = new JobTask(job.getId(), JobMessageHeaders.JOB_CANCEL, null);
-            comm.sendData(jt);            
-            storeJobAction(job.getId(), comm.getTargetId(), JobMessageHeaders.JOB_CANCEL);
-            
-            switch (s) {
-                case SENT:
-                    final Iterator<AssignmentRecord> it = jobsWaitingAssignment.get(comm).iterator();
-                    AssignmentRecord ar;
-                    while (it.hasNext()) {
-                        ar = it.next();
-                        if (ar.getJob() == job || ar.getJob().equals(job)) {
-                            it.remove();
+    public synchronized void cancelJob(ServerSideJob job) throws ConnectionException {
+        if (job != null) {
+            JobStatus s = job.getStatus();
+            if (s == JobStatus.SENT || s == JobStatus.ACCEPTED) {
+                job.setStatus(JobStatus.CANCELED);
+                Communicator comm = owners.get(job);
+                JobTask jt = new JobTask(job.getId(), JobMessageHeaders.JOB_CANCEL, null);
+                comm.sendData(jt);
+                storeJobAction(job.getId(), comm.getTargetId(), JobMessageHeaders.JOB_CANCEL);
+
+                switch (s) {
+                    case SENT:
+                        final Iterator<AssignmentRecord> it = jobsWaitingAssignment.get(comm).iterator();
+                        AssignmentRecord ar;
+                        while (it.hasNext()) {
+                            ar = it.next();
+                            if (job.equals(ar.getJob())) {
+                                it.remove();
+                            }
                         }
-                    }
-                    break;
-                case ACCEPTED:
-                    jobComputing.get(comm).remove(job);
-                    break;
+                        break;
+                    case ACCEPTED:
+                        jobComputing.get(comm).remove(job);
+                        break;
+                }
             }
-            
         }
     }
 
