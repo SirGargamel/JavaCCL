@@ -10,6 +10,7 @@ import cz.tul.comm.communicator.CommunicatorImpl;
 import cz.tul.comm.communicator.CommunicatorInner;
 import cz.tul.comm.communicator.Status;
 import cz.tul.comm.exceptions.ConnectionException;
+import cz.tul.comm.exceptions.ConnectionExceptionCause;
 import cz.tul.comm.history.History;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.history.sorting.DefaultSorter;
@@ -176,16 +177,15 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
 
     @Override
     public Object sendDataToServer(final Object data, final int timeout) throws ConnectionException {
-        log.log(Level.INFO, "Sending data to server - {0}", data.toString());
-        if (comm == null) {
-            throw new NullPointerException("No server communicator set.");
+        if (data != null) {
+            log.log(Level.INFO, "Sending data to server - {0}", data.toString());
         } else {
-            if (!isServerUp()) {
-                log.info("Server could not be contacted.");
-                return null;
-            } else {
-                return comm.sendData(data, TIMEOUT);
-            }
+            log.log(Level.INFO, "Sending NULL data to server.");
+        }
+        if (comm == null) {
+            throw new ConnectionException(ConnectionExceptionCause.CONNECTION_ERROR);
+        } else {
+            return comm.sendData(data, TIMEOUT);
         }
     }
 

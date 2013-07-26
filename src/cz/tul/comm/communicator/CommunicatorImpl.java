@@ -156,7 +156,12 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
             out.writeObject(dp);
             out.flush();
-            log.log(Level.CONFIG, "Data sent to client with ID {0} - [{1}]", new Object[]{getTargetId(), dp.getData().toString()});
+
+            if (dp.getData() != null) {
+                log.log(Level.CONFIG, "Data sent to client with ID {0} - [{1}]", new Object[]{getTargetId(), dp.getData().toString()});
+            } else {
+                log.log(Level.CONFIG, "NULL data sent to client with ID {0} - [{1}]", new Object[]{getTargetId()});
+            }
 
             try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
                 response = in.readObject();
