@@ -7,7 +7,7 @@ import cz.tul.comm.communicator.CommunicatorInner;
 import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
-import cz.tul.comm.messaging.MessageHeaders;
+import cz.tul.comm.messaging.SystemMessageHeaders;
 import cz.tul.comm.socket.IDFilter;
 import java.net.InetAddress;
 import java.util.Collection;
@@ -50,7 +50,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
             clients.add(cc);
 
             final UUID id = UUID.randomUUID();
-            final Message m = new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGIN, id);
+            final Message m = new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.LOGIN, id);
             cc.sendData(m);
             cc.setTargetId(id);
 

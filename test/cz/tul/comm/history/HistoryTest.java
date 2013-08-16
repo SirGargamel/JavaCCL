@@ -13,7 +13,7 @@ import cz.tul.comm.history.sorting.IPSorter;
 import cz.tul.comm.history.sorting.InOutSorter;
 import cz.tul.comm.history.sorting.UUIDSorter;
 import cz.tul.comm.messaging.Message;
-import cz.tul.comm.messaging.MessageHeaders;
+import cz.tul.comm.messaging.SystemMessageHeaders;
 import cz.tul.comm.server.Server;
 import cz.tul.comm.server.ServerImpl;
 import java.io.BufferedReader;
@@ -236,8 +236,8 @@ public class HistoryTest {
             data = hr.getData();
             if (data instanceof Message) {
                 m = (Message) data;
-                if (m.getHeader().equals(MessageHeaders.STATUS_CHECK)
-                        || m.getHeader().equals(MessageHeaders.LOGIN)) {
+                if (m.getHeader().equals(SystemMessageHeaders.STATUS_CHECK)
+                        || m.getHeader().equals(SystemMessageHeaders.LOGIN)) {
                     it.remove();
                 }
             }

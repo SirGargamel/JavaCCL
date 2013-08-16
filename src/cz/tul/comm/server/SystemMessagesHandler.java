@@ -4,7 +4,7 @@ import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.communicator.DataPacketImpl;
 import cz.tul.comm.messaging.Message;
-import cz.tul.comm.messaging.MessageHeaders;
+import cz.tul.comm.messaging.SystemMessageHeaders;
 import cz.tul.comm.socket.queue.Identifiable;
 import cz.tul.comm.socket.queue.Listener;
 import java.util.UUID;
@@ -42,7 +42,7 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                 final Message m = (Message) innerData;
                 final String header = m.getHeader();
                 switch (header) {
-                    case MessageHeaders.LOGIN:
+                    case SystemMessageHeaders.LOGIN:
                         try {
                             UUID clientId = UUID.randomUUID();
                             clientManager.addClient(dp.getSourceIP(), Integer.parseInt(m.getData().toString()), clientId);
@@ -56,7 +56,7 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                             log.log(Level.WARNING, "Null login data received.");
                             return GenericResponses.ILLEGAL_DATA;
                         }
-                    case MessageHeaders.LOGOUT:
+                    case SystemMessageHeaders.LOGOUT:
                         final Object id = m.getData();
                         if (id instanceof UUID) {
                             clientManager.deregisterClient((UUID) id);
@@ -66,7 +66,7 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                             log.log(Level.WARNING, "Invalid client id received - {0}", id.toString());
                             return GenericResponses.ILLEGAL_DATA;
                         }
-                    case MessageHeaders.STATUS_CHECK:
+                    case SystemMessageHeaders.STATUS_CHECK:
                         return Constants.ID_SERVER;
                     default:
                         return GenericResponses.ILLEGAL_HEADER;

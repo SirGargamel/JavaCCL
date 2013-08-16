@@ -8,7 +8,7 @@ import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.communicator.Status;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
-import cz.tul.comm.messaging.MessageHeaders;
+import cz.tul.comm.messaging.SystemMessageHeaders;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -95,7 +95,7 @@ public class MessagePullDaemon extends Thread implements IService {
                         ipComm = comm.getAddress();
                         port = comm.getPort();
 
-                        m = new Message(MessageHeaders.MSG_PULL_REQUEST, id);
+                        m = new Message(SystemMessageHeaders.MSG_PULL_REQUEST, id);
 
                         try (final Socket s = new Socket(ipComm, port)) {
                             try (final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream())) {

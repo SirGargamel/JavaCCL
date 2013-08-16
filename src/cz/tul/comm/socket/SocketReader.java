@@ -4,7 +4,7 @@ import cz.tul.comm.GenericResponses;
 import cz.tul.comm.communicator.DataPacketImpl;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
-import cz.tul.comm.messaging.MessageHeaders;
+import cz.tul.comm.messaging.SystemMessageHeaders;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -82,7 +82,7 @@ class SocketReader extends Observable implements Runnable {
             } else if (dataIn instanceof Message) {
                 final Message m = (Message) dataIn;
                 switch (m.getHeader()) {
-                    case (MessageHeaders.MSG_PULL_REQUEST):
+                    case (SystemMessageHeaders.MSG_PULL_REQUEST):
                         mpd.handleMessagePullRequest(socket, m.getData(), in);
                         break;
                     default:

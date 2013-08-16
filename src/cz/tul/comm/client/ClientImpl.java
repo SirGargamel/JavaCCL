@@ -19,7 +19,7 @@ import cz.tul.comm.job.JobMessageHeaders;
 import cz.tul.comm.job.client.AssignmentListener;
 import cz.tul.comm.job.client.ClientJobManagerImpl;
 import cz.tul.comm.messaging.Message;
-import cz.tul.comm.messaging.MessageHeaders;
+import cz.tul.comm.messaging.SystemMessageHeaders;
 import cz.tul.comm.persistence.ClientSettings;
 import cz.tul.comm.socket.IDFilter;
 import cz.tul.comm.socket.ListenerRegistrator;
@@ -101,7 +101,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
             public void run() {
                 try {
                     if (comm != null) {
-                        sendDataToServer(new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGOUT, comm.getSourceId()));
+                        sendDataToServer(new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.LOGOUT, comm.getSourceId()));
                     }
                 } catch (ConnectionException ex) {
                     log.warning("Server connection timed out.");
@@ -125,7 +125,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         comm = CommunicatorImpl.initNewCommunicator(address, port);
         comm.setTargetId(Constants.ID_SERVER);
         comm.registerHistory(history);
-        final Message login = new Message(Constants.ID_SYS_MSG, MessageHeaders.LOGIN, serverSocket.getPort());
+        final Message login = new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.LOGIN, serverSocket.getPort());
         try {
             final Object id = comm.sendData(login);
             if (id instanceof UUID) {
@@ -154,7 +154,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
 
     @Override
     public void deregisterFromServer() throws ConnectionException {
-        final Message m = new Message(MessageHeaders.LOGOUT, comm.getTargetId());
+        final Message m = new Message(SystemMessageHeaders.LOGOUT, comm.getTargetId());
         sendDataToServer(m);
         comm = null;
     }

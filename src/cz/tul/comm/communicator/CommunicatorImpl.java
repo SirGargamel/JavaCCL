@@ -7,7 +7,7 @@ import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.exceptions.ConnectionExceptionCause;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
-import cz.tul.comm.messaging.MessageHeaders;
+import cz.tul.comm.messaging.SystemMessageHeaders;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -225,7 +225,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     @Override
     public Status checkStatus() {
         boolean result = false;
-        final Object data = new Message(Constants.ID_SYS_MSG, MessageHeaders.STATUS_CHECK, null);
+        final Object data = new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.STATUS_CHECK, null);
         final DataPacket dp = new DataPacketImpl(sourceId, targetId, data);
         Status stat = Status.OFFLINE;
 

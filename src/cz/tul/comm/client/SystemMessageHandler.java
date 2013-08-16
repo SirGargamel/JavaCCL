@@ -4,7 +4,7 @@ import cz.tul.comm.Constants;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.communicator.DataPacketImpl;
 import cz.tul.comm.messaging.Message;
-import cz.tul.comm.messaging.MessageHeaders;
+import cz.tul.comm.messaging.SystemMessageHeaders;
 import cz.tul.comm.socket.IDFilter;
 import cz.tul.comm.socket.queue.Identifiable;
 import cz.tul.comm.socket.queue.Listener;
@@ -38,10 +38,10 @@ class SystemMessageHandler implements Listener<Identifiable> {
             if (innerData instanceof Message) {
                 final Message m = (Message) innerData;
                 switch (m.getHeader()) {
-                    case MessageHeaders.STATUS_CHECK:
+                    case SystemMessageHeaders.STATUS_CHECK:
                         result = idFIlter.getLocalID();
                         break;
-                    case MessageHeaders.LOGIN:
+                    case SystemMessageHeaders.LOGIN:
                         final Object mData = m.getData();
                         if (mData instanceof UUID) {
                             serverInterface.setServerInfo(dp.getSourceIP(), Constants.DEFAULT_PORT, (UUID) mData);

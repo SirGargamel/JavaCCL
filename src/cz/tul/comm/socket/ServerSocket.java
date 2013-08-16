@@ -6,7 +6,7 @@ import cz.tul.comm.IService;
 import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
-import cz.tul.comm.messaging.MessageHeaders;
+import cz.tul.comm.messaging.SystemMessageHeaders;
 import cz.tul.comm.socket.queue.Identifiable;
 import cz.tul.comm.socket.queue.Listener;
 import cz.tul.comm.socket.queue.ObjectQueue;
@@ -209,7 +209,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                 if (data instanceof Message) {
                     final UUID mId = ((Message) data).getId();
                     final String header = ((Message) data).getHeader();
-                    if (mId.equals(Constants.ID_SYS_MSG) && (header.equals(MessageHeaders.LOGIN) || header.equals(MessageHeaders.STATUS_CHECK))) {
+                    if (mId.equals(Constants.ID_SYS_MSG) && (header.equals(SystemMessageHeaders.LOGIN) || header.equals(SystemMessageHeaders.STATUS_CHECK))) {
                         allowed = true;
                     }
                 }

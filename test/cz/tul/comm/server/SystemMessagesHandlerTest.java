@@ -5,7 +5,7 @@ import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.DataPacketImpl;
 import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.messaging.Message;
-import cz.tul.comm.messaging.MessageHeaders;
+import cz.tul.comm.messaging.SystemMessageHeaders;
 import cz.tul.comm.socket.queue.Identifiable;
 import java.net.InetAddress;
 import java.util.Collection;
@@ -32,28 +32,28 @@ public class SystemMessagesHandlerTest {
         ClientMan cm = new ClientMan();
         SystemMessagesHandler instance = new SystemMessagesHandler(cm);
 
-        Message m = new Message(MessageHeaders.LOGIN, null);
+        Message m = new Message(SystemMessageHeaders.LOGIN, null);
         DataPacketImpl dp = new DataPacketImpl(null, null, m);
         Object result = instance.receiveData(dp);
         assertEquals(GenericResponses.ILLEGAL_DATA, result);
 
-        m = new Message(MessageHeaders.LOGIN, "5253,a");
+        m = new Message(SystemMessageHeaders.LOGIN, "5253,a");
         dp = new DataPacketImpl(null, null, m);
         result = instance.receiveData(dp);
         assertEquals(GenericResponses.ILLEGAL_DATA, result);
 
-        m = new Message(MessageHeaders.LOGIN, "5253");
+        m = new Message(SystemMessageHeaders.LOGIN, "5253");
         dp = new DataPacketImpl(null, null, m);
         dp.setSourceIP(InetAddress.getLoopbackAddress());
         result = instance.receiveData(dp);
         assertTrue(result instanceof UUID);
 
-        m = new Message(MessageHeaders.LOGOUT, "5253");
+        m = new Message(SystemMessageHeaders.LOGOUT, "5253");
         dp = new DataPacketImpl(null, null, m);
         result = instance.receiveData(dp);
         assertEquals(GenericResponses.ILLEGAL_DATA, result);
 
-        m = new Message(MessageHeaders.LOGOUT, UUID.randomUUID());
+        m = new Message(SystemMessageHeaders.LOGOUT, UUID.randomUUID());
         dp = new DataPacketImpl(null, null, m);
         result = instance.receiveData(dp);
         assertEquals(GenericResponses.OK, result);
