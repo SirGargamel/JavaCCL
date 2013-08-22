@@ -1,6 +1,6 @@
 package cz.tul.comm.communicator;
 
-import cz.tul.comm.socket.queue.Identifiable;
+import cz.tul.comm.messaging.Identifiable;
 import java.io.Serializable;
 import java.util.UUID;
 

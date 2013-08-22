@@ -11,7 +11,6 @@ import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.exceptions.ConnectionExceptionCause;
 import cz.tul.comm.server.Server;
 import cz.tul.comm.server.ServerImpl;
-import cz.tul.comm.socket.queue.Identifiable;
 import cz.tul.comm.socket.queue.Listener;
 import java.net.InetAddress;
 import java.util.Observable;

@@ -1,5 +1,7 @@
 package cz.tul.comm.socket.queue;
 
+import cz.tul.comm.messaging.Identifiable;
+
 /**
  * Interface for data receiving for registered listeners.
  *

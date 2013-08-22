@@ -5,7 +5,7 @@ import cz.tul.comm.client.ServerInterface;
 import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.job.JobMessageHeaders;
 import cz.tul.comm.job.JobTask;
-import cz.tul.comm.socket.queue.Identifiable;
+import cz.tul.comm.messaging.Identifiable;
 import cz.tul.comm.socket.queue.Listener;
 import java.util.HashMap;
 import java.util.Map;

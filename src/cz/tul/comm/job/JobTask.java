@@ -1,7 +1,7 @@
 package cz.tul.comm.job;
 
 import cz.tul.comm.Constants;
-import cz.tul.comm.socket.queue.Identifiable;
+import cz.tul.comm.messaging.Identifiable;
 import java.io.Serializable;
 import java.util.UUID;
 

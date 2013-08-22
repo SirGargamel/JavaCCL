@@ -1,5 +1,6 @@
 package cz.tul.comm.socket.queue;
 
+import cz.tul.comm.messaging.Identifiable;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;

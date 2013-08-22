@@ -1,7 +1,7 @@
 package cz.tul.comm.socket;
 
 import cz.tul.comm.communicator.DataPacket;
-import cz.tul.comm.socket.queue.Identifiable;
+import cz.tul.comm.messaging.Identifiable;
 import cz.tul.comm.socket.queue.Listener;
 import java.util.Observer;
 import java.util.Queue;

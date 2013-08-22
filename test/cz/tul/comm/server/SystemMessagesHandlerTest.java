@@ -6,7 +6,7 @@ import cz.tul.comm.communicator.DataPacketImpl;
 import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.SystemMessageHeaders;
-import cz.tul.comm.socket.queue.Identifiable;
+import cz.tul.comm.messaging.Identifiable;
 import java.net.InetAddress;
 import java.util.Collection;
 import java.util.UUID;

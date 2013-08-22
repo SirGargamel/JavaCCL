@@ -1,4 +1,4 @@
-package cz.tul.comm.socket.queue;
+package cz.tul.comm.messaging;
 
 /**
  * Interface fot data identificatoin.
