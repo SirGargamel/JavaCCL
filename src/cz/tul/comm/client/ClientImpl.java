@@ -52,16 +52,10 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
      * @param port target listening port
      * @return new Client instance
      */
-    public static Client initNewClient(final int port) {
-        ClientImpl result;
-        try {
-            result = new ClientImpl();
-            result.start(port);
-            log.log(Level.INFO, "New client created on port {0}", port);
-        } catch (IOException ex) {
-            log.log(Level.WARNING, "Failed to initialize client on port " + port, ex);
-            result = null;
-        }
+    public static Client initNewClient(final int port) throws IOException {
+        ClientImpl result = new ClientImpl();
+        result.start(port);
+        log.log(Level.INFO, "New client created on port {0}", port);
 
         return result;
     }
@@ -70,11 +64,17 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
      *
      * @return new client instance on default port
      */
-    public static Client initNewClient() {
+    public static Client initNewClient() {        
+        Client c = null;
         int port = Constants.DEFAULT_PORT;
-        Client c = initNewClient(port);
+        
         while (c == null) {
-            c = initNewClient(++port);
+            try {
+                c = initNewClient(++port);
+            } catch (IOException ex) {
+                log.log(Level.WARNING, "Error initializing server on port " + (port - 1), ex);
+            }
+
         }
         return c;
     }
