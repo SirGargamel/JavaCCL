@@ -57,12 +57,16 @@ public final class ServerImpl implements IService, Server {
         Server s = null;
         int port = Constants.DEFAULT_PORT;
 
-        while (s == null) {
+        while (s == null && port < 65535) {
             try {
                 s = initNewServer(port++);
             } catch (IOException ex) {
                 log.log(Level.WARNING, "Error initializing server on port " + (port - 1), ex);
             }
+        }
+        
+        if (s == null) {
+            log.log(Level.WARNING, "Error initializing server, no free port found");            
         }
 
         return s;

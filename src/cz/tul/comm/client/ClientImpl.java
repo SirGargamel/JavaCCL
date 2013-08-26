@@ -68,7 +68,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         Client c = null;
         int port = Constants.DEFAULT_PORT;
         
-        while (c == null) {
+        while (c == null && port < 65535) {
             try {
                 c = initNewClient(++port);
             } catch (IOException ex) {
@@ -76,6 +76,11 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
             }
 
         }
+        
+        if (c == null) {
+            log.log(Level.WARNING, "Error initializing client, no free port found");            
+        }
+        
         return c;
     }
     private ServerSocket serverSocket;
