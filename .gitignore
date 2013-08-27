@@ -13,3 +13,4 @@
 # system logs
 systemLog.xml*
 jacoco.exec*
+/nbproject/private/
