@@ -79,5 +79,7 @@ public interface Server extends IService {
      */
     Job submitJob(final Object task) throws IllegalArgumentException;
 
-    void loadSettings(final File settingsFile);
+    boolean loadSettings(final File settingsFile);
+    
+    boolean saveSettings(final File settingsFile);
 }

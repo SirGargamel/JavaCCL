@@ -81,5 +81,7 @@ public interface Client extends IService {
     
     boolean setMaxNumberOfConcurrentAssignments(final int assignmentCount);
     
-    void loadSettings(final File settingsFile);
+    boolean loadSettings(final File settingsFile);
+    
+    boolean saveSettings(final File settingsFile);
 }

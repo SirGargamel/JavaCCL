@@ -189,7 +189,12 @@ public final class ServerImpl implements IService, Server {
     }
     
     @Override
-    public void loadSettings(final File settingsFile) {
-        ServerSettings.deserialize(settingsFile, clients);
+    public boolean loadSettings(final File settingsFile) {
+        return ServerSettings.deserialize(settingsFile, clients);
+    }
+    
+    @Override
+    public boolean saveSettings(final File settingsFile) {
+        return ServerSettings.serialize(settingsFile, clients);
     }
 }

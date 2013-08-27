@@ -328,7 +328,12 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     }
     
     @Override
-    public void loadSettings(final File settingsFile) {
-        ClientSettings.deserialize(settingsFile, this);
+    public boolean loadSettings(final File settingsFile) {
+        return ClientSettings.deserialize(settingsFile, this);
+    }
+    
+    @Override
+    public boolean saveSettings(final File settingsFile) {
+        return ClientSettings.serialize(settingsFile, comm);
     }
 }
