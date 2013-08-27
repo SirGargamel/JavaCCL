@@ -34,7 +34,7 @@ public class ClientSettings {
      */
     public static boolean deserialize(final File settingsFile, final ServerInterface reg) {
         log.log(Level.CONFIG, "Deserializing client settings.");
-        boolean result = true;
+        boolean result = false;
 
         if (settingsFile.canRead()) {
             InetAddress ip = null;
@@ -69,20 +69,18 @@ public class ClientSettings {
 
                 if (ip != null) {
                     try {
-                        reg.registerToServer(ip, port);
+                        if (reg.registerToServer(ip, port)) {
+                            result = true;
+                        }
                     } catch (ConnectionException ex) {
                         log.log(Level.WARNING, "Could not connect to server with {0}, port {1}.", new Object[]{ip.getHostAddress(), port});
                     }
                 }
             } catch (IOException ex) {
-                result = false;
                 log.log(Level.WARNING, "Error accessing client settings at " + settingsFile.getAbsolutePath() + ".", ex);
             } catch (SAXException ex) {
-                result = false;
                 log.log(Level.WARNING, "Wrong format of input XML.", ex);
             }
-        } else {
-            result = false;
         }
 
         return result;

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <JavaCCL>
   <server>127.0.0.1:5252</server>
+  <client>127.0.0.1:5253</client>
+  <client>147.230.184.143:5253</client>
 </JavaCCL>

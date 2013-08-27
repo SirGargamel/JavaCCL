@@ -33,7 +33,7 @@ public class ServerSettings implements Serializable {
      */
     public static boolean deserialize(final File settingsFile, final ClientManager clientManager) {
         log.log(Level.CONFIG, "Deserializing server settings.");
-        boolean result = true;
+        boolean result = false;
 
         if (settingsFile.canRead()) {
             try {
@@ -43,11 +43,10 @@ public class ServerSettings implements Serializable {
                         case FIELD_NAME_CLIENT:
                             String[] split = fields.get(f).split(IP_PORT_SPLITTER);
                             try {
-                                if (clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1])) == null) {
-                                    result = false;
+                                if (clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1])) != null) {
+                                    result = true;
                                 }
-                            } catch (UnknownHostException | NumberFormatException | ArrayIndexOutOfBoundsException ex) {
-                                result = false;
+                            } catch (UnknownHostException | NumberFormatException | ArrayIndexOutOfBoundsException ex) {                                
                                 log.log(Level.WARNING, "Unkonwn host found in settings", ex);
                             } catch (ConnectionException ex) {
                                 log.log(Level.WARNING, "Could not connect client with IP {0} on port {1}.", new Object[]{split[0], split[1]});
@@ -58,15 +57,11 @@ public class ServerSettings implements Serializable {
                             break;
                     }
                 }
-            } catch (IOException ex) {
-                result = false;
+            } catch (IOException ex) {                
                 log.log(Level.WARNING, "Error accessing server settings at " + settingsFile.getAbsolutePath() + ".", ex);
-            } catch (SAXException ex) {
-                result = false;
+            } catch (SAXException ex) {                
                 log.log(Level.WARNING, "Wrong format of input XML.", ex);
             }
-        } else {
-            result = false;
         }
 
         return result;

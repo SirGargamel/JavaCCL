@@ -96,7 +96,7 @@ public class SettingsTest {
         assertEquals(true, result);
 
         result = ServerSettings.deserialize(new File(SettingsTest.class.getResource("testSettingsEmpty.xml").getFile()), s.getClientManager());
-        assertEquals(true, result);
+        assertEquals(false, result);
 
         result = ServerSettings.deserialize(new File(SettingsTest.class.getResource("testSettingsServerFail.xml").getFile()), s.getClientManager());
         assertEquals(false, result);
@@ -131,7 +131,7 @@ public class SettingsTest {
         assertEquals(true, result);
 
         result = ClientSettings.deserialize(new File(SettingsTest.class.getResource("testSettingsEmpty.xml").getFile()), (ServerInterface) c);
-        assertEquals(true, result);
+        assertEquals(false, result);
 
         result = ClientSettings.deserialize(new File(SettingsTest.class.getResource("testSettingsClientFail.xml").getFile()), (ServerInterface) c);
         assertEquals(false, result);

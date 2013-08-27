@@ -32,7 +32,7 @@ import org.xml.sax.SAXException;
 public class SimpleXMLSettingsFile {
 
     private static final Logger log = Logger.getLogger(SimpleXMLSettingsFile.class.getName());
-    private static final String SETTINGS_NODE_NAME = "settings";
+    private static final String SETTINGS_NODE_NAME = "JavaCCL";
 
     /**
      * Load contents of a simple XML file.
@@ -75,7 +75,7 @@ public class SimpleXMLSettingsFile {
         return fields;
     }
     
-    private static void addAllChildNodes(final Queue processingQueue, final NodeList nodes) {        
+    private static void addAllChildNodes(final Queue<Node> processingQueue, final NodeList nodes) {        
         for (int i = 0; i < nodes.getLength(); i++) {
             processingQueue.add(nodes.item(i));
         }
@@ -119,7 +119,7 @@ public class SimpleXMLSettingsFile {
 
             // root element
             Document doc = docBuilder.newDocument();
-            Element rootElement = doc.createElement("settings");
+            Element rootElement = doc.createElement(SETTINGS_NODE_NAME);
             doc.appendChild(rootElement);
             // data elements
             Element el;
