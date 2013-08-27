@@ -43,8 +43,7 @@ import java.util.logging.Logger;
 public class ClientImpl implements IService, ServerInterface, Client, IDFilter, ClientLister {
 
     private static final Logger log = Logger.getLogger(ClientImpl.class.getName());
-    private static final int TIMEOUT = 5000;
-    private static final String SETTINGS_NAME = "clientSettings.xml";
+    private static final int TIMEOUT = 5000;    
 
     /**
      * Create and initialize new instance of client at given port.
@@ -229,18 +228,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
 
         jm = new ClientJobManagerImpl(this);
         getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jm);
-
-        if (ComponentSwitches.useSettings) {
-            if (!ClientSettings.deserialize(new File(SETTINGS_NAME), this)) {
-                log.warning("Error loading client settings.");
-            }
-            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    ClientSettings.serialize(new File(SETTINGS_NAME), comm);
-                }
-            }));
-        }
+        
         if (ComponentSwitches.useClientDiscovery) {
             if (sdd != null) {
                 sdd.start();
@@ -337,5 +325,10 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
             return false;
         }
 
+    }
+    
+    @Override
+    public void loadSettings(final File settingsFile) {
+        ClientSettings.deserialize(settingsFile, this);
     }
 }

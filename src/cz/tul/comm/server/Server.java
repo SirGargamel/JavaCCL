@@ -7,6 +7,7 @@ import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.job.server.Job;
 import cz.tul.comm.job.server.ServerJobManager;
 import cz.tul.comm.socket.ListenerRegistrator;
+import java.io.File;
 import java.net.InetAddress;
 import java.util.UUID;
 
@@ -77,4 +78,6 @@ public interface Server extends IService {
      * @return interface for job control and result obtaining
      */
     Job submitJob(final Object task) throws IllegalArgumentException;
+
+    void loadSettings(final File settingsFile);
 }

@@ -30,8 +30,7 @@ import java.util.logging.Logger;
  */
 public final class ServerImpl implements IService, Server {
 
-    private static final Logger log = Logger.getLogger(ServerImpl.class.getName());
-    private static final String SETTINGS_NAME = "serverSettings.xml";
+    private static final Logger log = Logger.getLogger(ServerImpl.class.getName());    
 
     /**
      * Create and initialize new instance of server.
@@ -166,18 +165,6 @@ public final class ServerImpl implements IService, Server {
     }
 
     void start() {
-        if (ComponentSwitches.useSettings) {
-            if (!ServerSettings.deserialize(new File(SETTINGS_NAME), clients)) {
-                log.warning("Error loading server settings.");
-            }
-            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    ServerSettings.serialize(new File(SETTINGS_NAME), clients);
-                }
-            }));
-        }
-
         if (cdd != null) {
             cdd.start();
         }
@@ -199,5 +186,10 @@ public final class ServerImpl implements IService, Server {
     @Override
     public Communicator getClient(UUID id) {
         return clients.getClient(id);
+    }
+    
+    @Override
+    public void loadSettings(final File settingsFile) {
+        ServerSettings.deserialize(settingsFile, clients);
     }
 }

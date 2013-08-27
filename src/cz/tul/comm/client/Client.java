@@ -6,8 +6,8 @@ import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.job.client.AssignmentListener;
 import cz.tul.comm.socket.ListenerRegistrator;
+import java.io.File;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.UUID;
 
 /**
@@ -80,4 +80,6 @@ public interface Client extends IService {
     Object sendDataToServer(final Object data, final int timeout) throws ConnectionException;    
     
     boolean setMaxNumberOfConcurrentAssignments(final int assignmentCount);
+    
+    void loadSettings(final File settingsFile);
 }
