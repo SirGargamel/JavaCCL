@@ -76,7 +76,11 @@ public class SettingsTest {
     @Before
     public void setUp() {                
         s = ServerImpl.initNewServer();
-        c = ClientImpl.initNewClient(CLIENT_PORT);
+        try {
+            c = ClientImpl.initNewClient(CLIENT_PORT);
+        } catch (IOException ex) {
+            fail("Failed to initialize client.");
+        }
     }
     
     @After
@@ -136,14 +140,16 @@ public class SettingsTest {
     @Test
     public void testSerializeClient() {
         System.out.println("serializeClient");
-        c.stopService();
-        c = ClientImpl.initNewClient(CLIENT_PORT);
+        c.stopService();        
         try {
+            c = ClientImpl.initNewClient(CLIENT_PORT);
             c.registerToServer(InetAddress.getLoopbackAddress());
         } catch (IllegalArgumentException ex) {
             fail("Illegal arguments used");
         } catch (ConnectionException ex) {
             fail("Could not connect to client");
+        } catch (IOException ex) {
+            fail("Failed to initialize client.");
         }
 
         boolean result = ClientSettings.serialize(serializationTarget, c.getServerComm());

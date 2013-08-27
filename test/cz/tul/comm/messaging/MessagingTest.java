@@ -12,6 +12,7 @@ import cz.tul.comm.exceptions.ConnectionExceptionCause;
 import cz.tul.comm.server.Server;
 import cz.tul.comm.server.ServerImpl;
 import cz.tul.comm.socket.queue.Listener;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Observable;
 import java.util.Observer;
@@ -37,7 +38,11 @@ public class MessagingTest {
     @Before
     public void setUp() {
         s = ServerImpl.initNewServer();
-        c = ClientImpl.initNewClient(5253);
+        try {
+            c = ClientImpl.initNewClient(5253);
+        } catch (IOException ex) {
+            fail("Failed to initialize client.");
+        }
     }
 
     @After

@@ -1,10 +1,12 @@
 package cz.tul.comm.server;
 
+import cz.tul.comm.ComponentSwitches;
 import cz.tul.comm.client.Client;
 import cz.tul.comm.client.ClientImpl;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.CommunicatorInner;
 import cz.tul.comm.exceptions.ConnectionException;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collection;
 import java.util.HashSet;
@@ -22,14 +24,22 @@ public class ClientDBTest {
 
     private static final int PORT_CLIENT_1 = 5253;
     private static final int PORT_CLIENT_2 = 5254;
+    private boolean tempDiscovery;
     private static Client c1, c2;
     private static Server s;
 
     @Before
-    public void setUp() {                
+    public void setUp() {
+        tempDiscovery = ComponentSwitches.useClientDiscovery;
+        ComponentSwitches.useClientDiscovery = false;
+        
         s = ServerImpl.initNewServer();
-        c1 = ClientImpl.initNewClient(PORT_CLIENT_1);
-        c2 = ClientImpl.initNewClient(PORT_CLIENT_2);
+        try {
+            c1 = ClientImpl.initNewClient(PORT_CLIENT_1);
+            c2 = ClientImpl.initNewClient(PORT_CLIENT_2);
+        } catch (IOException ex) {
+            fail("Failed to initialize clients.");
+        }
     }
 
     @After
@@ -37,6 +47,8 @@ public class ClientDBTest {
         c1.stopService();
         c2.stopService();
         s.stopService();
+        
+        ComponentSwitches.useClientDiscovery = tempDiscovery;
     }
 
     /**

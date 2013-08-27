@@ -121,38 +121,45 @@ public class HistoryTest {
         UUID uuid2 = UUID.fromString("550e8400-e29b-41d4-a716-446655440111");
 
         final Server s = (ServerImpl) ServerImpl.initNewServer();
-        final ClientImpl c = (ClientImpl) ClientImpl.initNewClient(5253);
+        final ClientImpl c;
+        try {
+            c = (ClientImpl) ClientImpl.initNewClient(5253);
 
-        c.setServerInfo(ipLocal, 5252, clientUuid);
-        s.getClientManager().addClient(ipLocal, 5253, clientUuid);
+            c.setServerInfo(ipLocal, 5252, clientUuid);
+            s.getClientManager().addClient(ipLocal, 5253, clientUuid);
 
-        synchronized (this) {
-            try {
-                s.getClient(ipLocal).sendData(new Message(uuid, "Header", "data1"));
-                this.wait(10);
-                c.sendDataToServer(new Message(uuid, "Header", "dataBack"));                
-                this.wait(25);
-                s.getClient(ipLocal).sendData(new Message(uuid2, "Header", "data2"));
-                this.wait(25);
-            } catch (InterruptedException ex) {
-                fail("Waiting interrupted");
-            } catch (ConnectionException ex) {
-                fail("Failed to deliver message - " + ex);
+            synchronized (this) {
+                try {
+                    s.getClient(ipLocal).sendData(new Message(uuid, "Header", "data1"));
+                    this.wait(10);
+                    c.sendDataToServer(new Message(uuid, "Header", "dataBack"));
+                    this.wait(25);
+                    s.getClient(ipLocal).sendData(new Message(uuid2, "Header", "data2"));
+                    this.wait(25);
+                } catch (InterruptedException ex) {
+                    fail("Waiting interrupted");
+                } catch (ConnectionException ex) {
+                    fail("Failed to deliver message - " + ex);
+                }
             }
+
+            c.stopService();
+            s.stopService();
+
+            History h = (History) s.getHistory();
+            cleanUp(h.getRecords());
+            h.registerExporter(new ExportMessage());
+
+            prepareFile(exportTarget);
+            prepareFile(compareTarget);
+            assertTrue(s.getHistory().export(exportTarget, new UUIDSorter()));
+            prepareLocalIp(new File(HistoryTest.class.getResource("testExportUUID.xml").getFile()), compareTarget);
+            assertFiles(compareTarget, exportTarget);
+        } catch (IOException ex) {
+            fail("Failed to initialize clients.");
         }
 
-        c.stopService();
-        s.stopService();
 
-        History h = (History) s.getHistory();
-        cleanUp(h.getRecords());
-        h.registerExporter(new ExportMessage());
-
-        prepareFile(exportTarget);
-        prepareFile(compareTarget);
-        assertTrue(s.getHistory().export(exportTarget, new UUIDSorter()));
-        prepareLocalIp(new File(HistoryTest.class.getResource("testExportUUID.xml").getFile()), compareTarget);
-        assertFiles(compareTarget, exportTarget);       
     }
 
     private static void assertFiles(final File expected,
@@ -227,7 +234,7 @@ public class HistoryTest {
         // remove status checks, logins etc.
         Iterator<HistoryRecord> it = records.iterator();
 
-        HistoryRecord hr;        
+        HistoryRecord hr;
         Message m;
         Object data;
         while (it.hasNext()) {
