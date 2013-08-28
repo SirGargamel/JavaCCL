@@ -1,5 +1,6 @@
 package cz.tul.comm.persistence;
 
+import cz.tul.comm.Constants;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.server.ClientManager;
@@ -21,8 +22,7 @@ import org.xml.sax.SAXException;
  */
 public class ServerSettings implements Serializable {
 
-    private static final Logger log = Logger.getLogger(ServerSettings.class.getName());
-    private static final String IP_PORT_SPLITTER = ":";
+    private static final Logger log = Logger.getLogger(ServerSettings.class.getName());    
     private static final String FIELD_NAME_CLIENT = "client";
 
     /**
@@ -42,7 +42,7 @@ public class ServerSettings implements Serializable {
                 for (String f : fields.keySet()) {
                     switch (f) {
                         case FIELD_NAME_CLIENT:
-                            String[] split = fields.get(f).split(IP_PORT_SPLITTER);
+                            String[] split = fields.get(f).split(Constants.IP_PORT_SPLITTER);
                             try {
                                 if (clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1])) != null) {
                                     result = true;
@@ -83,7 +83,7 @@ public class ServerSettings implements Serializable {
         StringBuilder sb = new StringBuilder();
         for (Communicator c : comms) {
             sb.append(c.getAddress().getHostAddress());
-            sb.append(IP_PORT_SPLITTER);
+            sb.append(Constants.IP_PORT_SPLITTER);
             sb.append(c.getPort());
             xml.addField(FIELD_NAME_CLIENT, sb.toString());
             sb.setLength(0);

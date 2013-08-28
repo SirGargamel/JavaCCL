@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <JavaCCL>
-  <server>127.0.0.256:5252</server>
+  <server>127.0.0.256-5252</server>
 </JavaCCL>
