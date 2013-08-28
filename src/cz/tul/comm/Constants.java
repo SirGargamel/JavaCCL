@@ -33,5 +33,8 @@ public interface Constants {
      * UUID for system message handler
      */
     UUID ID_SYS_MSG = UUID.fromString("77776666-5555-4444-3333-222211110000");
+    /**
+     * Spliitting character between IP and port in XML settings
+     */
     String IP_PORT_SPLITTER = "-";
 }
