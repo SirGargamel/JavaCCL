@@ -20,9 +20,10 @@ public interface ServerInterface {
      * @throws ConnectionException Server could not be contacted
      */
     boolean registerToServer(final InetAddress address, final int port) throws ConnectionException;
-    
+
     /**
      * Set the server params without contacting him
+     *
      * @param address IP of the server
      * @param port port of the server
      * @param clientId local client UUID
@@ -31,9 +32,15 @@ public interface ServerInterface {
 
     /**
      * Send server info that client no longer wants to participate.
-     * @throws ConnectionException 
+     *
+     * @throws ConnectionException
      */
     void deregisterFromServer() throws ConnectionException;
+
+    /**
+     * Block any further connections to current server.
+     */
+    void disconnectFromServer();
 
     /**
      * Test if the server reachable.
@@ -46,8 +53,8 @@ public interface ServerInterface {
      * @return server communicator
      */
     Communicator getServerComm();
-    
-    /**     
+
+    /**
      * @return local port on which te client runs
      */
     int getLocalSocketPort();

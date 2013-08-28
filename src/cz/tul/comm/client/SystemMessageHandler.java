@@ -55,6 +55,9 @@ class SystemMessageHandler implements Listener<Identifiable> {
                             log.log(Level.WARNING, "Illegal data received with LOGIN message - [{0}].", mData.toString());
                         }
                         break;
+                    case SystemMessageHeaders.LOGOUT:
+                        serverInterface.disconnectFromServer();
+                        break;
                     default:
                         result = GenericResponses.ILLEGAL_HEADER;
                         break;

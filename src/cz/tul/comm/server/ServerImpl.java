@@ -10,6 +10,8 @@ import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.job.server.Job;
 import cz.tul.comm.job.server.ServerJobManager;
 import cz.tul.comm.job.server.ServerJobManagerImpl;
+import cz.tul.comm.messaging.Message;
+import cz.tul.comm.messaging.SystemMessageHeaders;
 import cz.tul.comm.persistence.ServerSettings;
 import cz.tul.comm.server.daemons.ClientDiscoveryDaemon;
 import cz.tul.comm.socket.ListenerRegistrator;
@@ -173,6 +175,14 @@ public final class ServerImpl implements IService, Server {
 
     @Override
     public void stopService() {
+        for (Communicator comm : clients.getClients()) {
+            try {
+                comm.sendData(new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.LOGOUT, null));            
+            } catch (ConnectionException ex) {
+                log.warning("Client connection timed out.");
+            }
+        }
+        
         if (cdd != null) {
             cdd.stopService();
         }

@@ -104,13 +104,6 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    if (comm != null) {
-                        sendDataToServer(new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.LOGOUT, comm.getSourceId()));
-                    }
-                } catch (ConnectionException ex) {
-                    log.warning("Server connection timed out.");
-                }
                 stopService();
             }
         }));
@@ -246,6 +239,13 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
 
     @Override
     public void stopService() {
+        try {
+            if (comm != null) {
+                sendDataToServer(new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.LOGOUT, comm.getSourceId()));
+            }
+        } catch (ConnectionException ex) {
+            log.warning("Server connection timed out.");
+        }
         if (serverSocket != null) {
             serverSocket.stopService();
         }
@@ -336,5 +336,10 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     @Override
     public boolean saveSettings(final File settingsFile) {
         return ClientSettings.serialize(settingsFile, comm);
+    }
+
+    @Override
+    public void disconnectFromServer() {
+        comm = null;
     }
 }
