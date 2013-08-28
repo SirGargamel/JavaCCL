@@ -27,7 +27,9 @@ public interface Job {
     Object getResult(final boolean blockingGet);
 
     /**
-     * Cancel job computaiton.
+     * Cancel job computaiton. This job wont be computed (wont be given to
+     * another client for computation, handover to another client must be done
+     * from clients side).
      *
      * @throws ConnectionException could not contact the client that is
      * computing the job

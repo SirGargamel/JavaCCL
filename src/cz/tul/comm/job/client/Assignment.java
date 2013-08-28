@@ -37,7 +37,8 @@ public interface Assignment {
     void submitResult(final Object result) throws ConnectionException;
 
     /**
-     * Cancel job computation.
+     * Cancel job computation on this client. This job has to be computed
+     * somewhere else.
      *
      * @param reason descritpion why the job was cancelled
      * @throws ConnectionException could not contact the server to cancel the
