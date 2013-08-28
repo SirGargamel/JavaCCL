@@ -124,6 +124,9 @@ public class History implements HistoryManager {
         log.log(Level.FINE, "New export unit registered - {0}", eu.getClass().getCanonicalName());
     }
 
+    /**     
+     * @return
+     */
     public List<HistoryRecord> getRecords() {
         return records;
     }

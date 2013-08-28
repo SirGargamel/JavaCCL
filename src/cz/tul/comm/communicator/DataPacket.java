@@ -19,7 +19,13 @@ public interface DataPacket extends Identifiable, Serializable {
     @Override
     Object getId();
 
+    /**     
+     * @return UUID of the server
+     */
     UUID getSourceID();
     
+    /**     
+     * @return UUID of the receiver
+     */
     UUID getTargetID();
 }

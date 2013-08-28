@@ -9,8 +9,16 @@ import java.util.UUID;
  */
 public interface IDFilter {
 
+    /**     
+     * @return ID of local instance
+     */
     UUID getLocalID();
     
+    /**
+     * Check if the given UUID is allowed to communicate with this instance
+     * @param id UUID for checking
+     * @return true if the communication is allowed
+     */
     boolean isTargetIdValid(final UUID id);
     
     /**

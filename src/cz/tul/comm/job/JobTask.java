@@ -20,6 +20,7 @@ public class JobTask implements Serializable, Identifiable {
      * Init new JobTasj
      *
      * @param jobId jobs ID
+     * @param taskDescritpion description of the task that happened
      * @param task job task
      */
     public JobTask(final UUID jobId, final String taskDescritpion, final Object task) {
@@ -35,6 +36,9 @@ public class JobTask implements Serializable, Identifiable {
         return jobId;
     }
 
+    /**     
+     * @return description of the task that happened
+     */
     public String getTaskDescription() {
         return taskDescription;
     }

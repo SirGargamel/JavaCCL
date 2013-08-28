@@ -17,8 +17,9 @@ public class JobAction {
     private final String actionDescription;
 
     /**     
-     * @param jobId jobs ID
-     * @param owner job owner
+     * New isntance
+     * @param job job for computatin
+     * @param ownerId UUID of the client that is computing the job
      * @param msgHeader action description
      */
     public JobAction(final Job job, final UUID ownerId, final String msgHeader) {

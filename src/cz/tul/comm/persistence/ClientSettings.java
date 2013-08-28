@@ -29,6 +29,7 @@ public class ClientSettings {
     /**
      * Save client settings to disk.
      *
+     * @param settingsFile target settings file
      * @param reg server parameters registrator
      * @return true for successfull deserialization
      */
@@ -89,6 +90,7 @@ public class ClientSettings {
     /**
      * Load client settings from disk.
      *
+     * @param settingsFile target settings file
      * @param serverCommunicator server communicator
      * @return true for successfull save
      */

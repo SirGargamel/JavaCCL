@@ -43,13 +43,14 @@ import java.util.logging.Logger;
 public class ClientImpl implements IService, ServerInterface, Client, IDFilter, ClientLister {
 
     private static final Logger log = Logger.getLogger(ClientImpl.class.getName());
-    private static final int TIMEOUT = 5000;    
+    private static final int TIMEOUT = 5000;
 
     /**
      * Create and initialize new instance of client at given port.
      *
      * @param port target listening port
      * @return new Client instance
+     * @throws IOException target port is already in use
      */
     public static Client initNewClient(final int port) throws IOException {
         ClientImpl result = new ClientImpl();
@@ -63,10 +64,10 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
      *
      * @return new client instance on default port
      */
-    public static Client initNewClient() {        
+    public static Client initNewClient() {
         Client c = null;
         int port = Constants.DEFAULT_PORT;
-        
+
         while (c == null && port < 65535) {
             try {
                 c = initNewClient(++port);
@@ -75,11 +76,11 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
             }
 
         }
-        
+
         if (c == null) {
-            log.log(Level.WARNING, "Error initializing client, no free port found");            
+            log.log(Level.WARNING, "Error initializing client, no free port found");
         }
-        
+
         return c;
     }
     private ServerSocket serverSocket;
@@ -228,7 +229,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
 
         jm = new ClientJobManagerImpl(this);
         getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jm);
-        
+
         if (ComponentSwitches.useClientDiscovery) {
             if (sdd != null) {
                 sdd.start();
@@ -326,12 +327,12 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         }
 
     }
-    
+
     @Override
     public boolean loadSettings(final File settingsFile) {
         return ClientSettings.deserialize(settingsFile, this);
     }
-    
+
     @Override
     public boolean saveSettings(final File settingsFile) {
         return ClientSettings.serialize(settingsFile, comm);

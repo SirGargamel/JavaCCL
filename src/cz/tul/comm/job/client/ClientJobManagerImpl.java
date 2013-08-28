@@ -28,12 +28,22 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
     private final Map<UUID, ClientSideJob> jobs;
     private final ExecutorService exec;
 
+    /**
+     * New instance.
+     *
+     * @param server interface for sending data to server
+     */
     public ClientJobManagerImpl(ServerInterface server) {
         this.server = server;
         jobs = new HashMap<>();
         exec = Executors.newCachedThreadPool();
     }
 
+    /**
+     * Set listener which will receive all incoming assignments.
+     *
+     * @param assignmentListener new assignment listener
+     */
     public void setAssignmentListener(AssignmentListener assignmentListener) {
         this.assignmentListener = assignmentListener;
     }

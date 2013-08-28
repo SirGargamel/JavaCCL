@@ -23,19 +23,17 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
     private static final Logger log = Logger.getLogger(ClientDiscoveryDaemon.class.getName());
     private static final int DELAY = 10_000;
     private final DatagramSocket s;    
-    private final byte[] message;
-    private final int messageLength;
+    private final byte[] message;    
     private boolean run;
 
     /**
-     * @param clientManager client manager for new client registration
+     * @param serverSocketPort port on which the server runs
      * @throws SocketException thrown when daemon could not be created
      */
     public ClientDiscoveryDaemon(final int serverSocketPort) throws SocketException {                
         s = new DatagramSocket(Constants.DEFAULT_PORT);
         s.setBroadcast(true);
-        message = Constants.DISCOVERY_QUESTION.concat(Constants.DELIMITER).concat(String.valueOf(serverSocketPort)).getBytes();
-        messageLength = message.length;
+        message = Constants.DISCOVERY_QUESTION.concat(Constants.DELIMITER).concat(String.valueOf(serverSocketPort)).getBytes();        
         run = true;
     }
 
@@ -63,6 +61,7 @@ public class ClientDiscoveryDaemon extends Thread implements IService {
     private void discoverClients() throws SocketException, IOException {
         // Find the clients using UDP broadcast                
         // Try the 255.255.255.255 first
+        final int messageLength = message.length;
         DatagramPacket sendPacket = new DatagramPacket(message, messageLength, InetAddress.getByName("255.255.255.255"), Constants.DEFAULT_PORT);
         s.send(sendPacket);
         log.log(Level.FINE, "Discovery packet sent to: 255.255.255.255 (DEFAULT)");

@@ -19,29 +19,37 @@ public interface ListenerRegistrator {
      *
      * @param clientId UUID of target listener
      * @param dataListener target listener
-     * @param wantsPushNotifications true if listeners wants to be notified that
-     * message has arrived
-     * @return Queue, which wil be used for data storing when data from this IP
-     * is received.
      */
     void setClientListener(final UUID clientId, final Listener<DataPacket> dataListener);
-    
+
+    /**
+     * Retrieve a queue with messages received from given client.
+     *
+     * @param clientId UUID of the client
+     * @return message queue
+     */
     Queue<DataPacket> getClientMessageQueue(final UUID clientId);
 
+    /**
+     * Deregister a client listener.
+     *
+     * @param clientId UUID of the client
+     */
     void removeClientListener(final UUID clientId);
-    
+
     /**
      * Register listener for given ID.
      *
      * @param id data ID for listening
      * @param idListener target listener
-     * @param wantsPushNotifications true if listeners wants to be notified that
-     * message has arrived
-     * @return Queue, which wil be used for data storing when data with this ID
-     * is received.
      */
     void setIdListener(final Object id, final Listener<Identifiable> idListener);
-    
+
+    /**
+     * Retrieve a queue with received messages with given ID.
+     * @param id message ID
+     * @return message queue
+     */
     Queue<Identifiable> getIdMessageQueue(final Object id);
 
     /**
@@ -49,7 +57,6 @@ public interface ListenerRegistrator {
      * is removed completely (from all IDs).
      *
      * @param id data ID for listening
-     * @param idListener target listener
      */
     void removeIdListener(final Object id);
 

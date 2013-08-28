@@ -27,6 +27,7 @@ public interface HistoryManager {
      * @param ipSource source IP
      * @param data transmitted data
      * @param accepted true if data has been received successfully
+     * @param answer response to the message 
      */
     void logMessageReceived(final InetAddress ipSource, final Object data, final boolean accepted, final Object answer);
 
@@ -36,6 +37,7 @@ public interface HistoryManager {
      * @param ipDestination target IP
      * @param data transmitted data
      * @param accepted true if data has been sent successfully
+     * @param response received answer
      */
     void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted, final Object response);
 

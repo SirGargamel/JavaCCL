@@ -9,6 +9,9 @@ import java.util.Collection;
  */
 public interface ClientLister {
     
+    /**     
+     * @return coolection representing all registered clients
+     */
     Collection<Communicator> getClients();
     
 }

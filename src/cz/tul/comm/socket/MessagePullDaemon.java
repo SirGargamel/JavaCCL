@@ -36,6 +36,11 @@ public class MessagePullDaemon extends Thread implements IService {
     private boolean run;
     private HistoryManager hm;
 
+    /**
+     * New instance of daemon for pulling messages.
+     * @param dpHandler handler of data packets
+     * @param clientLister interface for obtaining list of clients
+     */
     public MessagePullDaemon(final DataPacketHandler dpHandler, final ClientLister clientLister) {
         if (dpHandler != null) {
             this.dpHandler = dpHandler;
@@ -159,6 +164,12 @@ public class MessagePullDaemon extends Thread implements IService {
         log.fine("History registered.");
     }
 
+    /**
+     * Handle a request from a client (server) to pull data.
+     * @param s socket for answering
+     * @param pullData received data
+     * @param in stream for reading a response
+     */
     public void handleMessagePullRequest(final Socket s, Object pullData, ObjectInputStream in) {
         Object msg = null;
         CommunicatorInner communicator = null;

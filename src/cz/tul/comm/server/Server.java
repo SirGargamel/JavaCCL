@@ -67,7 +67,8 @@ public interface Server extends IService {
      * Register new client communicationg on given IP and on default port.
      *
      * @param adress client IP
-     * @return
+     * @return {@link Communicator} for communication
+     * @throws ConnectionException client could not be contacted
      */
     Communicator registerClient(final InetAddress adress) throws ConnectionException;
 
@@ -76,10 +77,23 @@ public interface Server extends IService {
      *
      * @param task jobs task
      * @return interface for job control and result obtaining
+     * @throws IllegalArgumentException jobs task could not be serialized
      */
     Job submitJob(final Object task) throws IllegalArgumentException;
 
+    /**
+     * Load settings from given file.
+     *
+     * @param settingsFile source file
+     * @return true for succefull load
+     */
     boolean loadSettings(final File settingsFile);
-    
+
+    /**
+     * Save settings to given file.
+     *
+     * @param settingsFile target file
+     * @return true for successfull save
+     */
     boolean saveSettings(final File settingsFile);
 }

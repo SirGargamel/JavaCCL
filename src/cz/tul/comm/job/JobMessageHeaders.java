@@ -22,7 +22,13 @@ public interface JobMessageHeaders {
     /**
      * Submit job result.
      */
-    String JOB_RESULT = "jobResult";    
+    String JOB_RESULT = "jobResult";
+    /**
+     * Sending job for computation.
+     */
     String JOB_TASK = "jobTask";
+    /**
+     * Telling the server how many concurrent job a client can compute.
+     */
     String JOB_COUNT = "jobCount";
 }

@@ -41,6 +41,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
      *
      * @param port listening port
      * @param idFilter
+     * @param clientLister interface for obtaining list of registered clients
      * @return new instance of ServerSocket
      * @throws IOException error creating socket on given port
      */

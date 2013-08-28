@@ -28,6 +28,7 @@ public class ServerSettings implements Serializable {
     /**
      * Read and use server settings.
      *
+     * @param settingsFile target settings file
      * @param clientManager interface for managing clients
      * @return true for successfull load
      */
@@ -70,6 +71,7 @@ public class ServerSettings implements Serializable {
     /**
      * Store server settings to disk.
      *
+     * @param settingsFile target settings file
      * @param clientManager interface for managing clients
      * @return true for successfull save
      */

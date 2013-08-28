@@ -17,6 +17,12 @@ public class DataPacketImpl implements DataPacket {
     private final Object data;
     private InetAddress sourceIP;
 
+    /**
+     * New instance.
+     * @param sourceID sender UUID
+     * @param targetID target UUID
+     * @param data tata for sending
+     */
     public DataPacketImpl(UUID sourceID, UUID targetID, Object data) {
         this.sourceID = sourceID;
         this.targetID = targetID;

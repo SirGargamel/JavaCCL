@@ -50,6 +50,9 @@ public class HistoryRecord {
         return data;
     }
 
+    /**
+     * @return response to message
+     */
     public Object getAnswer() {
         return answer;
     }

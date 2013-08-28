@@ -12,6 +12,8 @@ public interface Assignment {
 
     /**
      * @return jobs task
+     * @throws ConnectionException could not contact the server to tell him that
+     * the client accepts the assignment
      */
     Object getTask() throws ConnectionException;
 
@@ -20,6 +22,8 @@ public interface Assignment {
      *
      * @param dataId data identificator
      * @return requested data
+     * @throws ConnectionException could not contact the server to complete the
+     * request
      */
     Object requestData(final Object dataId) throws ConnectionException;
 
@@ -27,7 +31,8 @@ public interface Assignment {
      * Submit result for this assignment and send it to server.
      *
      * @param result computation result
-     * @return true for successfull sending 
+     * @throws ConnectionException could not contact the server to send the
+     * result
      */
     void submitResult(final Object result) throws ConnectionException;
 
@@ -35,6 +40,8 @@ public interface Assignment {
      * Cancel job computation.
      *
      * @param reason descritpion why the job was cancelled
+     * @throws ConnectionException could not contact the server to cancel the
+     * assignment
      */
     void cancel(final String reason) throws ConnectionException;
 
@@ -42,8 +49,8 @@ public interface Assignment {
      * @return assignments ID
      */
     UUID getId();
-    
-    /**     
+
+    /**
      * @return true if computation has been completed.
      */
     boolean isDone();

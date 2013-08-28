@@ -25,9 +25,7 @@ public class ClientSideJob implements Assignment {
      *
      * @param task task for computation
      * @param jobId jobs ID
-     * @param comm server communicator
-     * @param listenerRegistrator listener registrator
-     * @param taskListener task listener for job cancelation
+     * @param jobManager job management interface
      */
     public ClientSideJob(final Object task, final UUID jobId, final ClientJobManager jobManager) {
         this.task = task;
@@ -76,6 +74,9 @@ public class ClientSideJob implements Assignment {
         return isDone;
     }
 
+    /**
+     * @return {@link JobStatus} of the job
+     */
     public JobStatus getStatus() {
         return jobStatus;
     }

@@ -21,10 +21,10 @@ public enum GenericResponses implements Serializable {
      * Data were delivered to client, whos ID was different than targetID.
      */
     ILLEGAL_TARGET_ID,
-    /*
+    /**
      * No registered listeners / observers found, so message was not  handled in 
      * any way.
-     */
+     */    
     NOT_HANDLED,
     /**
      * No registered listener found, data were given to general message

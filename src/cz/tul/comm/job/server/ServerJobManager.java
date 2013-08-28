@@ -25,6 +25,7 @@ public interface ServerJobManager {
      *
      * @param task jobs task
      * @return interface for job control
+     * @throws IllegalArgumentException Task object cannot be serialized 
      */
     Job submitJob(final Object task) throws IllegalArgumentException;
 

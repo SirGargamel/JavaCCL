@@ -18,10 +18,21 @@ public interface ClientManager extends ClientLister {
      *
      * @param adress client IP
      * @param port client port
-     * @return {@link CommunicatorImpl} for client communication
+     * @return {@link Communicator} for client communication
+     * @throws IllegalArgumentException Invalid IP or port
+     * @throws ConnectionException Could not connect to the client
      */
     Communicator registerClient(final InetAddress adress, final int port) throws IllegalArgumentException, ConnectionException;
-    
+
+    /**
+     * Add client to local client registry without making a connection to client
+     * and assigning new UUID.
+     *
+     * @param address target IP
+     * @param port target port
+     * @param clientId clients UUID
+     * @return {@link Communicator} for client communication
+     */
     Communicator addClient(final InetAddress address, final int port, final UUID clientId);
 
     /**

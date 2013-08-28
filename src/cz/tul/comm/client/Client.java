@@ -16,7 +16,10 @@ import java.util.UUID;
  * @author Petr Ječmen
  */
 public interface Client extends IService {
-    
+
+    /**
+     * @return UUID of this client
+     */
     UUID getLocalID();
 
     /**
@@ -28,6 +31,8 @@ public interface Client extends IService {
 
     /**
      * Deregister client from current server.
+     *
+     * @throws ConnectionException server could not be contacted
      */
     void deregisterFromServer() throws ConnectionException;
 
@@ -58,6 +63,13 @@ public interface Client extends IService {
      */
     boolean isServerUp();
 
+    /**
+     * Register to server running on default port.
+     *
+     * @param address servers IP
+     * @return true if the registration has been successfull
+     * @throws ConnectionException server could not be contacted
+     */
     boolean registerToServer(final InetAddress address) throws ConnectionException;
 
     /**
@@ -66,6 +78,7 @@ public interface Client extends IService {
      * @param address target IP address
      * @param port target port
      * @return true if registration has been successfull
+     * @throws ConnectionException server could not be contacted
      */
     boolean registerToServer(final InetAddress address, final int port) throws ConnectionException;
 
@@ -74,14 +87,41 @@ public interface Client extends IService {
      *
      * @param data data for sending
      * @return true for successfull data sending
+     * @throws ConnectionException could not contact the server
      */
     Object sendDataToServer(final Object data) throws ConnectionException;
 
-    Object sendDataToServer(final Object data, final int timeout) throws ConnectionException;    
-    
+    /**
+     * Send data to server.
+     *
+     * @param data data for sending
+     * @param timeout maximal waiting time
+     * @return true for successfull data sending
+     * @throws ConnectionException could not contact the server
+     */
+    Object sendDataToServer(final Object data, final int timeout) throws ConnectionException;
+
+    /**
+     * Alter the maximal count of concurrent assignments (default is 1)
+     *
+     * @param assignmentCount maximal count of conccurent assignments
+     * @return true for successfull change
+     */
     boolean setMaxNumberOfConcurrentAssignments(final int assignmentCount);
-    
+
+    /**
+     * Load settings from given file.
+     *
+     * @param settingsFile source file
+     * @return true for succefull load
+     */
     boolean loadSettings(final File settingsFile);
-    
+
+    /**
+     * Save settings to given file.
+     *
+     * @param settingsFile target file
+     * @return true for successfull save
+     */
     boolean saveSettings(final File settingsFile);
 }

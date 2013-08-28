@@ -28,6 +28,9 @@ public interface Job {
 
     /**
      * Cancel job computaiton.
+     *
+     * @throws ConnectionException could not contact the client that is
+     * computing the job
      */
     void cancelJob() throws ConnectionException;
 

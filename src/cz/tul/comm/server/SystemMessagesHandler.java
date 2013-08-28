@@ -23,7 +23,6 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
 
     /**
      * @param clientManager client manager
-     * @param jobRequestManager interface for asking for extra jobs
      */
     public SystemMessagesHandler(ClientManager clientManager) {
         if (clientManager != null) {

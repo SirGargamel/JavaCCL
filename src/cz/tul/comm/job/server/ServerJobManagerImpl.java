@@ -594,7 +594,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
         }
         l.add(new JobAction(job, ownerId, action));
     }
-
+    
     @Override
     public synchronized void cancelJobByServer(ServerSideJob job) throws ConnectionException {
         if (jobCleanUp(job)) {
@@ -602,7 +602,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
             owners.get(job).sendData(jt);
             owners.remove(job);
         }
-        job.setStatus(JobStatus.CANCELED);     
+        job.setStatus(JobStatus.CANCELED);
     }
 
     private synchronized boolean jobCleanUp(ServerSideJob job) {
@@ -611,7 +611,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
             JobStatus s = job.getStatus();
             if (s == JobStatus.SENT || s == JobStatus.ACCEPTED) {
                 Communicator comm = owners.get(job);
-                if (comm != null) {                    
+                if (comm != null) {
                     storeJobAction(job, comm.getTargetId(), JobMessageHeaders.JOB_CANCEL);
 
                     switch (s) {

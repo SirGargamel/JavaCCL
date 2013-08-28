@@ -38,11 +38,20 @@ public class Utils {
         l.setLevel(level);        
     }
     
+    /**
+     * Adjust level of logging (of Loggers) for a given class
+     * @param cls target class
+     * @param level new level of logging
+     */
     public static void adjustClassLoggingLevel(final Class cls, final Level level) {
         Logger l = Logger.getLogger(cls.getName());
         l.setLevel(level);        
     }
     
+    /**
+     * Change level of logging of main Logger
+     * @param level new logging level
+     */
     public static void adjustMainHandlersLoggingLevel(final Level level) {
         Logger l = log.getParent();        
         for (Handler h : l.getHandlers()) {

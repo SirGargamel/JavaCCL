@@ -54,6 +54,9 @@ public class ServerSideJob implements Job {
         return result;
     }
 
+    /**     
+     * @param result result of the job
+     */
     public void setResult(Object result) {
         this.result = result;
         setStatus(JobStatus.FINISHED);
