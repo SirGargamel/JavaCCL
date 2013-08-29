@@ -11,7 +11,7 @@ import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.exceptions.ConnectionExceptionCause;
 import cz.tul.comm.server.Server;
 import cz.tul.comm.server.ServerImpl;
-import cz.tul.comm.socket.queue.Listener;
+import cz.tul.comm.socket.Listener;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Observable;
@@ -162,8 +162,8 @@ public class MessagingTest {
         final String msgToServer = "testDataToServer";
         final String msgHeader = "header";        
 
-        final Queue<Identifiable> clientQueue = c.getListenerRegistrator().getIdMessageQueue(id);
-        final Queue<Identifiable> serverQueue = s.getListenerRegistrator().getIdMessageQueue(id);
+        final Queue<Identifiable> clientQueue = c.getListenerRegistrator().createIdMessageQueue(id);
+        final Queue<Identifiable> serverQueue = s.getListenerRegistrator().createIdMessageQueue(id);
 
         try {
             Message m = new Message(id, msgHeader, msgToClient);
@@ -268,8 +268,8 @@ public class MessagingTest {
             fail("Registration from client to server failed - " + ex);
         }
 
-        final Queue<DataPacket> serverQueue = s.getListenerRegistrator().getClientMessageQueue(c.getLocalID());
-        final Queue<DataPacket> clientQueue = c.getListenerRegistrator().getClientMessageQueue(Constants.ID_SERVER);
+        final Queue<DataPacket> serverQueue = s.getListenerRegistrator().createClientMessageQueue(c.getLocalID());
+        final Queue<DataPacket> clientQueue = c.getListenerRegistrator().createClientMessageQueue(Constants.ID_SERVER);
 
         final String header = "abcdefg";
         final Message m = new Message(header, "data");

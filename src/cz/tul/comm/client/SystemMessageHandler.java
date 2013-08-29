@@ -7,7 +7,7 @@ import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.SystemMessageHeaders;
 import cz.tul.comm.socket.IDFilter;
 import cz.tul.comm.messaging.Identifiable;
-import cz.tul.comm.socket.queue.Listener;
+import cz.tul.comm.socket.Listener;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;

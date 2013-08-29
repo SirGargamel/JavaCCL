@@ -2,7 +2,6 @@ package cz.tul.comm.socket;
 
 import cz.tul.comm.communicator.DataPacket;
 import cz.tul.comm.messaging.Identifiable;
-import cz.tul.comm.socket.queue.Listener;
 import java.util.Observer;
 import java.util.Queue;
 import java.util.UUID;
@@ -28,7 +27,7 @@ public interface ListenerRegistrator {
      * @param clientId UUID of the client
      * @return message queue
      */
-    Queue<DataPacket> getClientMessageQueue(final UUID clientId);
+    Queue<DataPacket> createClientMessageQueue(final UUID clientId);
 
     /**
      * Deregister a client listener.
@@ -50,7 +49,7 @@ public interface ListenerRegistrator {
      * @param id message ID
      * @return message queue
      */
-    Queue<Identifiable> getIdMessageQueue(final Object id);
+    Queue<Identifiable> createIdMessageQueue(final Object id);
 
     /**
      * Deregister given listener for given ID. If ID is null, then the listener

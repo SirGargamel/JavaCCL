@@ -8,8 +8,6 @@ import cz.tul.comm.history.HistoryManager;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.SystemMessageHeaders;
 import cz.tul.comm.messaging.Identifiable;
-import cz.tul.comm.socket.queue.Listener;
-import cz.tul.comm.socket.queue.ObjectQueue;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
@@ -83,7 +81,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     }
 
     @Override
-    public Queue<DataPacket> getClientMessageQueue(final UUID clientId) {
+    public Queue<DataPacket> createClientMessageQueue(final UUID clientId) {
         if (dataStorageClient.isListenerRegistered(clientId)) {
             return dataStorageClient.getDataQueue(clientId);
         } else {
@@ -109,7 +107,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     }
 
     @Override
-    public Queue<Identifiable> getIdMessageQueue(final Object id) {
+    public Queue<Identifiable> createIdMessageQueue(final Object id) {
         if (dataStorageId.isListenerRegistered(id)) {
             return dataStorageId.getDataQueue(id);
         } else {
@@ -248,8 +246,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
             }
         }
 
-        if (!(data instanceof Identifiable)
-                || GenericResponses.NOT_HANDLED.equals(result)) {
+        if (GenericResponses.NOT_HANDLED.equals(result)) {
             if (listenersClient.containsKey(clientId)) {
                 result = listenersClient.get(clientId).receiveData(dp);
             } else if (dataStorageClient.isListenerRegistered(clientId)) {
@@ -259,7 +256,9 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         }
 
         if (!sysMsg && !dataListeners.isEmpty()) {
-            result = GenericResponses.NOT_HANDLED_DIRECTLY;
+            if (GenericResponses.NOT_HANDLED.equals(result)) {
+                result = GenericResponses.NOT_HANDLED_DIRECTLY;
+            }
             exec.submit(new Runnable() {
                 @Override
                 public void run() {

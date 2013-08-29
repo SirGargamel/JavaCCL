@@ -17,7 +17,7 @@ import cz.tul.comm.server.ClientManager;
 import cz.tul.comm.server.DataStorage;
 import cz.tul.comm.socket.ListenerRegistrator;
 import cz.tul.comm.messaging.Identifiable;
-import cz.tul.comm.socket.queue.Listener;
+import cz.tul.comm.socket.Listener;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;

@@ -6,7 +6,7 @@ import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.job.JobMessageHeaders;
 import cz.tul.comm.job.JobTask;
 import cz.tul.comm.messaging.Identifiable;
-import cz.tul.comm.socket.queue.Listener;
+import cz.tul.comm.socket.Listener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
