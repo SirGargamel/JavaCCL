@@ -35,7 +35,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
     private HistoryManager hm;
 
     ClientDB() {
-        clients = Collections.synchronizedSet(new HashSet<Communicator>());
+        clients = Collections.synchronizedSet(new HashSet<Communicator>());        
         allowedIDs = Collections.emptySet();
         allowedIDs = Collections.unmodifiableCollection(allowedIDs);
     }
@@ -85,13 +85,15 @@ class ClientDB implements ClientManager, Observer, IDFilter {
         final Iterator<Communicator> i = clients.iterator();
         Communicator cc;
         UUID ccId;
-        while (i.hasNext()) {
-            cc = i.next();
-            ccId = cc.getTargetId();
-            if (ccId != null && ccId.equals(id)) {
-                i.remove();
-                prepareAllowedIDs();
-                break;
+        synchronized (clients) {
+            while (i.hasNext()) {
+                cc = i.next();
+                ccId = cc.getTargetId();
+                if (ccId != null && ccId.equals(id)) {
+                    i.remove();
+                    prepareAllowedIDs();
+                    break;
+                }
             }
         }
         log.log(Level.CONFIG, "Client with ID {0} deregistered", new Object[]{id});

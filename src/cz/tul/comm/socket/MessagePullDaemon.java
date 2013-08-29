@@ -15,6 +15,7 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Locale;
@@ -38,6 +39,7 @@ public class MessagePullDaemon extends Thread implements IService {
 
     /**
      * New instance of daemon for pulling messages.
+     *
      * @param dpHandler handler of data packets
      * @param clientLister interface for obtaining list of clients
      */
@@ -58,7 +60,7 @@ public class MessagePullDaemon extends Thread implements IService {
 
     @Override
     public void run() {
-        Collection<Communicator> comms;
+        Collection<Communicator> comms = new ArrayList<>(clientLister.getClients().size());
         CommunicatorInner commI;
         Message m;
         InetAddress ipComm;
@@ -82,12 +84,13 @@ public class MessagePullDaemon extends Thread implements IService {
                 }
             }
 
-            comms = clientLister.getClients();
-            for (Communicator comm : comms) {
+            comms.clear();
+            comms.addAll(clientLister.getClients());
+            for (Communicator comm : clientLister.getClients()) {
                 if (!run) {
                     break;
                 }
-                
+
                 if (comm instanceof CommunicatorInner) {
                     commI = (CommunicatorInner) comm;
                     final UUID id = commI.getSourceId();
@@ -166,6 +169,7 @@ public class MessagePullDaemon extends Thread implements IService {
 
     /**
      * Handle a request from a client (server) to pull data.
+     *
      * @param s socket for answering
      * @param pullData received data
      * @param in stream for reading a response
