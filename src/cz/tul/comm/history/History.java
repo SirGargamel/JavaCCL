@@ -140,4 +140,15 @@ public class History implements HistoryManager {
     public void enable(boolean enable) {
         isEnabled = enable;
     }
+
+    @Override
+    public void enableAutomticExportBeforeShutdown(final File target, final HistorySorter sorter) {
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                export(target, sorter);
+            }
+        }));
+    }
 }

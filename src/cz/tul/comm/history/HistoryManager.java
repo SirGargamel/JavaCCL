@@ -27,7 +27,7 @@ public interface HistoryManager {
      * @param ipSource source IP
      * @param data transmitted data
      * @param accepted true if data has been received successfully
-     * @param answer response to the message 
+     * @param answer response to the message
      */
     void logMessageReceived(final InetAddress ipSource, final Object data, final boolean accepted, final Object answer);
 
@@ -47,6 +47,15 @@ public interface HistoryManager {
      * @param eu new export unit
      */
     void registerExporter(final ExportUnit eu);
-    
+
     void enable(final boolean enable);
+
+    /**
+     * When the instance of history is being shutdown, it will export all
+     * recorder data to the target file, records are
+     * sorted using given sorter (you can use null for no sorting).
+     * @param target target file
+     * @param sorter 
+     */
+    void enableAutomticExportBeforeShutdown(final File target, final HistorySorter sorter);
 }
