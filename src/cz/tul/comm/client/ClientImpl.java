@@ -40,49 +40,11 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class ClientImpl implements IService, ServerInterface, Client, IDFilter, ClientLister {
+public class ClientImpl extends Client implements IService, ServerInterface, IDFilter, ClientLister {
 
     private static final Logger log = Logger.getLogger(ClientImpl.class.getName());
     private static final int TIMEOUT = 5000;
-
-    /**
-     * Create and initialize new instance of client at given port.
-     *
-     * @param port target listening port
-     * @return new Client instance
-     * @throws IOException target port is already in use
-     */
-    public static Client initNewClient(final int port) throws IOException {
-        ClientImpl result = new ClientImpl();
-        result.start(port);
-        log.log(Level.INFO, "New client created on port {0}", port);
-
-        return result;
-    }
-
-    /**
-     *
-     * @return new client instance on default port
-     */
-    public static Client initNewClient() {
-        Client c = null;
-        int port = Constants.DEFAULT_PORT;
-
-        while (c == null && port < 65535) {
-            try {
-                c = initNewClient(++port);
-            } catch (IOException ex) {
-                log.log(Level.WARNING, "Error initializing server on port " + (port - 1), ex);
-            }
-
-        }
-
-        if (c == null) {
-            log.log(Level.WARNING, "Error initializing client, no free port found");
-        }
-
-        return c;
-    }
+    
     private ServerSocket serverSocket;
     private final HistoryManager history;
     private CommunicatorInner comm;
@@ -90,7 +52,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
     private ClientJobManagerImpl jm;
     private ServerDiscoveryDaemon sdd;
 
-    private ClientImpl() {
+    ClientImpl() {
         history = new History();
 
         if (ComponentSwitches.useClientDiscovery) {
@@ -213,7 +175,7 @@ public class ClientImpl implements IService, ServerInterface, Client, IDFilter, 
         return comm;
     }
 
-    private void start(final int port) throws IOException {
+    void start(final int port) throws IOException {
         serverSocket = ServerSocket.createServerSocket(port, this, this);
         serverSocket.registerHistory(history);
 
