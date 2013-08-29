@@ -58,8 +58,7 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                     case SystemMessageHeaders.LOGOUT:
                         final Object id = m.getData();
                         if (id instanceof UUID) {
-                            clientManager.deregisterClient((UUID) id);
-                            log.log(Level.CONFIG, "Client with id {0} deregistered.", id);
+                            clientManager.deregisterClient((UUID) id);                            
                             return GenericResponses.OK;
                         } else {
                             log.log(Level.WARNING, "Invalid client id received - {0}", id.toString());
