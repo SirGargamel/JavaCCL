@@ -143,6 +143,8 @@ public class HistoryTest {
                 }
             }
 
+            s.getHistory().enable(false);
+            
             c.stopService();
             s.stopService();
 
