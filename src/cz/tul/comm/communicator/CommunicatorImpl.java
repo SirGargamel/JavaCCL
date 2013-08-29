@@ -61,8 +61,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     private final Map<DataPacket, Object> responses;
     private UUID sourceId;
     private UUID targetId;
-    private Calendar lastStatusUpdateTime;
-    private Calendar lastUnsentDataCheckTime;
+    private Calendar lastStatusUpdateTime;    
     private Status status;
     private HistoryManager hm;
 
@@ -314,8 +313,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     }
 
     @Override
-    public Queue<DataPacket> getUnsentData() {
-        lastUnsentDataCheckTime = Calendar.getInstance(Locale.getDefault());
+    public Queue<DataPacket> getUnsentData() {        
         return unsentData;
     }
 
