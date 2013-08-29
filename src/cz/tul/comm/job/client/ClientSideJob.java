@@ -72,12 +72,5 @@ public class ClientSideJob implements Assignment {
     @Override
     public boolean isDone() {
         return isDone;
-    }
-
-    /**
-     * @return {@link JobStatus} of the job
-     */
-    public JobStatus getStatus() {
-        return jobStatus;
-    }
+    }    
 }
