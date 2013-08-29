@@ -198,8 +198,7 @@ public class JobTest {
 
                     Integer count = (Integer) tsk;
 
-                    synchronized (JobTest.this) {
-                        System.out.println("Waiting " + count + "ms.");
+                    synchronized (JobTest.this) {                        
                         JobTest.this.wait(count);
                     }
 
@@ -653,7 +652,7 @@ public class JobTest {
             });
 
             final Client failingClient = ClientImpl.initNewClient(5254);
-            
+
             try {
                 failingClient.registerToServer(InetAddress.getLoopbackAddress());
             } catch (ConnectionException ex) {
@@ -905,8 +904,9 @@ public class JobTest {
     public void testOfflineClient() {
         try {
             final Counter counter = new Counter();
-
-            c.setAssignmentListener(new AssignmentListener() {
+            final int multiplier = 3;
+            
+            final AssignmentListener al = new AssignmentListener() {
                 @Override
                 public void receiveTask(Assignment task) {
                     try {
@@ -920,11 +920,9 @@ public class JobTest {
 
                         synchronized (JobTest.this) {
                             JobTest.this.wait(count);
-                        }
-
-                        counter.add(count);
-
-                        task.submitResult(GenericResponses.OK);
+                        }                                                
+                        
+                        task.submitResult(multiplier * count);
                     } catch (ConnectionException ex) {
                         fail("Connection to server failed - " + ex);
                     } catch (InterruptedException ex) {
@@ -936,7 +934,9 @@ public class JobTest {
                 public void cancelTask(Assignment task) {
                     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                 }
-            });
+            };
+
+            c.setAssignmentListener(al);
 
             final Client failingClient = ClientImpl.initNewClient(5254);
             try {
@@ -945,55 +945,24 @@ public class JobTest {
                 fail("Failed to connect client to server - " + ex);
             }
 
-            failingClient.setAssignmentListener(new AssignmentListener() {
-                @Override
-                public void receiveTask(Assignment task) {
-                    try {
-                        Object tsk = task.getTask();
+            failingClient.setAssignmentListener(al);
 
-                        if (!(tsk instanceof Integer)) {
-                            fail("Illegal task received");
-                        }
-
-                        Integer count = (Integer) tsk;
-
-                        synchronized (JobTest.this) {
-                            JobTest.this.wait(count);
-                        }
-
-                        counter.add(count);
-                        task.submitResult(GenericResponses.OK);
-                    } catch (ConnectionException ex) {
-                        fail("Connection to server failed - " + ex);
-                    } catch (InterruptedException ex) {
-                        fail("Waiting has been interrupted - " + ex);
-                    }
-
-
-                }
-
-                @Override
-                public void cancelTask(Assignment task) {
-                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                }
-            });
-
-            int cnt = 0, val;
+            int totalCount = 0, val;
             Random rnd = new Random();
             final int jobCount = rnd.nextInt(5) + 5;
             Set<Job> jobs = new HashSet<>(jobCount);
             for (int i = 0; i < jobCount; i++) {
                 val = (rnd.nextInt(4) + 1) * 10;
-                cnt += val;
+                totalCount += multiplier * val;
                 jobs.add(s.submitJob(val));
             }
 
             // client goes offline
             try {
                 synchronized (this) {
-                    this.wait(cnt / 2);
+                    this.wait(totalCount / 4);
                 }
-                failingClient.stopService();
+                failingClient.stopService();                
             } catch (InterruptedException ex) {
                 fail("Failed to wait before client goes offline.");
             }
@@ -1001,10 +970,10 @@ public class JobTest {
             s.getJobManager().waitForAllJobs();
 
             for (Job j : jobs) {
-                assertEquals(j.getStatus().toString(), GenericResponses.OK, j.getResult(true));
+                counter.add((int) j.getResult(true));                
             }
 
-            assertEquals(cnt, counter.getCount());
+            assertEquals(totalCount, counter.getCount());
         } catch (IOException ex) {
             fail("Failed to initialize client.");
         }
@@ -1152,7 +1121,7 @@ public class JobTest {
             fail("Waiting for cancelation failed.");
         }
 
-        s.getJobManager().stopAllJobs();        
+        s.getJobManager().stopAllJobs();
 
         for (Job j : jobs) {
             assertEquals(null, j.getResult(true));

@@ -204,10 +204,12 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         try {
             if (comm != null) {
                 sendDataToServer(new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.LOGOUT, comm.getSourceId()));
-            }
+            }            
         } catch (ConnectionException ex) {
             log.warning("Server connection timed out.");
         }
+        disconnectFromServer();
+        
         if (serverSocket != null) {
             serverSocket.stopService();
         }

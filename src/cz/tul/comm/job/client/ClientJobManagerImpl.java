@@ -70,7 +70,7 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
 
     private Object sendDataToServer(final UUID jobId, final String header, final Object result) throws ConnectionException {
         waitForSever();
-        final JobTask jt = new JobTask(jobId, header, result);
+        final JobTask jt = new JobTask(jobId, header, result);        
         return server.getServerComm().sendData(jt);
     }
 
@@ -82,7 +82,7 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
                     try {
                         this.wait(WAIT_TIME);
                     } catch (InterruptedException ex) {
-                        log.log(Level.WARNING, "Waiting for server being aviable for data request has been interrupted.", ex);
+                        log.log(Level.WARNING, "Waiting for server being available for data request has been interrupted.", ex);
                     }
                 }
             } while (!server.isServerUp());
