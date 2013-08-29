@@ -63,7 +63,7 @@ public class ClientImplTest {
                 c.sendDataToServer(null);
                 fail("Should have failed because server is offline.");
             } catch (ConnectionException ex) {
-                assertEquals(ConnectionExceptionCause.TIMEOUT, ex.getExceptionCause());
+                assertEquals(ConnectionExceptionCause.CONNECTION_ERROR, ex.getExceptionCause());
             } catch (InterruptedException ex) {
                 fail("Waiting has been interrupted.");
             }
