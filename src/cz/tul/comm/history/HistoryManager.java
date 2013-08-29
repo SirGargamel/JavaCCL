@@ -47,4 +47,6 @@ public interface HistoryManager {
      * @param eu new export unit
      */
     void registerExporter(final ExportUnit eu);
+    
+    void enable(final boolean enable);
 }

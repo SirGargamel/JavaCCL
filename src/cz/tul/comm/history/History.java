@@ -33,6 +33,7 @@ import org.w3c.dom.Element;
 public class History implements HistoryManager {
 
     private static final Logger log = Logger.getLogger(History.class.getName());
+    private boolean isEnabled;
 
     private static Document prepareDocument() throws ParserConfigurationException {
         final DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -70,21 +71,25 @@ public class History implements HistoryManager {
             local = InetAddress.getLoopbackAddress();
         }
         localHost = local;
+        isEnabled = true;
     }
 
     @Override
     public void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted, final Object answer) {
-        final HistoryRecord r = new HistoryRecord(localHost, ipDestination, data, accepted, answer);
-        records.add(r);
-        log.log(Level.FINE, "Sent message stored to history - {0}", r);
-
+        if (isEnabled) {
+            final HistoryRecord r = new HistoryRecord(localHost, ipDestination, data, accepted, answer);
+            records.add(r);
+            log.log(Level.FINE, "Sent message stored to history - {0}", r);
+        }
     }
 
     @Override
     public void logMessageReceived(final InetAddress ipSource, final Object data, final boolean accepted, final Object answer) {
-        final HistoryRecord r = new HistoryRecord(ipSource, localHost, data, accepted, answer);
-        records.add(r);
-        log.log(Level.FINE, "Received message stored to history - {0}", r);
+        if (isEnabled) {
+            final HistoryRecord r = new HistoryRecord(ipSource, localHost, data, accepted, answer);
+            records.add(r);
+            log.log(Level.FINE, "Received message stored to history - {0}", r);
+        }
     }
 
     @Override
@@ -102,7 +107,7 @@ public class History implements HistoryManager {
             final List<Element> data = sorter.sortHistory(records, doc);
             for (Element e : data) {
                 rootElement.appendChild(e);
-            }            
+            }
             exportDocumentToXML(target, doc);
             result = true;
 
@@ -124,10 +129,15 @@ public class History implements HistoryManager {
         log.log(Level.FINE, "New export unit registered - {0}", eu.getClass().getCanonicalName());
     }
 
-    /**     
+    /**
      * @return
      */
     public List<HistoryRecord> getRecords() {
         return records;
+    }
+
+    @Override
+    public void enable(boolean enable) {
+        isEnabled = enable;
     }
 }
