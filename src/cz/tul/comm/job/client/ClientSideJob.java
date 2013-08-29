@@ -1,7 +1,6 @@
 package cz.tul.comm.job.client;
 
 import cz.tul.comm.exceptions.ConnectionException;
-import cz.tul.comm.job.JobStatus;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,8 +15,7 @@ public class ClientSideJob implements Assignment {
     private static final Logger log = Logger.getLogger(ClientSideJob.class.getName());
     private final Object task;
     private final ClientJobManager jobManager;
-    private final UUID jobId;
-    private JobStatus jobStatus;
+    private final UUID jobId;    
     private boolean isDone;
 
     /**
@@ -32,8 +30,7 @@ public class ClientSideJob implements Assignment {
         this.jobId = jobId;
         this.jobManager = jobManager;
 
-        isDone = false;
-        jobStatus = JobStatus.ACCEPTED;
+        isDone = false;        
     }
 
     @Override
@@ -45,8 +42,7 @@ public class ClientSideJob implements Assignment {
     @Override
     public void submitResult(Object result) throws ConnectionException {
         log.log(Level.CONFIG, "Submitting result for task with ID {0}", jobId);
-        isDone = true;
-        jobStatus = JobStatus.FINISHED;
+        isDone = true;        
         jobManager.submitResult(jobId, result);
     }
 
@@ -59,8 +55,7 @@ public class ClientSideJob implements Assignment {
 
     @Override
     public void cancel(final String reason) throws ConnectionException {
-        log.log(Level.CONFIG, "Canceling task with ID {0}", jobId);
-        jobStatus = JobStatus.CANCELED;
+        log.log(Level.CONFIG, "Canceling task with ID {0}", jobId);        
         jobManager.cancelJob(jobId);
     }
 
