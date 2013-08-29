@@ -165,7 +165,7 @@ public class ClientDBTest {
             fail("Failed to register client on server - " + ex);
         }
 
-        final Collection<Communicator> expResult = new HashSet(3);
+        final Collection<Communicator> expResult = new HashSet<>(3);
         expResult.add(comm1);
         expResult.add(comm2);
         final Collection<Communicator> result = instance.getClients();
