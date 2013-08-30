@@ -129,7 +129,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             } else {
                 readAndReply = true;
             }
-        } else {
+        } else if (stat.equals(Status.PASSIVE)) {
             if (!readAndReply && !unsentData.contains(dp)) {
                 unsentData.add(dp);
                 try {
@@ -139,6 +139,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                     log.log(Level.WARNING, "Waiting for response has been interrupted.", ex);
                 }
             }
+        } else {
+            throw new ConnectionException(ConnectionExceptionCause.CONNECTION_ERROR);
         }
 
         if (hm != null) {
@@ -259,17 +261,17 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         if (hm != null) {
             hm.logMessageSend(address, data, result, stat);
         }
-        
+
         if (stat.equals(Status.OFFLINE)) {
             final Calendar currentTime = Calendar.getInstance();
             final long dif = currentTime.getTimeInMillis() - lastMsgPull.getTimeInMillis();
             if (dif < MSG_PULL_TIME_LIMIT) {
-                stat = Status.ONLINE;
+                stat = Status.PASSIVE;
             }
         }
 
         setStatus(stat);
-        return getStatus();
+        return stat;
     }
 
     private void setStatus(final Status newStatus) {
@@ -288,10 +290,16 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     }
 
     @Override
+    public boolean isOnline() {
+        final Status stat = getStatus();
+        return (stat.equals(Status.ONLINE) || stat.equals(Status.PASSIVE));
+    }
+
+    @Override
     public Status getStatus() {
         Calendar lastUpdate = getLastStatusUpdate();
         if (lastUpdate == null
-                || Calendar.getInstance().getTimeInMillis() - lastUpdate.getTimeInMillis() > STATUS_CHECK_INTERVAL) {
+                || (Calendar.getInstance().getTimeInMillis() - lastUpdate.getTimeInMillis() > STATUS_CHECK_INTERVAL)) {
             checkStatus();
         }
 

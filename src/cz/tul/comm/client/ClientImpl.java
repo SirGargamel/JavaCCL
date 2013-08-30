@@ -8,7 +8,6 @@ import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
 import cz.tul.comm.communicator.CommunicatorImpl;
 import cz.tul.comm.communicator.CommunicatorInner;
-import cz.tul.comm.communicator.Status;
 import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.exceptions.ConnectionExceptionCause;
 import cz.tul.comm.history.History;
@@ -122,9 +121,8 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     @Override
     public boolean isServerUp() {
         boolean serverStatus = false;
-        if (comm != null) {
-            Status s = comm.getStatus();
-            serverStatus = !s.equals(Status.OFFLINE);
+        if (comm != null) {            
+            serverStatus = comm.isOnline();
         }
         log.log(Level.INFO, "Is server running - {0}", serverStatus);
         return serverStatus;

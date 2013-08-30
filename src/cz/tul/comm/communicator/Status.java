@@ -15,4 +15,9 @@ public enum Status {
      * Client is aviable.
      */
     ONLINE,
+    /**
+     * Target could not be reached directly, but he can make connection to local
+     * instance and retrieve messages.
+     */
+    PASSIVE
 }

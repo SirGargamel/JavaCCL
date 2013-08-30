@@ -3,7 +3,6 @@ package cz.tul.comm.job.server;
 import cz.tul.comm.GenericResponses;
 import cz.tul.comm.IService;
 import cz.tul.comm.communicator.Communicator;
-import cz.tul.comm.communicator.Status;
 import cz.tul.comm.exceptions.ConnectionException;
 import cz.tul.comm.exceptions.ConnectionExceptionCause;
 import cz.tul.comm.job.JobCount;
@@ -401,8 +400,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
     }
 
     private boolean isClientOnline(final Communicator comm) {
-        final Status s = comm.getStatus();
-        final boolean result = !s.equals(Status.OFFLINE);
+        final boolean result = comm.isOnline();
         if (result) {
             storeClientOnlineStatus(comm);
         }
@@ -580,7 +578,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 if (list.isEmpty()) {
                     jobComputing.remove(owner);
                 }
-            }            
+            }
             log.log(Level.CONFIG, "Job with ID {0} has been computed succefully.", id);
             storeJobAction(ssj, owner.getTargetId(), JobMessageHeaders.JOB_RESULT);
             wakeUp();

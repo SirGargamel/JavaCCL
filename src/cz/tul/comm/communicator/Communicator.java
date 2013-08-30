@@ -34,6 +34,11 @@ public interface Communicator {
     int getPort();
 
     /**
+     * @return tre if the library can deliver messages to target
+     */
+    boolean isOnline();
+
+    /**
      * @return last known client status
      */
     Status getStatus();
@@ -55,8 +60,7 @@ public interface Communicator {
      * @param timeout time, after which sending is considered unsuccessfull
      * @return true for successfull send
      * @throws IllegalArgumentException Data could not be serialized.
-     * @throws ConnectionException Target could not be contacted. 
+     * @throws ConnectionException Target could not be contacted.
      */
     Object sendData(final Object data, final int timeout) throws IllegalArgumentException, ConnectionException;
-    
 }
