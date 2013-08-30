@@ -42,7 +42,7 @@ public class ServerSettings implements Serializable {
                 for (String f : fields.keySet()) {
                     switch (f) {
                         case FIELD_NAME_CLIENT:
-                            String[] split = fields.get(f).split(Constants.IP_PORT_SPLITTER);
+                            String[] split = fields.get(f).split(Constants.DELIMITER);
                             try {
                                 if (clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1])) != null) {
                                     result = true;
@@ -83,7 +83,7 @@ public class ServerSettings implements Serializable {
         StringBuilder sb = new StringBuilder();
         for (Communicator c : comms) {
             sb.append(c.getAddress().getHostAddress());
-            sb.append(Constants.IP_PORT_SPLITTER);
+            sb.append(Constants.DELIMITER);
             sb.append(c.getPort());
             xml.addField(FIELD_NAME_CLIENT, sb.toString());
             sb.setLength(0);

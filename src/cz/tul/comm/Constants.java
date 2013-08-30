@@ -18,9 +18,9 @@ public interface Constants {
      */
     String DISCOVERY_QUESTION = "DISCOVER_CLIENT";
     /**
-     * character splitting port number from rest of the response
+     * data used as an identifier for distributing server info amongs clients
      */
-    String DELIMITER = ":";
+    String DISCOVERY_INFO = "DISCOVER_SERVER";
     /**
      * Server UUID
      */
@@ -37,7 +37,7 @@ public interface Constants {
 //    UUID ID_SYS_MSG = UUID.fromString("77776666-5555-4444-3333-222211110000");
     UUID ID_SYS_MSG = UUID.randomUUID();
     /**
-     * Spliitting character between IP and port in XML settings
+     * Spliitting character
      */
-    String IP_PORT_SPLITTER = "-";
+    String DELIMITER = "-";
 }

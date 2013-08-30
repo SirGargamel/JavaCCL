@@ -1,5 +1,6 @@
 package cz.tul.comm.client;
 
+import cz.tul.comm.discovery.ServerDiscoveryDaemon;
 import cz.tul.comm.socket.ClientLister;
 import cz.tul.comm.ComponentSwitches;
 import cz.tul.comm.Constants;

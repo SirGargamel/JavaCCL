@@ -45,7 +45,7 @@ public class ClientSettings {
                     switch (f) {
                         case FIELD_NAME_SERVER:
                             try {
-                                String[] split = fields.get(f).split(Constants.IP_PORT_SPLITTER);
+                                String[] split = fields.get(f).split(Constants.DELIMITER);
                                 ip = InetAddress.getByName(split[0]);
                                 if (split.length > 1) {
                                     port = Integer.valueOf(split[1]);
@@ -115,7 +115,7 @@ public class ClientSettings {
     private static String composeServerAddress(final InetAddress address, final int port) {
         StringBuilder sb = new StringBuilder();
         sb.append(address.getHostAddress());
-        sb.append(Constants.IP_PORT_SPLITTER);
+        sb.append(Constants.DELIMITER);
         sb.append(port);
         return sb.toString();
     }

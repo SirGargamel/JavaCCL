@@ -13,7 +13,7 @@ import cz.tul.comm.job.server.ServerJobManagerImpl;
 import cz.tul.comm.messaging.Message;
 import cz.tul.comm.messaging.SystemMessageHeaders;
 import cz.tul.comm.persistence.ServerSettings;
-import cz.tul.comm.server.daemons.ClientDiscoveryDaemon;
+import cz.tul.comm.discovery.ClientDiscoveryDaemon;
 import cz.tul.comm.socket.ListenerRegistrator;
 import cz.tul.comm.socket.ServerSocket;
 import java.io.File;
