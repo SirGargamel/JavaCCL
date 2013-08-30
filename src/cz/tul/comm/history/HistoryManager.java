@@ -48,6 +48,9 @@ public interface HistoryManager {
      */
     void registerExporter(final ExportUnit eu);
 
+    /**     
+     * @param enable false for disabling storing info to history
+     */
     void enable(final boolean enable);
 
     /**
