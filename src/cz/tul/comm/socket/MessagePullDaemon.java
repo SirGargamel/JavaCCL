@@ -67,23 +67,11 @@ public class MessagePullDaemon extends Thread implements IService {
         int port;
         Object dataIn = null, response = null;
         boolean dataRead = false;
-        Calendar lastTime = Calendar.getInstance(Locale.getDefault()), now;
+        Calendar lastTime, now;
         long dif, wait;
 
         while (run) {
-            now = Calendar.getInstance(Locale.getDefault());
-            dif = now.getTimeInMillis() - lastTime.getTimeInMillis();
-            lastTime = now;
-            wait = WAIT_TIME - dif;
-            if (wait > 0) {
-                try {
-                    synchronized (this) {
-                        this.wait(wait);
-                    }
-                } catch (InterruptedException ex) {
-                    log.log(Level.WARNING, "Waiting between message pulls has been interrupted.", ex);
-                }
-            }
+            lastTime = Calendar.getInstance(Locale.getDefault());
 
             comms.clear();
             comms.addAll(clientLister.getClients());
@@ -148,11 +136,16 @@ public class MessagePullDaemon extends Thread implements IService {
                 }
             }
 
-            synchronized (this) {
+            now = Calendar.getInstance(Locale.getDefault());
+            dif = now.getTimeInMillis() - lastTime.getTimeInMillis();            
+            wait = WAIT_TIME - dif;
+            if (wait > 0) {
                 try {
-                    this.wait(WAIT_TIME);
+                    synchronized (this) {
+                        this.wait(wait);
+                    }
                 } catch (InterruptedException ex) {
-                    log.log(Level.WARNING, "Waiting of MessaPullDaemon has been interrupted.", ex);
+                    log.log(Level.WARNING, "Waiting between message pulls has been interrupted.", ex);
                 }
             }
         }
@@ -183,7 +176,7 @@ public class MessagePullDaemon extends Thread implements IService {
             final UUID id = (UUID) pullData;
             Collection<Communicator> comms = clientLister.getClients();
 
-            for (Communicator comm : comms) {
+            for (Communicator comm : comms) {                
                 if (comm instanceof CommunicatorInner) {
                     communicator = (CommunicatorInner) comm;
 
