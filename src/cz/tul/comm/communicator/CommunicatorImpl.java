@@ -262,7 +262,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             hm.logMessageSend(address, data, result, stat);
         }
 
-        if (stat.equals(Status.OFFLINE)) {
+        if (stat.equals(Status.OFFLINE) && lastMsgPull != null) {
             final Calendar currentTime = Calendar.getInstance();
             final long dif = currentTime.getTimeInMillis() - lastMsgPull.getTimeInMillis();
             if (dif < MSG_PULL_TIME_LIMIT) {
