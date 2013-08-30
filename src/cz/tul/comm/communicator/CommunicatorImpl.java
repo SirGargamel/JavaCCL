@@ -52,6 +52,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         return new CommunicatorImpl(address, port);
     }
     private final int MSG_SEND_TIMEOUT = 5000;
+    private final int MSG_PULL_TIME_LIMIT = 2000;
     private final int STATUS_CHECK_TIMEOUT = 200;
     private final int STATUS_CHECK_INTERVAL = 500;
     private final int REPONSE_CHECK_INTERVAL = 100;
@@ -61,7 +62,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     private final Map<DataPacket, Object> responses;
     private UUID sourceId;
     private UUID targetId;
-    private Calendar lastStatusUpdateTime;    
+    private Calendar lastStatusUpdateTime;
+    private Calendar lastMsgPull;
     private Status status;
     private HistoryManager hm;
 
@@ -257,6 +259,14 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         if (hm != null) {
             hm.logMessageSend(address, data, result, stat);
         }
+        
+        if (stat.equals(Status.OFFLINE)) {
+            final Calendar currentTime = Calendar.getInstance();
+            final long dif = currentTime.getTimeInMillis() - lastMsgPull.getTimeInMillis();
+            if (dif < MSG_PULL_TIME_LIMIT) {
+                stat = Status.ONLINE;
+            }
+        }
 
         setStatus(stat);
         return getStatus();
@@ -313,7 +323,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     }
 
     @Override
-    public Queue<DataPacket> getUnsentData() {        
+    public Queue<DataPacket> getUnsentData() {
+        lastMsgPull = Calendar.getInstance();
         return unsentData;
     }
 
