@@ -73,6 +73,7 @@ public class MessagePullDaemon extends Thread implements IService {
         while (run) {
             now = Calendar.getInstance(Locale.getDefault());
             dif = now.getTimeInMillis() - lastTime.getTimeInMillis();
+            lastTime = now;
             wait = WAIT_TIME - dif;
             if (wait > 0) {
                 try {
