@@ -44,15 +44,17 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
 
     private static final Logger log = Logger.getLogger(ClientImpl.class.getName());
     private static final int TIMEOUT = 5000;
-    
     private ServerSocket serverSocket;
     private final HistoryManager history;
     private CommunicatorInner comm;
     private SystemMessageHandler csm;
     private ClientJobManagerImpl jm;
     private ServerDiscoveryDaemon sdd;
+    private int concurentJobCount;
 
     ClientImpl() {
+        concurentJobCount = 1;
+
         history = new History();
 
         if (ComponentSwitches.useClientDiscovery) {
@@ -91,6 +93,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
             if (id instanceof UUID) {
                 comm.setSourceId(((UUID) id));
                 result = true;
+                setMaxNumberOfConcurrentAssignments(concurentJobCount);
                 log.log(Level.INFO, "Client has been registered to new server, new ID has been received - {0}", comm.getSourceId());
             } else {
                 comm = oldComm;
@@ -110,6 +113,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         comm.setTargetId(Constants.ID_SERVER);
         comm.setSourceId(clientId);
         comm.registerHistory(history);
+        setMaxNumberOfConcurrentAssignments(concurentJobCount);
     }
 
     @Override
@@ -122,7 +126,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     @Override
     public boolean isServerUp() {
         boolean serverStatus = false;
-        if (comm != null) {            
+        if (comm != null) {
             serverStatus = comm.isOnline();
         }
         log.log(Level.INFO, "Is server running - {0}", serverStatus);
@@ -203,12 +207,12 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         try {
             if (comm != null) {
                 sendDataToServer(new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.LOGOUT, comm.getSourceId()));
-            }            
+            }
         } catch (ConnectionException ex) {
             log.warning("Server connection timed out.");
         }
         disconnectFromServer();
-        
+
         if (serverSocket != null) {
             serverSocket.stopService();
         }
