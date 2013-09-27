@@ -37,6 +37,7 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
         this.server = server;
         jobs = new HashMap<>();
         exec = Executors.newCachedThreadPool();
+        assignmentListener = null;
     }
 
     /**
@@ -70,7 +71,7 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
 
     private Object sendDataToServer(final UUID jobId, final String header, final Object result) throws ConnectionException {
         waitForSever();
-        final JobTask jt = new JobTask(jobId, header, result);        
+        final JobTask jt = new JobTask(jobId, header, result);
         return server.getServerComm().sendData(jt);
     }
 
@@ -96,15 +97,19 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
             final UUID id = jt.getJobId();
             switch (jt.getTaskDescription()) {
                 case JobMessageHeaders.JOB_TASK:
-                    final ClientSideJob job = new ClientSideJob(jt.getTask(), id, this);
-                    jobs.put(job.getId(), job);
-                    exec.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            assignmentListener.receiveTask(job);
-                        }
-                    });
-                    return GenericResponses.OK;
+                    if (assignmentListener != null) {
+                        final ClientSideJob job = new ClientSideJob(jt.getTask(), id, this);
+                        jobs.put(job.getId(), job);
+                        exec.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                assignmentListener.receiveTask(job);
+                            }
+                        });
+                        return GenericResponses.OK;
+                    } else {
+                        return GenericResponses.GENERAL_ERROR;
+                    }
                 case JobMessageHeaders.JOB_CANCEL:
                     jobs.remove(id);
                     exec.submit(new Runnable() {
