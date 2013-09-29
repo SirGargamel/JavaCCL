@@ -94,6 +94,7 @@ public class Utils {
                 result = true;
             } catch (IOException ex) {
                 // not serializable
+                log.log(Level.CONFIG, "Could not serialize data class {0}", ex.getLocalizedMessage());
             }
         }
 
