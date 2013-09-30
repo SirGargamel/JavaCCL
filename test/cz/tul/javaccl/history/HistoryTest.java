@@ -115,31 +115,27 @@ public class HistoryTest {
     public void testHistoryServerAndClient() {
         System.out.println("logHistoryServerAndClient");
 
-        InetAddress ipLocal = InetAddress.getLoopbackAddress();
-        UUID clientUuid = UUID.fromString("550e8400-e29b-41d4-a716-446655449999");
+        InetAddress ipLocal = InetAddress.getLoopbackAddress();        
         UUID uuid = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
         UUID uuid2 = UUID.fromString("550e8400-e29b-41d4-a716-446655440111");
 
         final Server s = (ServerImpl) ServerImpl.initNewServer();
         final ClientImpl c;
         try {
+            s.getHistory().enable(false);
             c = (ClientImpl) ClientImpl.initNewClient(5253);
-
-            c.setServerInfo(ipLocal, 5252, clientUuid);
-            s.getClientManager().addClient(ipLocal, 5253, clientUuid);
-
+            c.registerToServer(ipLocal);
+            
             synchronized (this) {
-                try {
+                try {                    
+                    s.getHistory().enable(true);
                     s.getClient(ipLocal).sendData(new Message(uuid, "Header", "data1"));
-                    this.wait(10);
+                    this.wait(50);
                     c.sendDataToServer(new Message(uuid, "Header", "dataBack"));
-                    this.wait(25);
-                    s.getClient(ipLocal).sendData(new Message(uuid2, "Header", "data2"));
-                    this.wait(25);
+                    this.wait(50);
+                    s.getClient(ipLocal).sendData(new Message(uuid2, "Header", "data2"));                    
                 } catch (InterruptedException ex) {
-                    fail("Waiting interrupted");
-                } catch (ConnectionException ex) {
-                    fail("Failed to deliver message - " + ex);
+                    fail("Waiting interrupted - " + ex.getLocalizedMessage());
                 }
             }
 
@@ -158,7 +154,9 @@ public class HistoryTest {
             prepareLocalIp(new File(HistoryTest.class.getResource("testExportUUID.xml").getFile()), compareTarget);
             assertFiles(compareTarget, exportTarget);
         } catch (IOException ex) {
-            fail("Failed to initialize clients.");
+            fail("Failed to initialize clients - " + ex.getLocalizedMessage());
+        } catch (ConnectionException ex) {
+            fail("Communication failed - " + ex.getExceptionCause());
         }
 
 
