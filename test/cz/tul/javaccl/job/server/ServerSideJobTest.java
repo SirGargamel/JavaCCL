@@ -57,8 +57,7 @@ public class ServerSideJobTest {
      */
     @Test
     public void testIsDone() {
-        System.out.println("isDone");
-        System.out.println("isCanceled");
+        System.out.println("isDone");        
         ServerSideJob job = new ServerSideJob(null, null);
 
         job.setStatus(JobStatus.SUBMITTED);

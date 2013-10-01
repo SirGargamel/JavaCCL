@@ -54,7 +54,7 @@ public class ServerSideJob implements Job {
         return result;
     }
 
-    /**     
+    /**
      * @param result result of the job
      */
     public void setResult(Object result) {
@@ -68,7 +68,10 @@ public class ServerSideJob implements Job {
     @Override
     public void cancelJob() throws ConnectionException {
         log.log(Level.CONFIG, "Canceling job with ID {0}.", jobId);
-        jcm.cancelJobByServer(this);        
+        jcm.cancelJobByServer(this);
+        synchronized (this) {
+            this.notify();
+        }
     }
 
     /**

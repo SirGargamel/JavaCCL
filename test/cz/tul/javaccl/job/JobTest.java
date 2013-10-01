@@ -75,6 +75,7 @@ public class JobTest {
 
     @Test
     public void testBasicJob() {
+        System.out.println("basicJob");
         final Counter counter = new Counter();
 
         c.setAssignmentListener(new AssignmentListener() {
@@ -119,6 +120,7 @@ public class JobTest {
 
     @Test
     public void testBasicJobWithDataRequest() {
+        System.out.println("basicJobWithDataRequest");
         final Counter counter = new Counter();
 
         final String dataTitle = "dataId";
@@ -184,6 +186,7 @@ public class JobTest {
 
     @Test
     public void testMultipleJobs() {
+        System.out.println("multipleJobs");
         final Counter counter = new Counter();
 
         c.setAssignmentListener(new AssignmentListener() {
@@ -239,6 +242,7 @@ public class JobTest {
 
     @Test
     public void testMultipleJobsDataRequests() {
+        System.out.println("multipleJobsWithDataRequests");
         final Counter totalCounter = new Counter();
         final Counter requestCounter = new Counter();
 
@@ -319,6 +323,7 @@ public class JobTest {
 
     @Test
     public void testMultipleJobsWithMultipleClients() {
+        System.out.println("multipleJobsWithMultipleClients");
         c.stopService();
 
         final Random rnd = new Random();
@@ -397,6 +402,7 @@ public class JobTest {
 
     @Test
     public void testMultipleJobsWithMultipleClientsWithDataRequests() {
+        System.out.println("multipleJobsWithMultipleClientsWithDataRequests");
         c.stopService();
 
         final Random rnd = new Random();
@@ -501,6 +507,7 @@ public class JobTest {
 
     @Test
     public void testMultipleConcurrentJobsOnClient() {
+        System.out.println("multipleConcurrentJobsOnClient");
         final Counter counter = new Counter();
         final Set<AssignmentListener> computingClients = new HashSet<>();
 
@@ -616,6 +623,7 @@ public class JobTest {
 
     @Test
     public void testNotRespondingClient() {
+        System.out.println("notResponsindClient");
         try {
             final Counter counter = new Counter();
 
@@ -697,6 +705,7 @@ public class JobTest {
 
     @Test
     public void testCancelingClient() {
+        System.out.println("cancelingClient");
         try {
             final Counter counter = new Counter();
 
@@ -794,6 +803,7 @@ public class JobTest {
 
     @Test
     public void testCancelingClients() {
+        System.out.println("cancelingClients");
         try {
             final Counter counter = new Counter();
 
@@ -902,6 +912,7 @@ public class JobTest {
 
     @Test
     public void testOfflineClient() {
+        System.out.println("offlineClient");
         try {
             final Counter counter = new Counter();
             final int multiplier = 3;
@@ -981,6 +992,7 @@ public class JobTest {
 
     @Test
     public void testCancelFromServer() {
+        System.out.println("cancelFromServer");
         final Counter counter = new Counter();
 
         c.setAssignmentListener(new AssignmentListener() {
@@ -1061,6 +1073,7 @@ public class JobTest {
 
     @Test
     public void testCancelAllJobs() {
+        System.out.println("cancelAllJobs");
         final Counter counter = new Counter();
 
         c.setAssignmentListener(new AssignmentListener() {
@@ -1121,16 +1134,18 @@ public class JobTest {
             fail("Waiting for cancelation failed.");
         }
 
+        System.out.println("Submit");
         s.getJobManager().stopAllJobs();
-
+        System.out.println("Stop");
         for (Job j : jobs) {
             assertEquals(null, j.getResult(true));
         }
-
+        System.out.println("Result");
         assertEquals(0, counter.getCount());
+        System.out.println("Counter");
     }
 
-    private class Counter {
+    private final class Counter {
 
         int count;
         int max;
