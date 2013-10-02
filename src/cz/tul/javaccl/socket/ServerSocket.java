@@ -144,6 +144,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         while (run) {
             try {
                 s = socket.accept();
+                s.setSoTimeout(Constants.DEFAULT_TIMEOUT);
                 log.log(Level.FINE, "Connection accepted from IP {0}:{1}", new Object[]{s.getInetAddress().getHostAddress(), s.getPort()});
                 final SocketReader sr = new SocketReader(s, this, mpd);
                 sr.registerHistory(hm);

@@ -50,8 +50,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
      */
     public static CommunicatorInner initNewCommunicator(final InetAddress address, final int port) {
         return new CommunicatorImpl(address, port);
-    }
-    private final int MSG_SEND_TIMEOUT = 5000;
+    }    
     private final int MSG_PULL_TIME_LIMIT = 2000;
     private final int STATUS_CHECK_TIMEOUT = 200;
     private final int STATUS_CHECK_INTERVAL = 500;
@@ -104,7 +103,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     @Override
     public Object sendData(final Object data) throws IllegalArgumentException, ConnectionException {
-        return sendData(data, MSG_SEND_TIMEOUT);
+        return sendData(data, Constants.DEFAULT_TIMEOUT);
     }
 
     @Override

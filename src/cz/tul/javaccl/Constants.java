@@ -14,6 +14,10 @@ public interface Constants {
      */
     int DEFAULT_PORT = 5_252;
     /**
+     * default timeout in ms
+     */
+    int DEFAULT_TIMEOUT = 30_000;
+    /**
      * data used as question for client discovery
      */
     String DISCOVERY_QUESTION = "DISCOVER_CLIENT";
@@ -24,17 +28,14 @@ public interface Constants {
     /**
      * Server UUID
      */
-//    UUID ID_SERVER = UUID.fromString("00000000-0000-0000-0000-000000000000");
     UUID ID_SERVER = UUID.randomUUID();
     /**
      * UUID of job manager
      */
-//    UUID ID_JOB_MANAGER = UUID.fromString("00001111-2222-3333-4444-555566667777");
     UUID ID_JOB_MANAGER = UUID.randomUUID();
     /**
      * UUID for system message handler
      */
-//    UUID ID_SYS_MSG = UUID.fromString("77776666-5555-4444-3333-222211110000");
     UUID ID_SYS_MSG = UUID.randomUUID();
     /**
      * Spliitting character
