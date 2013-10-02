@@ -2,13 +2,13 @@ package cz.tul.javaccl.communicator;
 
 import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.GenericResponses;
-import cz.tul.javaccl.Utils;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import cz.tul.javaccl.exceptions.ConnectionExceptionCause;
 import cz.tul.javaccl.history.HistoryManager;
 import cz.tul.javaccl.messaging.Message;
 import cz.tul.javaccl.messaging.SystemMessageHeaders;
 import java.io.IOException;
+import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -108,9 +108,6 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     @Override
     public Object sendData(final Object data, final int timeout) throws IllegalArgumentException, ConnectionException {
-        if (!Utils.checkSerialization(data)) {
-            throw new IllegalArgumentException("Data for sending (and all of its members) must be serializable (eg. implement Serializable or Externalizable interface.)");
-        }
 
         boolean readAndReply = false;
         Object response = dummy;
@@ -176,6 +173,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             }
         } catch (SocketTimeoutException ex) {
             throw new ConnectionException(ConnectionExceptionCause.TIMEOUT);
+        } catch (NotSerializableException ex) {
+            throw new IllegalArgumentException("Data for sending (and all of its members) must be serializable (eg. implement Serializable or Externalizable interface.)");
         } catch (IOException ex) {
             log.log(Level.WARNING, "Cannot write to output socket.", ex);
         }

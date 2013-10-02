@@ -1,6 +1,5 @@
 package cz.tul.javaccl.messaging;
 
-import cz.tul.javaccl.Utils;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
@@ -24,10 +23,6 @@ public class Message implements Serializable, Identifiable {
      * @param data message data
      */
     public Message(final UUID id, final String header, final Object data) {
-        if (!Utils.checkSerialization(data)) {
-            throw new IllegalArgumentException("Data object (and all of its members) needs to implement Serializable (or Externalizable) interface in order to be able to send it.");
-        }
-
         this.id = id;
         this.header = header;
         this.data = data;

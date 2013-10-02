@@ -77,30 +77,6 @@ public class Utils {
         }
     }
 
-    /**
-     * Checks if the given object is fully serializable.
-     *
-     * @param data object for testing
-     * @return true if object can be serialized using {@link ObjectOutputStream}
-     */
-    public static boolean checkSerialization(final Object data) {
-        boolean result = false;
-
-        if (data == null) {
-            result = true;
-        } else if (data instanceof Serializable || data instanceof Externalizable) {
-            try (ObjectOutputStream o = new ObjectOutputStream(new ByteArrayOutputStream())) {
-                o.writeObject(data);
-                result = true;
-            } catch (IOException ex) {
-                // not serializable
-                log.log(Level.CONFIG, "Could not serialize data class {0}", ex.getLocalizedMessage());
-            }
-        }
-
-        return result;
-    }
-
     private Utils() {
     }
 }

@@ -1,6 +1,5 @@
 package cz.tul.javaccl.job.server;
 
-import cz.tul.javaccl.Utils;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import cz.tul.javaccl.job.JobStatus;
 import java.util.UUID;
@@ -23,11 +22,7 @@ public class ServerSideJob implements Job {
 
     ServerSideJob(final Object task, final JobCancelManager jobCancelManager) throws IllegalArgumentException {
         jcm = jobCancelManager;
-        if (Utils.checkSerialization(task)) {
-            this.task = task;
-        } else {
-            throw new IllegalArgumentException("JobTasks data (and all of its members) must be serializable (eg. implement Serializable or Externalizable interface.)");
-        }
+        this.task = task;
         jobStatus = JobStatus.SUBMITTED;
         jobId = UUID.randomUUID();
     }
