@@ -103,7 +103,7 @@ class SocketReader extends Observable implements Runnable {
         }
 
         try {
-            if (!socket.isClosed()) {
+            if (!socket.isClosed() || !socket.isInputShutdown() || !socket.isOutputShutdown()) {
                 socket.close();
             }
         } catch (Exception ex) {
