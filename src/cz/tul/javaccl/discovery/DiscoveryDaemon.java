@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 abstract class DiscoveryDaemon extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(DiscoveryDaemon.class.getName());
-    protected static final int DELAY = 10_000;
+    protected static final int DELAY = 10000;
     protected final DatagramSocket s;
 
     public DiscoveryDaemon() throws SocketException {

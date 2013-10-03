@@ -1,6 +1,7 @@
 package cz.tul.javaccl.server;
 
 import cz.tul.javaccl.ComponentSwitches;
+import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.client.Client;
 import cz.tul.javaccl.client.ClientImpl;
 import cz.tul.javaccl.communicator.Communicator;
@@ -8,6 +9,7 @@ import cz.tul.javaccl.communicator.CommunicatorInner;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.UUID;
@@ -55,11 +57,11 @@ public class ClientDBTest {
      * Test of registerClient method, of class ClientDB.
      */
     @Test
-    public void testRegisterClient() {
+    public void testRegisterClient() throws UnknownHostException {
         System.out.println("registerClient");
         ClientManager instance = s.getClientManager();
 
-        InetAddress address = InetAddress.getLoopbackAddress();
+        InetAddress address = InetAddress.getByName(Constants.IP_LOOPBACK);
 
         try {
             Communicator result = instance.registerClient(address, PORT_CLIENT_1);
@@ -82,11 +84,11 @@ public class ClientDBTest {
         ClientManager instance = s.getClientManager();
 
         try {
-            CommunicatorInner comm = (CommunicatorInner) instance.registerClient(InetAddress.getLoopbackAddress(), PORT_CLIENT_1);
+            CommunicatorInner comm = (CommunicatorInner) instance.registerClient(InetAddress.getByName(Constants.IP_LOOPBACK), PORT_CLIENT_1);
             UUID id = UUID.randomUUID();
             comm.setTargetId(id);
 
-            instance.registerClient(InetAddress.getLoopbackAddress(), PORT_CLIENT_2);
+            instance.registerClient(InetAddress.getByName(Constants.IP_LOOPBACK), PORT_CLIENT_2);
 
             assertEquals(2, instance.getClients().size());
 
@@ -95,7 +97,7 @@ public class ClientDBTest {
 
             instance.deregisterClient(id);
             assertEquals(1, instance.getClients().size());
-        } catch (ConnectionException ex) {
+        } catch (Exception ex) {
             fail("Failed to register client on server - " + ex);
         }
     }
@@ -104,9 +106,9 @@ public class ClientDBTest {
      * Test of getClient method, of class ClientDB.
      */
     @Test
-    public void testGetClient_InetAddress_int() {
+    public void testGetClient_InetAddress_int() throws UnknownHostException {
         System.out.println("getClient");
-        InetAddress adress = InetAddress.getLoopbackAddress();
+        InetAddress adress = InetAddress.getByName(Constants.IP_LOOPBACK);
         ClientManager instance = s.getClientManager();
 
         try {
@@ -134,15 +136,15 @@ public class ClientDBTest {
         ClientManager instance = s.getClientManager();
 
         try {
-            CommunicatorInner comm = (CommunicatorInner) instance.registerClient(InetAddress.getLoopbackAddress(), PORT_CLIENT_1);
+            CommunicatorInner comm = (CommunicatorInner) instance.registerClient(InetAddress.getByName(Constants.IP_LOOPBACK), PORT_CLIENT_1);
 
-            instance.registerClient(InetAddress.getLoopbackAddress(), PORT_CLIENT_2);
+            instance.registerClient(InetAddress.getByName(Constants.IP_LOOPBACK), PORT_CLIENT_2);
 
             assertEquals(comm, instance.getClient(comm.getTargetId()));
 
             assertNull(instance.getClient(UUID.randomUUID()));
             assertNull(instance.getClient(null));
-        } catch (ConnectionException ex) {
+        } catch (Exception ex) {
             fail("Failed to register client on server - " + ex);
         }
     }
@@ -159,13 +161,13 @@ public class ClientDBTest {
         Communicator comm2 = null;
 
         try {
-            comm1 = instance.registerClient(InetAddress.getLoopbackAddress(), PORT_CLIENT_1);
-            comm2 = instance.registerClient(InetAddress.getLoopbackAddress(), PORT_CLIENT_2);
-        } catch (ConnectionException ex) {
+            comm1 = instance.registerClient(InetAddress.getByName(Constants.IP_LOOPBACK), PORT_CLIENT_1);
+            comm2 = instance.registerClient(InetAddress.getByName(Constants.IP_LOOPBACK), PORT_CLIENT_2);
+        } catch (Exception ex) {
             fail("Failed to register client on server - " + ex);
         }
 
-        final Collection<Communicator> expResult = new HashSet<>(3);
+        final Collection<Communicator> expResult = new HashSet<Communicator>(3);
         expResult.add(comm1);
         expResult.add(comm2);
         final Collection<Communicator> result = instance.getClients();
@@ -182,11 +184,11 @@ public class ClientDBTest {
         ClientDB instance = (ClientDB) s.getClientManager();
 
         try {
-            CommunicatorInner comm = (CommunicatorInner) instance.registerClient(InetAddress.getLoopbackAddress(), PORT_CLIENT_1);
+            CommunicatorInner comm = (CommunicatorInner) instance.registerClient(InetAddress.getByName(Constants.IP_LOOPBACK), PORT_CLIENT_1);
             comm.setTargetId(id);
             assertTrue(instance.isIdAllowed(id));
             assertFalse(instance.isIdAllowed(UUID.randomUUID()));
-        } catch (ConnectionException ex) {
+        } catch (Exception ex) {
             fail("Failed to register client on server - " + ex);
         }
     }

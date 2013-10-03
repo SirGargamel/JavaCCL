@@ -22,7 +22,7 @@ import org.xml.sax.SAXException;
  */
 public class ClientSettings {
 
-    private static final Logger log = Logger.getLogger(ClientSettings.class.getName());   
+    private static final Logger log = Logger.getLogger(ClientSettings.class.getName());
     private static final String FIELD_NAME_SERVER = "server";
 
     /**
@@ -42,28 +42,25 @@ public class ClientSettings {
             try {
                 Map<String, String> fields = SimpleXMLSettingsFile.loadSimpleXMLFile(settingsFile);
                 for (String f : fields.keySet()) {
-                    switch (f) {
-                        case FIELD_NAME_SERVER:
-                            try {
-                                String[] split = fields.get(f).split(Constants.DELIMITER);
-                                ip = InetAddress.getByName(split[0]);
-                                if (split.length > 1) {
-                                    port = Integer.valueOf(split[1]);
-                                }
-                            } catch (UnknownHostException ex) {
-                                result = false;
-                                log.log(Level.WARNING, "Unkonwn server ip found in settings", ex);
-                            } catch (NumberFormatException ex) {
-                                result = false;
-                                log.log(Level.WARNING, "Unkonwn server port found in settings", ex);
-                            } catch (ArrayIndexOutOfBoundsException ex) {
-                                result = false;
-                                log.log(Level.WARNING, "Unkonwn server info found in settings.", ex);
+                    if (f != null && f.equals(FIELD_NAME_SERVER)) {
+                        try {
+                            String[] split = fields.get(f).split(Constants.DELIMITER);
+                            ip = InetAddress.getByName(split[0]);
+                            if (split.length > 1) {
+                                port = Integer.valueOf(split[1]);
                             }
-                            break;
-                        default:
-                            log.log(Level.FINE, "Unknown field - {0}", f);
-                            break;
+                        } catch (UnknownHostException ex) {
+                            result = false;
+                            log.log(Level.WARNING, "Unkonwn server ip found in settings", ex);
+                        } catch (NumberFormatException ex) {
+                            result = false;
+                            log.log(Level.WARNING, "Unkonwn server port found in settings", ex);
+                        } catch (ArrayIndexOutOfBoundsException ex) {
+                            result = false;
+                            log.log(Level.WARNING, "Unkonwn server info found in settings.", ex);
+                        }
+                    } else {
+                        log.log(Level.FINE, "Unknown field - {0}", f);
                     }
                 }
 

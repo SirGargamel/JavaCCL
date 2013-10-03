@@ -12,11 +12,11 @@ public interface Constants {
     /**
      * default server port
      */
-    int DEFAULT_PORT = 5_252;
+    int DEFAULT_PORT = 5252;
     /**
      * default timeout in ms
      */
-    int DEFAULT_TIMEOUT = 30_000;
+    int DEFAULT_TIMEOUT = 30000;
     /**
      * data used as question for client discovery
      */
@@ -38,7 +38,11 @@ public interface Constants {
      */
     UUID ID_SYS_MSG = UUID.fromString("a1b248d1-949b-01e4-a84b-000000000003");
     /**
-     * Spliitting character
+     * Splitting character
      */
     String DELIMITER = "-";
+    /**
+     * IP for loopback communication
+     */
+    String IP_LOOPBACK = "127.0.0.1";
 }

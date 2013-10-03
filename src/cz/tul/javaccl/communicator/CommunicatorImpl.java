@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Observable;
 import java.util.Queue;
 import java.util.UUID;
@@ -50,7 +49,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
      */
     public static CommunicatorInner initNewCommunicator(final InetAddress address, final int port) {
         return new CommunicatorImpl(address, port);
-    }    
+    }
     private final int MSG_PULL_TIME_LIMIT = 2000;
     private final int STATUS_CHECK_TIMEOUT = 200;
     private final int STATUS_CHECK_INTERVAL = 500;
@@ -69,15 +68,15 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     private CommunicatorImpl(final InetAddress address, final int port) throws IllegalArgumentException {
         if (address == null) {
             throw new IllegalArgumentException("Invalid address \"" + address + "\"");
-        } else if (port < 0 || port > 65_535) {
+        } else if (port < 0 || port > 65535) {
             throw new IllegalArgumentException("Invalid port \"" + port + "\"");
         }
 
         this.address = address;
         this.port = port;
 
-        unsentData = new LinkedList<>();
-        responses = new HashMap<>();
+        unsentData = new LinkedList<DataPacket>();
+        responses = new HashMap<DataPacket, Object>();
 
         status = Status.OFFLINE;
 
@@ -148,7 +147,9 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     private Object pushDataToOnlineClient(final DataPacket dp, final int timeout) throws ConnectionException {
         Object response = dummy;
-        try (final Socket s = new Socket(address, port)) {
+        Socket s = null;
+        try {
+            s = new Socket(address, port);
             s.setSoTimeout(timeout);
 
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
@@ -162,7 +163,9 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                 log.log(Level.CONFIG, "NULL data sent to client with ID {0} - [{1}]", new Object[]{getTargetId()});
             }
 
-            try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
+            ObjectInputStream in = null;
+            try {
+                in = new ObjectInputStream(s.getInputStream());
                 response = in.readObject();
                 log.log(Level.FINE, "Received reply from client - {0}", response);
             } catch (IOException ex) {
@@ -170,6 +173,10 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             } catch (ClassNotFoundException ex) {
                 log.log(Level.WARNING, "Unknown class object received.", ex);
                 response = GenericResponses.ILLEGAL_DATA;
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
             }
         } catch (SocketTimeoutException ex) {
             throw new ConnectionException(ConnectionExceptionCause.TIMEOUT);
@@ -177,6 +184,14 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             throw new IllegalArgumentException("Data for sending (and all of its members) must be serializable (eg. implement Serializable or Externalizable interface.)");
         } catch (IOException ex) {
             log.log(Level.WARNING, "Cannot write to output socket.", ex);
+        } finally {
+            if (s != null) {
+                try {
+                    s.close();
+                } catch (IOException ex) {
+                    log.warning("Error closing socket.");
+                }
+            }
         }
         return response;
     }
@@ -230,7 +245,9 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         final DataPacket dp = new DataPacketImpl(sourceId, targetId, data);
         Status stat = Status.OFFLINE;
 
-        try (final Socket s = new Socket(address, port)) {
+        Socket s = null;
+        try {
+            s = new Socket(address, port);
             s.setSoTimeout(STATUS_CHECK_TIMEOUT);
 
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
@@ -238,7 +255,9 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             out.writeObject(dp);
             out.flush();
 
-            try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
+            ObjectInputStream in = null;
+            try {
+                in = new ObjectInputStream(s.getInputStream());
                 Object response = in.readObject();
                 if ((targetId != null && targetId.equals(response))
                         || targetId == null && response == null) {
@@ -250,10 +269,22 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                 log.log(Level.FINE, "Client on IP {0} did not open stream for answer.", address.getHostAddress());
             } catch (ClassNotFoundException ex) {
                 log.log(Level.WARNING, "Illegal class received from client for KEEP_ALIVE", ex);
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
             }
         } catch (SocketTimeoutException ex) {
             log.log(Level.FINE, "Client on IP {0} is not responding to request.", address.getHostAddress());
         } catch (IOException ex) {
+        } finally {
+            if (s != null) {
+                try {
+                    s.close();
+                } catch (IOException ex) {
+                    log.warning("Error closing socket.");
+                }
+            }
         }
 
         if (hm != null) {
@@ -357,7 +388,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 23 * hash + Objects.hashCode(this.address);
+        hash = 23 * hash + this.address.hashCode();
         hash = 23 * hash + this.port;
         return hash;
     }

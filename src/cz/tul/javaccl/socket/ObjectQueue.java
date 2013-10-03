@@ -24,7 +24,7 @@ public class ObjectQueue<O extends Identifiable> {
      * Initialize new queue.
      */
     public ObjectQueue() {
-        data = new ConcurrentHashMap<>();
+        data = new ConcurrentHashMap<Object, Queue<O>>();
     }
 
     /**
@@ -40,7 +40,7 @@ public class ObjectQueue<O extends Identifiable> {
      * @return data queue, which will be used for storing data with given ID
      */
     public Queue<O> prepareQueue(final Object id) {
-        final Queue<O> result = new ConcurrentLinkedQueue<>();
+        final Queue<O> result = new ConcurrentLinkedQueue<O>();
 
         if (id != null) {
             data.put(id, result);

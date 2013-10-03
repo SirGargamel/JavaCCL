@@ -148,7 +148,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
     }
 
     private void prepareAllowedIDs() {
-        Collection<UUID> ids = new HashSet<>();
+        Collection<UUID> ids = new HashSet<UUID>();
         UUID id;
         for (Communicator comm : clients) {
             id = comm.getTargetId();

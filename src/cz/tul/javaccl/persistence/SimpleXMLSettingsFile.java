@@ -43,7 +43,7 @@ public class SimpleXMLSettingsFile {
      * @throws SAXException error parsing XML file
      */
     public static Map<String, String> loadSimpleXMLFile(final File source) throws IOException, SAXException {
-        Map<String, String> fields = new HashMap<>();
+        Map<String, String> fields = new HashMap<String, String>();
 
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -54,7 +54,7 @@ public class SimpleXMLSettingsFile {
             //read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
             doc.getDocumentElement().normalize();
 
-            Queue<Node> nodesForParsing = new ConcurrentLinkedQueue<>();            
+            Queue<Node> nodesForParsing = new ConcurrentLinkedQueue<Node>();            
             addAllChildNodes(nodesForParsing, doc.getElementsByTagName(SETTINGS_NODE_NAME));
             
             Node node;
@@ -86,7 +86,7 @@ public class SimpleXMLSettingsFile {
      * Init fresh instance of XML file.
      */
     public SimpleXMLSettingsFile() {
-        this.fields = new HashMap<>();
+        this.fields = new HashMap<String, String>();
     }
 
     /**

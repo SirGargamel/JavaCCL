@@ -65,12 +65,12 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         socket = new java.net.ServerSocket(port);
         this.idFilter = idFilter;
         exec = Executors.newCachedThreadPool();
-        dataStorageClient = new ObjectQueue<>();
-        dataStorageId = new ObjectQueue<>();
-        dataListeners = new HashSet<>();
+        dataStorageClient = new ObjectQueue<DataPacket>();
+        dataStorageId = new ObjectQueue<Identifiable>();
+        dataListeners = new HashSet<Observer>();
         run = true;
-        listenersClient = new HashMap<>();
-        listenersId = new HashMap<>();
+        listenersClient = new HashMap<UUID, Listener<DataPacket>>();
+        listenersId = new HashMap<Object, Listener<Identifiable>>();
         mpd = new MessagePullDaemon(this, clientLister);
     }
 

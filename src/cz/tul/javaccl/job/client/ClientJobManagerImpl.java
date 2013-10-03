@@ -35,7 +35,7 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
      */
     public ClientJobManagerImpl(ServerInterface server) {
         this.server = server;
-        jobs = new HashMap<>();
+        jobs = new HashMap<UUID, ClientSideJob>();
         exec = Executors.newCachedThreadPool();
         assignmentListener = null;
     }
@@ -92,11 +92,14 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
 
     @Override
     public Object receiveData(final Identifiable data) {
+        Object result = GenericResponses.ILLEGAL_DATA;
         if (data instanceof JobTask) {
+            result = GenericResponses.ILLEGAL_HEADER;            
             final JobTask jt = (JobTask) data;
             final UUID id = jt.getJobId();
-            switch (jt.getTaskDescription()) {
-                case JobMessageHeaders.JOB_TASK:
+            final String descr = jt.getTaskDescription();
+            if (descr != null) {
+                if (descr.equals(JobMessageHeaders.JOB_TASK)) {
                     if (assignmentListener != null) {
                         final ClientSideJob job = new ClientSideJob(jt.getTask(), id, this);
                         jobs.put(job.getId(), job);
@@ -106,11 +109,11 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
                                 assignmentListener.receiveTask(job);
                             }
                         });
-                        return GenericResponses.OK;
+                        result = GenericResponses.OK;
                     } else {
-                        return GenericResponses.GENERAL_ERROR;
+                        result = GenericResponses.GENERAL_ERROR;
                     }
-                case JobMessageHeaders.JOB_CANCEL:
+                } else if (descr.equals(JobMessageHeaders.JOB_CANCEL)) {
                     jobs.remove(id);
                     exec.submit(new Runnable() {
                         @Override
@@ -118,12 +121,10 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
                             assignmentListener.cancelTask(jobs.get(id));
                         }
                     });
-                    return GenericResponses.OK;
-                default:
-                    return GenericResponses.ILLEGAL_HEADER;
-            }
-        } else {
-            return GenericResponses.ILLEGAL_DATA;
+                    result = GenericResponses.OK;
+                }
+            }           
         }
+        return result;
     }
 }

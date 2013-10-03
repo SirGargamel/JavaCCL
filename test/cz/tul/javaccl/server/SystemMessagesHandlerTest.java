@@ -1,5 +1,6 @@
 package cz.tul.javaccl.server;
 
+import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.communicator.Communicator;
 import cz.tul.javaccl.communicator.DataPacketImpl;
@@ -8,6 +9,7 @@ import cz.tul.javaccl.messaging.Message;
 import cz.tul.javaccl.messaging.SystemMessageHeaders;
 import cz.tul.javaccl.messaging.Identifiable;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.UUID;
 import org.junit.Test;
@@ -20,7 +22,7 @@ import static org.junit.Assert.*;
 public class SystemMessagesHandlerTest {
 
     @Test
-    public void testReceiveData() {
+    public void testReceiveData() throws UnknownHostException {
         System.out.println("receiveData");
 
         try {
@@ -44,7 +46,7 @@ public class SystemMessagesHandlerTest {
 
         m = new Message(SystemMessageHeaders.LOGIN, "5253");
         dp = new DataPacketImpl(null, null, m);
-        dp.setSourceIP(InetAddress.getLoopbackAddress());
+        dp.setSourceIP(InetAddress.getByName(Constants.IP_LOOPBACK));
         result = instance.receiveData(dp);
         assertTrue(result instanceof UUID);
 

@@ -194,7 +194,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
             } else if (ComponentSwitches.useClientAutoConnectLocalhost && !isServerUp()) {
                 log.info("Could not init server discovery, trying to connect to local host.");
                 try {
-                    registerToServer(InetAddress.getLoopbackAddress(), Constants.DEFAULT_PORT);
+                    registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK), Constants.DEFAULT_PORT);
                 } catch (ConnectionException ex) {
                     log.info("Could not reach server at localhost on default port.");
                 }
@@ -247,7 +247,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
 
     @Override
     public Collection<Communicator> getClients() {
-        final Collection<Communicator> result = new ArrayList<>(1);
+        final Collection<Communicator> result = new ArrayList<Communicator>(1);
         result.add(comm);
         return result;
     }

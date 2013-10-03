@@ -26,7 +26,7 @@ public class UUIDSorter extends HistorySorter {
         log.fine("Sotring messages by UUID.");
 
         // group Nodes by UUID        
-        final SortedMap<UUID, List<HistoryRecord>> idGroups = new TreeMap<>();
+        final SortedMap<UUID, List<HistoryRecord>> idGroups = new TreeMap<UUID, List<HistoryRecord>>();
         List<HistoryRecord> l;
         Message m;
         Object o;
@@ -36,14 +36,14 @@ public class UUIDSorter extends HistorySorter {
                 m = (Message) o;
                 l = idGroups.get(m.getId());
                 if (l == null) {
-                    l = new ArrayList<>();
+                    l = new ArrayList<HistoryRecord>();
                     idGroups.put(m.getId(), l);
                 }
                 l.add(r);
             }
         }
 
-        final List<Element> result = new ArrayList<>(records.size());
+        final List<Element> result = new ArrayList<Element>(records.size());
         Element group;
         for (UUID id : idGroups.keySet()) {
             group = doc.createElement("Group");

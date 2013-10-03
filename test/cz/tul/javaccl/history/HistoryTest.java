@@ -4,6 +4,7 @@
  */
 package cz.tul.javaccl.history;
 
+import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.client.ClientImpl;
 import cz.tul.javaccl.exceptions.ConnectionException;
@@ -27,6 +28,8 @@ import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.AfterClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -60,10 +63,10 @@ public class HistoryTest {
     }
 
     @Test
-    public void testHistoryDirectLogging() {
+    public void testHistoryDirectLogging() throws UnknownHostException {
         System.out.println("logHistoryDirectLoggin");
 
-        InetAddress ipLocal = InetAddress.getLoopbackAddress();
+        InetAddress ipLocal = InetAddress.getByName(Constants.IP_LOOPBACK);
 
         HistoryManager h = new History();
 
@@ -112,10 +115,10 @@ public class HistoryTest {
     }
 
     @Test
-    public void testHistoryServerAndClient() {
+    public void testHistoryServerAndClient() throws UnknownHostException {
         System.out.println("logHistoryServerAndClient");
 
-        InetAddress ipLocal = InetAddress.getLoopbackAddress();        
+        InetAddress ipLocal = InetAddress.getByName(Constants.IP_LOOPBACK);
         UUID uuid = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
         UUID uuid2 = UUID.fromString("550e8400-e29b-41d4-a716-446655440111");
 
@@ -125,22 +128,22 @@ public class HistoryTest {
             s.getHistory().enable(false);
             c = (ClientImpl) ClientImpl.initNewClient(5253);
             c.registerToServer(ipLocal);
-            
+
             synchronized (this) {
-                try {                    
+                try {
                     s.getHistory().enable(true);
                     s.getClient(ipLocal).sendData(new Message(uuid, "Header", "data1"));
                     this.wait(50);
                     c.sendDataToServer(new Message(uuid, "Header", "dataBack"));
                     this.wait(50);
-                    s.getClient(ipLocal).sendData(new Message(uuid2, "Header", "data2"));                    
+                    s.getClient(ipLocal).sendData(new Message(uuid2, "Header", "data2"));
                 } catch (InterruptedException ex) {
                     fail("Waiting interrupted - " + ex.getLocalizedMessage());
                 }
             }
 
             s.getHistory().enable(false);
-            
+
             c.stopService();
             s.stopService();
 
@@ -165,53 +168,80 @@ public class HistoryTest {
     private static void assertFiles(final File expected,
             final File actual) {
         String actualLine, expectedLine;
-        try (BufferedReader expectedR = new BufferedReader(new FileReader(expected))) {
-            try (BufferedReader actualR = new BufferedReader(new FileReader(actual))) {
-                while ((expectedLine = expectedR.readLine()) != null) {
-                    actualLine = actualR.readLine();
-                    assertNotNull("Expected had more lines then the actual.", actualLine);
+        BufferedReader expectedR = null, actualR = null;
+        try {
+            expectedR = new BufferedReader(new FileReader(expected));
+            actualR = new BufferedReader(new FileReader(actual));
+            while ((expectedLine = expectedR.readLine()) != null) {
+                actualLine = actualR.readLine();
+                assertNotNull("Expected had more lines then the actual.", actualLine);
 
-                    if (!expectedLine.trim().startsWith("<Time>")) {
-                        assertEquals(expectedLine.trim(), actualLine.trim());
-                    }
+                if (!expectedLine.trim().startsWith("<Time>")) {
+                    assertEquals(expectedLine.trim(), actualLine.trim());
                 }
-                assertNull("Actual had more lines then the expected.", actualR.readLine());
             }
+            assertNull("Actual had more lines then the expected.", actualR.readLine());
         } catch (IOException ex) {
             fail("Could not access tested files - " + ex.getLocalizedMessage());
+        } finally {
+            if (expectedR != null) {
+                try {
+                    expectedR.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(HistoryTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            if (actualR != null) {
+                try {
+                    actualR.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(HistoryTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
     }
 
     private static void prepareLocalIp(final File fileIn, final File fileOut) {
         // insert local IP at right spots
+        BufferedReader in = null;
+            BufferedWriter out = null;
         try {
             final String ipSource = "<IPSource>" + InetAddress.getLocalHost().getHostAddress() + "</IPSource>";
             final String ipDest = "<IPDestination>" + InetAddress.getLocalHost().getHostAddress() + "</IPDestination>";
 
             String line;
-            try (BufferedReader in = new BufferedReader(new FileReader(fileIn))) {
-                try (BufferedWriter out = new BufferedWriter(new FileWriter(fileOut))) {
-                    while (in.ready()) {
-                        line = in.readLine().trim();
-                        switch (line) {
-                            case IP_SOURCE_TEMPLATE:
-                                out.append(ipSource);
-                                break;
-                            case IP_DESTINATION_TEMPLATE:
-                                out.append(ipDest);
-                                break;
-                            default:
-                                out.append(line);
-                                break;
-                        }
-                        out.newLine();
-                    }
+            
+            in = new BufferedReader(new FileReader(fileIn));
+            out = new BufferedWriter(new FileWriter(fileOut));
+            while (in.ready()) {
+                line = in.readLine().trim();
+                if (line.equals(IP_SOURCE_TEMPLATE)) {
+                    out.append(ipSource);
+                } else if (line.equals(IP_DESTINATION_TEMPLATE)) {
+                    out.append(ipDest);
+                } else {
+                    out.append(line);
                 }
-            }
+                out.newLine();            }
         } catch (UnknownHostException ex) {
             fail("Cannot obtain local IP.");
         } catch (IOException ex) {
             fail("Failed to prepare file " + fileIn + " for comparison.");
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(HistoryTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(HistoryTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
     }
 

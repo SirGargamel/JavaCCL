@@ -1,7 +1,6 @@
 package cz.tul.javaccl.messaging;
 
 import java.io.Serializable;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -87,9 +86,9 @@ public class Message implements Serializable, Identifiable {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 29 * hash + Objects.hashCode(this.id);
-        hash = 29 * hash + Objects.hashCode(this.header);
-        hash = 29 * hash + Objects.hashCode(this.data);
+        hash = 29 * hash + this.id.hashCode();
+        hash = 29 * hash + this.header.hashCode();
+        hash = 29 * hash + this.data.hashCode();
         return hash;
     }
 }

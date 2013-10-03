@@ -70,7 +70,10 @@ class SocketReader extends Observable implements Runnable {
         boolean dataRead = false;
         final InetAddress ip = socket.getInetAddress();
         Object dataIn = null;
-        try (final ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+        
+        ObjectInputStream in = null;
+        try {
+            in = new ObjectInputStream(socket.getInputStream());
             dataIn = in.readObject();
             dataRead = true;
 
@@ -81,15 +84,14 @@ class SocketReader extends Observable implements Runnable {
                 sendReply(ip, dp.getData(), dataRead, response);
             } else if (dataIn instanceof Message) {
                 final Message m = (Message) dataIn;
-                switch (m.getHeader()) {
-                    case (SystemMessageHeaders.MSG_PULL_REQUEST):
-                        mpd.handleMessagePullRequest(socket, m.getData(), in);
-                        break;
-                    default:
-                        log.log(Level.WARNING, "Received Message with unidentifined header - {0}", new Object[]{m.toString()});
+                
+                final String header = m.getHeader();
+                if (header != null && header.equals(SystemMessageHeaders.MSG_PULL_REQUEST)) {
+                    mpd.handleMessagePullRequest(socket, m.getData(), in);
+                } else {
+                    log.log(Level.WARNING, "Received Message with unidentifined header - {0}", new Object[]{m.toString()});
                         sendReply(ip, dataIn, dataRead, GenericResponses.ILLEGAL_HEADER);
-                        break;
-                }
+                }                
             } else {
                 log.log(Level.WARNING, "Received data is not an instance of DataPacket or Message - {0}", new Object[]{dataIn});
                 sendReply(ip, dataIn, dataRead, GenericResponses.ILLEGAL_DATA);
@@ -100,6 +102,14 @@ class SocketReader extends Observable implements Runnable {
         } catch (ClassNotFoundException ex) {
             log.log(Level.WARNING, "Invalid data received from sender.", ex);
             sendReply(ip, dataIn, dataRead, GenericResponses.ILLEGAL_DATA);
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(SocketReader.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
 
         try {
@@ -112,12 +122,22 @@ class SocketReader extends Observable implements Runnable {
     }
 
     private void sendReply(final InetAddress ip, Object dataIn, boolean dataRead, final Object response) {
-        try (final ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
+        ObjectOutputStream out = null;
+        try {
+            out = new ObjectOutputStream(socket.getOutputStream());
             out.writeObject(response);
             out.flush();
             log.log(Level.FINE, "Reply sent.");
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error writing result data to socket.", ex);
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(SocketReader.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
 
         if (hm != null) {

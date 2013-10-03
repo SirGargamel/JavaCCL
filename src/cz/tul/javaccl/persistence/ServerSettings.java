@@ -22,7 +22,7 @@ import org.xml.sax.SAXException;
  */
 public class ServerSettings implements Serializable {
 
-    private static final Logger log = Logger.getLogger(ServerSettings.class.getName());    
+    private static final Logger log = Logger.getLogger(ServerSettings.class.getName());
     private static final String FIELD_NAME_CLIENT = "client";
 
     /**
@@ -40,27 +40,28 @@ public class ServerSettings implements Serializable {
             try {
                 Map<String, String> fields = SimpleXMLSettingsFile.loadSimpleXMLFile(settingsFile);
                 for (String f : fields.keySet()) {
-                    switch (f) {
-                        case FIELD_NAME_CLIENT:
-                            String[] split = fields.get(f).split(Constants.DELIMITER);
+                    if (f != null && f.equals(FIELD_NAME_CLIENT)) {
+                        String[] split = fields.get(f).split(Constants.DELIMITER);
                             try {
                                 if (clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1])) != null) {
                                     result = true;
                                 }
-                            } catch (UnknownHostException | NumberFormatException | ArrayIndexOutOfBoundsException ex) {                                
+                            } catch (UnknownHostException ex) {
+                                log.log(Level.WARNING, "Unkonwn host found in settings", ex);
+                            } catch (NumberFormatException  ex) {
+                                log.log(Level.WARNING, "Unkonwn host found in settings", ex);
+                            } catch (ArrayIndexOutOfBoundsException ex) {
                                 log.log(Level.WARNING, "Unkonwn host found in settings", ex);
                             } catch (ConnectionException ex) {
                                 log.log(Level.WARNING, "Could not connect client with IP {0} on port {1}.", new Object[]{split[0], split[1]});
                             }
-                            break;
-                        default:
-                            log.log(Level.CONFIG, "Unknown field - {0}", f);
-                            break;
-                    }
+                    } else {
+                        log.log(Level.CONFIG, "Unknown field - {0}", f);
+                    }                   
                 }
-            } catch (IOException ex) {                
+            } catch (IOException ex) {
                 log.log(Level.WARNING, "Error accessing server settings at " + settingsFile.getAbsolutePath() + ".", ex);
-            } catch (SAXException ex) {                
+            } catch (SAXException ex) {
                 log.log(Level.WARNING, "Wrong format of input XML.", ex);
             }
         }

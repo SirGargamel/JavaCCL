@@ -1,5 +1,6 @@
 package cz.tul.javaccl.job;
 
+import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.Utils;
 import cz.tul.javaccl.client.Client;
@@ -57,8 +58,8 @@ public class JobTest {
         try {
             s = ServerImpl.initNewServer();
             c = ClientImpl.initNewClient(5253);
-            c.registerToServer(InetAddress.getLoopbackAddress());
-        } catch (ConnectionException | NullPointerException | IOException ex) {
+            c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK));
+        } catch (Exception ex) {
             fail("Initialization failed - " + ex);
         }
     }
@@ -147,7 +148,7 @@ public class JobTest {
 
                     Object req = task.requestData(dataTitle);
                     if (req instanceof Integer) {
-                        counter.add((int) req);
+                        counter.add((Integer) req);
                     } else {
                         fail("Illegal data from server data request - " + req);
                     }
@@ -224,7 +225,7 @@ public class JobTest {
         int cnt = 0, val;
         Random rnd = new Random();
         final int jobCount = rnd.nextInt(5) + 5;
-        Set<Job> jobs = new HashSet<>(jobCount);
+        Set<Job> jobs = new HashSet<Job>(jobCount);
         for (int i = 0; i < jobCount; i++) {
             val = (rnd.nextInt(4) + 1) * 10;
             cnt += val;
@@ -261,9 +262,9 @@ public class JobTest {
 
                     Object req = task.requestData(dataTitle);
                     if (req instanceof Double) {
-                        double multiplier = (double) req;
+                        double multiplier = (Double) req;
 
-                        int count = (int) (((int) tsk) * multiplier);
+                        int count = (int) (((Integer) tsk) * multiplier);
 
                         synchronized (JobTest.this) {
                             JobTest.this.wait(count);
@@ -303,7 +304,7 @@ public class JobTest {
         int cnt = 0, val;
         Random rnd = new Random();
         final int jobCount = rnd.nextInt(5) + 5;
-        Set<Job> jobs = new HashSet<>(jobCount);
+        Set<Job> jobs = new HashSet<Job>(jobCount);
         for (int i = 0; i < jobCount; i++) {
             val = (rnd.nextInt(4) + 1) * 10;
             cnt += val;
@@ -329,15 +330,15 @@ public class JobTest {
         final Random rnd = new Random();
 
         final Counter counter = new Counter();
-        final Set<AssignmentListener> computingClients = new HashSet<>();
+        final Set<AssignmentListener> computingClients = new HashSet<AssignmentListener>();
 
         final int clientCount = rnd.nextInt(5) + 2;
         Client cl;
-        List<Client> clients = new ArrayList<>(clientCount);
+        List<Client> clients = new ArrayList<Client>(clientCount);
         for (int i = 0; i < clientCount; i++) {
             try {
                 cl = ClientImpl.initNewClient();
-                cl.registerToServer(InetAddress.getLoopbackAddress());
+                cl.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK));
                 cl.setAssignmentListener(new AssignmentListener() {
                     @Override
                     public void receiveTask(Assignment task) {
@@ -372,7 +373,7 @@ public class JobTest {
                     }
                 });
                 clients.add(cl);
-            } catch (ConnectionException ex) {
+            } catch (Exception ex) {
                 fail("Initialization of one of the clients failed - " + ex);
             }
         }
@@ -409,7 +410,7 @@ public class JobTest {
 
         final Counter totalCounter = new Counter();
         final Counter requestCounter = new Counter();
-        final Set<AssignmentListener> computingClients = new HashSet<>();
+        final Set<AssignmentListener> computingClients = new HashSet<AssignmentListener>();
 
         final String dataTitle = "dataId";
         final double requestMultiplier = 2;
@@ -428,11 +429,11 @@ public class JobTest {
 
         final int clientCount = rnd.nextInt(5) + 2;
         Client cl;
-        List<Client> clients = new ArrayList<>(clientCount);
+        List<Client> clients = new ArrayList<Client>(clientCount);
         for (int i = 0; i < clientCount; i++) {
             try {
                 cl = ClientImpl.initNewClient();
-                cl.registerToServer(InetAddress.getLoopbackAddress());
+                cl.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK));
                 cl.setAssignmentListener(new AssignmentListener() {
                     @Override
                     public void receiveTask(Assignment task) {
@@ -445,9 +446,9 @@ public class JobTest {
 
                             Object req = task.requestData(dataTitle);
                             if (req instanceof Double) {
-                                double multiplier = (double) req;
+                                double multiplier = (Double) req;
 
-                                int count = (int) (((int) tsk) * multiplier);
+                                int count = (int) (((Integer) tsk) * multiplier);
 
                                 synchronized (JobTest.this) {
                                     JobTest.this.wait(count);
@@ -474,7 +475,7 @@ public class JobTest {
                     }
                 });
                 clients.add(cl);
-            } catch (ConnectionException ex) {
+            } catch (Exception ex) {
                 fail("Initialization of one of the clients failed - " + ex);
             }
         }
@@ -509,7 +510,7 @@ public class JobTest {
     public void testMultipleConcurrentJobsOnClient() {
         System.out.println("multipleConcurrentJobsOnClient");
         final Counter counter = new Counter();
-        final Set<AssignmentListener> computingClients = new HashSet<>();
+        final Set<AssignmentListener> computingClients = new HashSet<AssignmentListener>();
 
         final int concurrentCount = 3;
         final Counter concurrentCounter = new Counter();
@@ -553,11 +554,11 @@ public class JobTest {
 
         final int clientCount = rnd.nextInt(2) + 1;
         Client cl;
-        List<Client> clients = new ArrayList<>(clientCount);
+        List<Client> clients = new ArrayList<Client>(clientCount);
         for (int i = 0; i < clientCount; i++) {
             try {
                 cl = ClientImpl.initNewClient();
-                cl.registerToServer(InetAddress.getLoopbackAddress());
+                cl.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK));
                 cl.setAssignmentListener(new AssignmentListener() {
                     @Override
                     public void receiveTask(Assignment task) {
@@ -592,7 +593,7 @@ public class JobTest {
                     }
                 });
                 clients.add(cl);
-            } catch (ConnectionException ex) {
+            } catch (Exception ex) {
                 fail("Initialization of one of the clients failed - " + ex);
             }
         }
@@ -662,7 +663,7 @@ public class JobTest {
             final Client failingClient = ClientImpl.initNewClient(5254);
 
             try {
-                failingClient.registerToServer(InetAddress.getLoopbackAddress());
+                failingClient.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK));
             } catch (ConnectionException ex) {
                 fail("Failed to connect client to server - " + ex);
             }
@@ -682,7 +683,7 @@ public class JobTest {
             int cnt = 0, val;
             Random rnd = new Random();
             final int jobCount = rnd.nextInt(5) + 5;
-            Set<Job> jobs = new HashSet<>(jobCount);
+            Set<Job> jobs = new HashSet<Job>(jobCount);
             for (int i = 0; i < jobCount; i++) {
                 val = (rnd.nextInt(4) + 1) * 10;
                 cnt += val;
@@ -743,7 +744,7 @@ public class JobTest {
 
             final Client failingClient = ClientImpl.initNewClient(5254);
             try {
-                failingClient.registerToServer(InetAddress.getLoopbackAddress());
+                failingClient.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK));
             } catch (ConnectionException ex) {
                 fail("Failed to connect client to server - " + ex);
             }
@@ -756,7 +757,7 @@ public class JobTest {
 
                         if (w instanceof Integer) {
                             synchronized (JobTest.this) {
-                                JobTest.this.wait(((int) w) / 2);
+                                JobTest.this.wait(((Integer) w) / 2);
                             }
 
                             task.cancel("Moody client.");
@@ -780,7 +781,7 @@ public class JobTest {
             int cnt = 0, val;
             Random rnd = new Random();
             final int jobCount = rnd.nextInt(5) + 5;
-            Set<Job> jobs = new HashSet<>(jobCount);
+            Set<Job> jobs = new HashSet<Job>(jobCount);
             for (int i = 0; i < jobCount; i++) {
                 val = (rnd.nextInt(4) + 1) * 10;
                 cnt += val;
@@ -818,7 +819,7 @@ public class JobTest {
 
                         if (Math.random() < 0.25) {
                             synchronized (JobTest.this) {
-                                JobTest.this.wait(((int) tsk) / 4);
+                                JobTest.this.wait(((Integer) tsk) / 4);
                             }
                             task.cancel("Client cancel.");
                         } else {
@@ -845,7 +846,7 @@ public class JobTest {
 
             final Client failingClient = ClientImpl.initNewClient(5254);
             try {
-                failingClient.registerToServer(InetAddress.getLoopbackAddress());
+                failingClient.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK));
             } catch (ConnectionException ex) {
                 fail("Failed to connect client to server - " + ex);
             }
@@ -861,7 +862,7 @@ public class JobTest {
 
                         if (Math.random() < 0.25) {
                             synchronized (JobTest.this) {
-                                JobTest.this.wait(((int) tsk) / 4);
+                                JobTest.this.wait(((Integer) tsk) / 4);
                             }
                             task.cancel("Client cancel.");
                         } else {
@@ -889,7 +890,7 @@ public class JobTest {
             int cnt = 0, val;
             Random rnd = new Random();
             final int jobCount = rnd.nextInt(5) + 5;
-            Set<Job> jobs = new HashSet<>(jobCount);
+            Set<Job> jobs = new HashSet<Job>(jobCount);
             for (int i = 0; i < jobCount; i++) {
                 val = (rnd.nextInt(4) + 1) * 10;
                 cnt += val;
@@ -951,7 +952,7 @@ public class JobTest {
 
             final Client failingClient = ClientImpl.initNewClient(5254);
             try {
-                failingClient.registerToServer(InetAddress.getLoopbackAddress());
+                failingClient.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK));
             } catch (ConnectionException ex) {
                 fail("Failed to connect client to server - " + ex);
             }
@@ -961,7 +962,7 @@ public class JobTest {
             int totalCount = 0, val;
             Random rnd = new Random();
             final int jobCount = rnd.nextInt(5) + 5;
-            Set<Job> jobs = new HashSet<>(jobCount);
+            Set<Job> jobs = new HashSet<Job>(jobCount);
             for (int i = 0; i < jobCount; i++) {
                 val = (rnd.nextInt(4) + 1) * 10;
                 totalCount += multiplier * val;
@@ -981,7 +982,7 @@ public class JobTest {
             s.getJobManager().waitForAllJobs();
 
             for (Job j : jobs) {
-                counter.add((int) j.getResult(true));                
+                counter.add((Integer) j.getResult(true));                
             }
 
             assertEquals(totalCount, counter.getCount());
@@ -1039,7 +1040,7 @@ public class JobTest {
         int cnt = 0, val;
         Random rnd = new Random();
         final int jobCount = rnd.nextInt(5) + 5;
-        Set<Job> jobs = new HashSet<>(jobCount);
+        Set<Job> jobs = new HashSet<Job>(jobCount);
         for (int i = 0; i < jobCount; i++) {
             val = (rnd.nextInt(4) + 2) * 20;
             cnt += val;
@@ -1120,7 +1121,7 @@ public class JobTest {
         int val;
         Random rnd = new Random();
         final int jobCount = rnd.nextInt(5) + 5;
-        Set<Job> jobs = new HashSet<>(jobCount);
+        Set<Job> jobs = new HashSet<Job>(jobCount);
         for (int i = 0; i < jobCount; i++) {
             val = (rnd.nextInt(4) + 1) * 200;
             jobs.add(s.submitJob(val));

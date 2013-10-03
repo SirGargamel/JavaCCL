@@ -1,6 +1,7 @@
 package cz.tul.javaccl.client;
 
 import cz.tul.javaccl.ComponentSwitches;
+import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import cz.tul.javaccl.exceptions.ConnectionExceptionCause;
 import cz.tul.javaccl.server.Server;
@@ -49,7 +50,7 @@ public class ClientImplTest {
             }
 
             try {
-                c.registerToServer(Inet4Address.getLoopbackAddress());
+                c.registerToServer(Inet4Address.getByName(Constants.IP_LOOPBACK));
             } catch (ConnectionException ex) {
                 fail("Registration failed.");
             }
@@ -71,7 +72,7 @@ public class ClientImplTest {
 
             s = ServerImpl.initNewServer();
             try {
-                c.registerToServer(Inet4Address.getLoopbackAddress());
+                c.registerToServer(Inet4Address.getByName(Constants.IP_LOOPBACK));
             } catch (ConnectionException ex) {
                 fail("Registration failed.");
             }

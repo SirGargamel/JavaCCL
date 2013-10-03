@@ -5,6 +5,7 @@
 package cz.tul.javaccl.persistence;
 
 import cz.tul.javaccl.ComponentSwitches;
+import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.client.Client;
 import cz.tul.javaccl.client.ClientImpl;
 import cz.tul.javaccl.client.ServerInterface;
@@ -16,6 +17,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -108,11 +112,13 @@ public class SettingsTest {
         s.stopService();
         s = ServerImpl.initNewServer();
         try {
-            s.getClientManager().registerClient(InetAddress.getLoopbackAddress(), CLIENT_PORT);
+            s.getClientManager().registerClient(InetAddress.getByName(Constants.IP_LOOPBACK), CLIENT_PORT);
         } catch (IllegalArgumentException ex) {
             fail("Illegal arguments used");
         } catch (ConnectionException ex) {
             fail("Could not connect to client");
+        } catch (UnknownHostException ex) {
+            fail("Error obtaining IP.");
         }
 
         boolean result = ServerSettings.serialize(serializationTarget, s.getClientManager());
@@ -143,12 +149,12 @@ public class SettingsTest {
         c.stopService();        
         try {
             c = ClientImpl.initNewClient(CLIENT_PORT);
-            c.registerToServer(InetAddress.getLoopbackAddress());
+            c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK));
         } catch (IllegalArgumentException ex) {
             fail("Illegal arguments used");
         } catch (ConnectionException ex) {
             fail("Could not connect to client");
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             fail("Failed to initialize client.");
         }
 
@@ -161,17 +167,33 @@ public class SettingsTest {
     private static void assertFiles(final File expected,
             final File actual) {
         String actualLine, expectedLine;
-        try (BufferedReader expectedR = new BufferedReader(new FileReader(expected))) {
-            try (BufferedReader actualR = new BufferedReader(new FileReader(actual))) {
+        BufferedReader expectedR = null, actualR = null;
+        try {
+            expectedR = new BufferedReader(new FileReader(expected));
+            actualR = new BufferedReader(new FileReader(actual)) ;           
                 while ((expectedLine = expectedR.readLine()) != null) {
                     actualLine = actualR.readLine();
                     assertNotNull("Expected had more lines then the actual.", actualLine);
                     assertEquals(expectedLine.trim(), actualLine.trim());
                 }
-                assertNull("Actual had more lines then the expected.", actualR.readLine());
-            }
+                assertNull("Actual had more lines then the expected.", actualR.readLine());            
         } catch (IOException ex) {
             fail("Could not access tested files - " + ex.getLocalizedMessage());
+        } finally {
+            if (expectedR != null) {
+                try {
+                    expectedR.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(SettingsTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            if (actualR != null) {
+                try {
+                    actualR.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(SettingsTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
     }
 }

@@ -1,10 +1,6 @@
 package cz.tul.javaccl;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Externalizable;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -72,7 +68,9 @@ public class Utils {
                 fh.setLevel(Level.ALL);
             }
             l.addHandler(fh);
-        } catch (IOException | SecurityException ex) {
+        } catch (IOException ex) {
+            log.log(Level.SEVERE, "Error preparing file logger.", ex);
+        } catch (SecurityException ex) {
             log.log(Level.SEVERE, "Error preparing file logger.", ex);
         }
     }

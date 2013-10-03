@@ -18,7 +18,7 @@ public abstract class Exporter {
     private static final Map<Class<?>, ExportUnit> exporters;
 
     static {
-        exporters = new HashMap<>();
+        exporters = new HashMap<Class<?>, ExportUnit>();
 
         registerExporterUnit(new ExportMessage());
     }

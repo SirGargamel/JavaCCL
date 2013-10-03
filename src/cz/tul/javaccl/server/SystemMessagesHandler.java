@@ -40,8 +40,8 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
             if (innerData instanceof Message) {
                 final Message m = (Message) innerData;
                 final String header = m.getHeader();
-                switch (header) {
-                    case SystemMessageHeaders.LOGIN:
+                if (header != null) {
+                    if (header.equals(SystemMessageHeaders.LOGIN)) {
                         try {
                             UUID clientId = UUID.randomUUID();
                             clientManager.addClient(dp.getSourceIP(), Integer.parseInt(m.getData().toString()), clientId);
@@ -55,19 +55,22 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                             log.log(Level.WARNING, "Null login data received.");
                             return GenericResponses.ILLEGAL_DATA;
                         }
-                    case SystemMessageHeaders.LOGOUT:
+                    } else if (header.equals(SystemMessageHeaders.LOGOUT)) {
                         final Object id = m.getData();
                         if (id instanceof UUID) {
-                            clientManager.deregisterClient((UUID) id);                            
+                            clientManager.deregisterClient((UUID) id);
                             return GenericResponses.OK;
                         } else {
                             log.log(Level.WARNING, "Invalid client id received - {0}", id.toString());
                             return GenericResponses.ILLEGAL_DATA;
                         }
-                    case SystemMessageHeaders.STATUS_CHECK:
+                    } else if (header.equals(SystemMessageHeaders.STATUS_CHECK)) {
                         return Constants.ID_SERVER;
-                    default:
+                    } else {
                         return GenericResponses.ILLEGAL_HEADER;
+                    }
+                } else {
+                    return GenericResponses.ILLEGAL_HEADER;
                 }
             } else {
                 if (innerData != null) {

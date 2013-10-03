@@ -56,8 +56,8 @@ public class MessagingTest {
         System.out.println("testRegistration");
 
         try {
-            assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
-        } catch (ConnectionException ex) {
+            assertTrue(c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK)));
+        } catch (Exception ex) {
             fail("Registration from client to server failed - " + ex);
         }
 
@@ -68,18 +68,20 @@ public class MessagingTest {
         }
 
         try {
-            assertNotNull(s.getClientManager().registerClient(InetAddress.getLoopbackAddress(), PORT_CLIENT));
-        } catch (ConnectionException ex) {
+            assertNotNull(s.getClientManager().registerClient(InetAddress.getByName(Constants.IP_LOOPBACK), PORT_CLIENT));
+        } catch (Exception ex) {
             fail("Registration from server to client failed - " + ex);
         }
 
         try {
-            CommunicatorInner comm = (CommunicatorInner) CommunicatorImpl.initNewCommunicator(InetAddress.getLoopbackAddress(), 5252);
+            CommunicatorInner comm = (CommunicatorInner) CommunicatorImpl.initNewCommunicator(InetAddress.getByName(Constants.IP_LOOPBACK), 5252);
             comm.setTargetId(Constants.ID_SERVER);
             comm.sendData("data");
             fail("Should have failed, because this communicator is not registered.");
         } catch (ConnectionException ex) {
             assertEquals(ConnectionExceptionCause.UUID_NOT_ALLOWED, ex.getExceptionCause());
+        } catch (Exception ex) {
+            fail(ex.getLocalizedMessage());
         }
     }
 
@@ -88,8 +90,8 @@ public class MessagingTest {
         System.out.println("testIdMessaging");
 
         try {
-            assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
-        } catch (ConnectionException ex) {
+            assertTrue(c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK)));
+        } catch (Exception ex) {
             fail("Registration from client to server failed - " + ex);
         }
 
@@ -152,8 +154,8 @@ public class MessagingTest {
         System.out.println("testIdMessagingNoPush");
 
         try {
-            assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
-        } catch (ConnectionException ex) {
+            assertTrue(c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK)));
+        } catch (Exception ex) {
             fail("Registration from client to server failed - " + ex);
         }
 
@@ -204,8 +206,8 @@ public class MessagingTest {
         System.out.println("testClientMessaging");
 
         try {
-            assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
-        } catch (ConnectionException ex) {
+            assertTrue(c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK)));
+        } catch (Exception ex) {
             fail("Registration from client to server failed - " + ex);
         }
 
@@ -263,8 +265,8 @@ public class MessagingTest {
         System.out.println("testClientMessagingNoPush");
 
         try {
-            assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
-        } catch (ConnectionException ex) {
+            assertTrue(c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK)));
+        } catch (Exception ex) {
             fail("Registration from client to server failed - " + ex);
         }
 
@@ -315,8 +317,8 @@ public class MessagingTest {
         System.out.println("testMessageObserver");
 
         try {
-            assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
-        } catch (ConnectionException ex) {
+            assertTrue(c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK)));
+        } catch (Exception ex) {
             fail("Registration from client to server failed - " + ex);
         }
 
@@ -400,8 +402,8 @@ public class MessagingTest {
         System.out.println("testMessageInvalidTarget");
 
         try {
-            assertTrue(c.registerToServer(InetAddress.getLoopbackAddress()));
-        } catch (ConnectionException ex) {
+            assertTrue(c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK)));
+        } catch (Exception ex) {
             fail("Registration from client to server failed - " + ex);
         }
 

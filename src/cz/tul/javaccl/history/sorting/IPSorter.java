@@ -65,7 +65,7 @@ public class IPSorter extends HistorySorter {
     public List<Element> sortHistory(final Collection<HistoryRecord> records, final Document doc) {
         log.fine("Sorting nodes by time.");
 
-        final List<HistoryRecord> sortedList = new ArrayList<>(records);
+        final List<HistoryRecord> sortedList = new ArrayList<HistoryRecord>(records);
         final Comparator<HistoryRecord> comp;
         if (byDestination) {
             comp = new Comparator<HistoryRecord>() {
@@ -85,7 +85,7 @@ public class IPSorter extends HistorySorter {
 
         Collections.sort(sortedList, comp);
 
-        final List<Element> result = new ArrayList<>(records.size());
+        final List<Element> result = new ArrayList<Element>(records.size());
         for (HistoryRecord r : sortedList) {
             result.add(convertRecordToXML(r, doc));
         }

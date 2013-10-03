@@ -37,31 +37,28 @@ class SystemMessageHandler implements Listener<Identifiable> {
             final Object innerData = dp.getData();
             if (innerData instanceof Message) {
                 final Message m = (Message) innerData;
-                switch (m.getHeader()) {
-                    case SystemMessageHeaders.STATUS_CHECK:
+                final String header = m.getHeader();
+                result = GenericResponses.ILLEGAL_HEADER;
+                if (header != null) {
+                    if (header.equals(SystemMessageHeaders.STATUS_CHECK)) {
                         result = idFIlter.getLocalID();
-                        break;
-                    case SystemMessageHeaders.LOGIN:
+                    } else if (header.equals(SystemMessageHeaders.LOGIN)) {
                         final Object mData = m.getData();
                         if (mData instanceof UUID) {
                             serverInterface.setServerInfo(dp.getSourceIP(), Constants.DEFAULT_PORT, (UUID) mData);
                             log.log(
-                                    Level.CONFIG, 
-                                    "Registered to new server at {0} o port {1} with client ID {2}", 
+                                    Level.CONFIG,
+                                    "Registered to new server at {0} o port {1} with client ID {2}",
                                     new Object[]{dp.getSourceIP().getHostAddress(), Constants.DEFAULT_PORT, mData.toString()});
                             result = GenericResponses.OK;
 
                         } else {
                             log.log(Level.WARNING, "Illegal data received with LOGIN message - [{0}].", mData.toString());
                         }
-                        break;
-                    case SystemMessageHeaders.LOGOUT:
+                    } else if (header.equals(SystemMessageHeaders.LOGOUT)) {
                         serverInterface.disconnectFromServer();
-                        break;
-                    default:
-                        result = GenericResponses.ILLEGAL_HEADER;
-                        break;
-                }
+                    }
+                }                
             }
         }
 

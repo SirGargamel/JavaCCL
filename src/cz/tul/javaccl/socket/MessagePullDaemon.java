@@ -60,7 +60,7 @@ public class MessagePullDaemon extends Thread implements IService {
 
     @Override
     public void run() {
-        Collection<Communicator> comms = new ArrayList<>(clientLister.getClients().size());
+        Collection<Communicator> comms = new ArrayList<Communicator>(clientLister.getClients().size());
         CommunicatorInner commI;
         Message m;
         InetAddress ipComm;
@@ -94,13 +94,19 @@ public class MessagePullDaemon extends Thread implements IService {
 
                         m = new Message(SystemMessageHeaders.MSG_PULL_REQUEST, id);
 
-                        try (final Socket s = new Socket(ipComm, port)) {
-                            try (final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream())) {
+                        Socket s = null;
+                        try {
+                            s = new Socket(ipComm, port);
+                            ObjectOutputStream out = null;
+                            try {
+                                out = new ObjectOutputStream(s.getOutputStream());
                                 out.writeObject(m);
                                 out.flush();
                                 log.log(Level.FINE, "Message pull request sent to {0}:{1}", new Object[]{ipComm.getHostAddress(), port});
 
-                                try (final ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
+                                ObjectInputStream in = null;
+                                try {
+                                    in = new ObjectInputStream(s.getInputStream());
                                     try {
                                         dataIn = in.readObject();
                                         dataRead = true;
@@ -121,12 +127,26 @@ public class MessagePullDaemon extends Thread implements IService {
                                     } catch (ClassNotFoundException ex) {
                                         log.log(Level.WARNING, "Illegal class received.", ex);
                                     }
+                                } finally {
+                                    if (in != null) {
+                                        in.close();
+                                    }
+                                }
+                            } finally {
+                                if (out != null) {
+                                    out.close();
                                 }
                             }
                         } catch (SocketTimeoutException ex) {
                             log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", ipComm.getHostAddress());
                         } catch (IOException ex) {
                             log.log(Level.WARNING, "Error operating socket.", ex);
+                        } finally {
+                            try {
+                                s.close();
+                            } catch (IOException ex) {
+                                Logger.getLogger(MessagePullDaemon.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                         }
 
                         if (hm != null) {
@@ -137,7 +157,7 @@ public class MessagePullDaemon extends Thread implements IService {
             }
 
             now = Calendar.getInstance(Locale.getDefault());
-            dif = now.getTimeInMillis() - lastTime.getTimeInMillis();            
+            dif = now.getTimeInMillis() - lastTime.getTimeInMillis();
             wait = WAIT_TIME - dif;
             if (wait > 0) {
                 try {
@@ -176,7 +196,7 @@ public class MessagePullDaemon extends Thread implements IService {
             final UUID id = (UUID) pullData;
             Collection<Communicator> comms = clientLister.getClients();
 
-            for (Communicator comm : comms) {                
+            for (Communicator comm : comms) {
                 if (comm instanceof CommunicatorInner) {
                     communicator = (CommunicatorInner) comm;
 
@@ -206,7 +226,9 @@ public class MessagePullDaemon extends Thread implements IService {
             msg = GenericResponses.ILLEGAL_DATA;
         }
 
-        try (final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream())) {
+        ObjectOutputStream out = null;
+        try {
+            out = new ObjectOutputStream(s.getOutputStream());
             out.writeObject(msg);
             out.flush();
 
@@ -222,6 +244,14 @@ public class MessagePullDaemon extends Thread implements IService {
             }
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error operating socket.\n", ex);
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException ex) {
+                    log.warning("Error closing OutputStream.");
+                }
+            }
         }
     }
 

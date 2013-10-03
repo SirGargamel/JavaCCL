@@ -65,7 +65,7 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
     private void listenForDiscoveryPacket() {
         try {
             //Receive a packet
-            byte[] recvBuf = new byte[15_000];
+            byte[] recvBuf = new byte[15000];
             DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
             log.log(Level.FINE, "Starting listening for discovery packets");
             s.receive(packet);

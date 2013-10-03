@@ -16,7 +16,7 @@ public class DefaultSorter extends HistorySorter {
 
     @Override
     public List<Element> sortHistory(final Collection<HistoryRecord> records, final Document doc) {       
-        final List<Element> result = new ArrayList<>(records.size());
+        final List<Element> result = new ArrayList<Element>(records.size());
         
         for (HistoryRecord r : records) {
             result.add(convertRecordToXML(r, doc));
