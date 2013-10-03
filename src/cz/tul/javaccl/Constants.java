@@ -28,15 +28,15 @@ public interface Constants {
     /**
      * Server UUID
      */
-    UUID ID_SERVER = UUID.randomUUID();
+    UUID ID_SERVER = UUID.fromString("a1b248d1-949b-01e4-a84b-000000000001");
     /**
      * UUID of job manager
      */
-    UUID ID_JOB_MANAGER = UUID.randomUUID();
+    UUID ID_JOB_MANAGER = UUID.fromString("a1b248d1-949b-01e4-a84b-000000000002");
     /**
      * UUID for system message handler
      */
-    UUID ID_SYS_MSG = UUID.randomUUID();
+    UUID ID_SYS_MSG = UUID.fromString("a1b248d1-949b-01e4-a84b-000000000003");
     /**
      * Spliitting character
      */
