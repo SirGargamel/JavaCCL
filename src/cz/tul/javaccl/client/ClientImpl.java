@@ -141,7 +141,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     @Override
     public Object sendDataToServer(final Object data, final int timeout) throws ConnectionException {
         if (data != null) {
-            log.log(Level.INFO, "Sending data to server - {0}", data.toString());
+            log.log(Level.INFO, "Sending data to server - {0}", new Object[] {data.toString()});
         } else {
             log.log(Level.INFO, "Sending NULL data to server.");
         }
@@ -289,7 +289,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
             final Object response = sendDataToServer(m);
             return GenericResponses.OK.equals(response);
         } catch (ConnectionException ex) {
-            log.log(Level.WARNING, "Communication with server failed - {0}", ex);
+            log.log(Level.WARNING, "Communication with server failed - {0}, {1}", new Object[] {ex.getExceptionCause(), ex.getLocalizedMessage()});
             return false;
         }
 
