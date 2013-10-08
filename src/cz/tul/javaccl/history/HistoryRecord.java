@@ -76,15 +76,33 @@ public class HistoryRecord {
         final StringBuilder sb = new StringBuilder();
 
         sb.append("From ");
-        sb.append(ipSource.getHostAddress());
+        if (ipSource != null) {
+            sb.append(ipSource.getHostAddress());
+        } else {
+            sb.append("NULL");
+        }
         sb.append(" to ");
-        sb.append(ipDestination.getHostAddress());
+        if (ipDestination != null) {
+            sb.append(ipDestination.getHostAddress());
+        } else {
+            sb.append("NULL");
+        }
         sb.append(" on ");
         sb.append(time);
         sb.append(". Data - ");
-        sb.append(data.toString());
+        if (data != null) {
+            sb.append(data.toString());
+        } else {
+            sb.append("NULL");
+        }
         sb.append(". Was accepted - ");
         sb.append(accepted);
+        sb.append(" with answer - ");
+        if (answer != null) {
+            sb.append(answer.toString());
+        } else {
+            sb.append("NULL");
+        }
 
         return sb.toString();
     }
