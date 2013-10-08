@@ -71,9 +71,9 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
             s.receive(packet);
 
             //Packet received                    
-            log.log(Level.CONFIG, "Discovery packet received from {0}", new Object[]{packet.getAddress().getHostAddress()});
+            log.log(Level.CONFIG, "Discovery packet received from " + packet.getAddress().getHostAddress());
             String message = new String(packet.getData()).trim();
-            log.log(Level.CONFIG, "Discovery packet received from {0} - {1}", new Object[]{packet.getAddress().getHostAddress(), message});
+            log.log(Level.CONFIG, "Discovery packet received from " + packet.getAddress().getHostAddress() + " - " + message.toString());
 
             //See if the packet holds the right message                    
             if (message.startsWith(Constants.DISCOVERY_QUESTION)) {
@@ -83,13 +83,13 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
                     try {
                         sr.registerToServer(packet.getAddress(), port);
                     } catch (ConnectionException ex) {
-                        log.log(Level.WARNING, "Could not contact server at IP {0} and port {1}.", new Object[]{packet.getAddress(), port});
+                        log.log(Level.WARNING, "Could not contact server at IP " + packet.getAddress() + " and port " + port);
                     }
                 } catch (NumberFormatException ex) {
                     try {
                         sr.registerToServer(packet.getAddress(), Constants.DEFAULT_PORT);
                     } catch (ConnectionException ex2) {
-                        log.log(Level.WARNING, "Could not contact server at IP {0} on default port {1}.", new Object[]{packet.getAddress(), Constants.DEFAULT_PORT});
+                        log.log(Level.WARNING, "Could not contact server at IP " + packet.getAddress() + " on default port " + Constants.DEFAULT_PORT);
                     }
                 }
             } else if (message.startsWith(Constants.DISCOVERY_INFO)) {
@@ -102,13 +102,13 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
                     try {
                         sr.registerToServer(ip, port);
                     } catch (ConnectionException ex) {
-                        log.log(Level.WARNING, "Could not contact server at IP {0} and port {1}.", new Object[]{ip, port});
+                        log.log(Level.WARNING, "Could not contact server at IP " + ip + " and port " + port);
                     }
                 } catch (NumberFormatException ex) {
                     try {
                         sr.registerToServer(packet.getAddress(), Constants.DEFAULT_PORT);
                     } catch (ConnectionException ex2) {
-                        log.log(Level.WARNING, "Could not contact server at IP {0} on default port {1}.", new Object[]{packet.getAddress(), Constants.DEFAULT_PORT});
+                        log.log(Level.WARNING, "Could not contact server at IP " + packet.getAddress() + " on default port " + Constants.DEFAULT_PORT);
                     }
                 }
             }

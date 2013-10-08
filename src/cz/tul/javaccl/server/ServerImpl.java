@@ -71,7 +71,7 @@ public final class ServerImpl extends Server implements IService {
 
     @Override
     public Communicator registerClient(final InetAddress adress) throws ConnectionException {
-        log.log(Level.INFO, "Registering new client on IP{0} on default port", adress);
+        log.log(Level.INFO, "Registering new client on IP " + adress.getHostAddress() + " on default port");
         return clients.registerClient(adress, Constants.DEFAULT_PORT);
     }
 

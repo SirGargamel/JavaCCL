@@ -44,7 +44,7 @@ public class ObjectQueue<O extends Identifiable> {
 
         if (id != null) {
             data.put(id, result);
-            log.log(Level.FINE, "New queue prepared for id {0}", new Object[]{id.toString()});
+            log.log(Level.FINE, "New queue prepared for id " + id.toString());
         }
 
         return result;
@@ -52,6 +52,7 @@ public class ObjectQueue<O extends Identifiable> {
 
     /**
      * Check if for the given ID there is a listener registered.
+     *
      * @param id message ID
      * @return true if there is a listener registered
      */
@@ -66,11 +67,12 @@ public class ObjectQueue<O extends Identifiable> {
      */
     public void removeListener(final Object id) {
         data.remove(id);
-        log.log(Level.FINE, "Listener deregistered for id{0}", new Object[]{id.toString()});
+        log.log(Level.FINE, "Listener deregistered for id " + id.toString());
     }
 
     /**
      * Store received data.
+     *
      * @param id ID of the data
      * @param data data for storing
      */
@@ -79,7 +81,7 @@ public class ObjectQueue<O extends Identifiable> {
             final Queue<O> q = this.data.get(id);
             if (q != null) {
                 q.add(data);
-                log.log(Level.FINE, "Data [{0}] stored.", data.toString());
+                log.log(Level.FINE, "Data [" + data.toString() + "] stored.");
             }
         }
     }

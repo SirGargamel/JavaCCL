@@ -70,7 +70,7 @@ class SocketReader extends Observable implements Runnable {
         boolean dataRead = false;
         final InetAddress ip = socket.getInetAddress();
         Object dataIn = null;
-        
+
         ObjectInputStream in = null;
         try {
             in = new ObjectInputStream(socket.getInputStream());
@@ -84,16 +84,16 @@ class SocketReader extends Observable implements Runnable {
                 sendReply(ip, dp.getData(), dataRead, response);
             } else if (dataIn instanceof Message) {
                 final Message m = (Message) dataIn;
-                
+
                 final String header = m.getHeader();
                 if (header != null && header.equals(SystemMessageHeaders.MSG_PULL_REQUEST)) {
                     mpd.handleMessagePullRequest(socket, m.getData(), in);
                 } else {
-                    log.log(Level.WARNING, "Received Message with unidentifined header - {0}", new Object[]{m.toString()});
-                        sendReply(ip, dataIn, dataRead, GenericResponses.ILLEGAL_HEADER);
-                }                
+                    log.log(Level.WARNING, "Received Message with unidentifined header - " + m.toString());
+                    sendReply(ip, dataIn, dataRead, GenericResponses.ILLEGAL_HEADER);
+                }
             } else {
-                log.log(Level.WARNING, "Received data is not an instance of DataPacket or Message - {0}", new Object[]{dataIn});
+                log.log(Level.WARNING, "Received data is not an instance of DataPacket or Message - " + dataIn);
                 sendReply(ip, dataIn, dataRead, GenericResponses.ILLEGAL_DATA);
             }
         } catch (IOException ex) {

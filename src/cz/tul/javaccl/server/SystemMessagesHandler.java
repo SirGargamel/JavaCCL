@@ -45,11 +45,10 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                         try {
                             UUID clientId = UUID.randomUUID();
                             clientManager.addClient(dp.getSourceIP(), Integer.parseInt(m.getData().toString()), clientId);
-                            log.log(Level.CONFIG, "LOGIN received from {0}, assigning id {1}", new Object[]{dp.getSourceIP().getHostAddress(), clientId});
+                            log.log(Level.CONFIG, "LOGIN received from " + dp.getSourceIP().getHostAddress() + ", assigning id " + clientId);
                             return clientId;
                         } catch (NumberFormatException ex) {
-                            log.log(Level.WARNING, "Illegal login data received - {0}",
-                                    new Object[]{m.getData().toString()});
+                            log.log(Level.WARNING, "Illegal login data received - " + m.getData().toString());
                             return GenericResponses.ILLEGAL_DATA;
                         } catch (NullPointerException ex) {
                             log.log(Level.WARNING, "Null login data received.");
@@ -61,7 +60,7 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                             clientManager.deregisterClient((UUID) id);
                             return GenericResponses.OK;
                         } else {
-                            log.log(Level.WARNING, "Invalid client id received - {0}", id.toString());
+                            log.log(Level.WARNING, "Invalid client id received - " + id.toString());
                             return GenericResponses.ILLEGAL_DATA;
                         }
                     } else if (header.equals(SystemMessageHeaders.STATUS_CHECK)) {
@@ -74,7 +73,7 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                 }
             } else {
                 if (innerData != null) {
-                    log.log(Level.WARNING, "Invalid data received - {0}", innerData.toString());
+                    log.log(Level.WARNING, "Invalid data received - " + innerData.toString());
                 } else {
                     log.log(Level.WARNING, "Received NULL inner data.");
                 }
@@ -82,7 +81,7 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
             }
         } else {
             if (data != null) {
-                log.log(Level.WARNING, "Invalid data received - {0}", data.toString());
+                log.log(Level.WARNING, "Invalid data received - " + data.toString());
             } else {
                 log.log(Level.WARNING, "Received NULL data.");
             }

@@ -60,7 +60,7 @@ public class ClientSettings {
                             log.log(Level.WARNING, "Unkonwn server info found in settings.", ex);
                         }
                     } else {
-                        log.log(Level.FINE, "Unknown field - {0}", f);
+                        log.log(Level.FINE, "Unknown field - " + f);
                     }
                 }
 
@@ -70,7 +70,7 @@ public class ClientSettings {
                             result = true;
                         }
                     } catch (ConnectionException ex) {
-                        log.log(Level.WARNING, "Could not connect to server with {0}, port {1}.", new Object[]{ip.getHostAddress(), port});
+                        log.log(Level.WARNING, "Could not connect to server with " + ip.getHostAddress() + ", port " + port);
                     }
                 }
             } catch (IOException ex) {

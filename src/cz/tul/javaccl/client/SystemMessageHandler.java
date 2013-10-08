@@ -48,17 +48,16 @@ class SystemMessageHandler implements Listener<Identifiable> {
                             serverInterface.setServerInfo(dp.getSourceIP(), Constants.DEFAULT_PORT, (UUID) mData);
                             log.log(
                                     Level.CONFIG,
-                                    "Registered to new server at {0} o port {1} with client ID {2}",
-                                    new Object[]{dp.getSourceIP().getHostAddress(), Constants.DEFAULT_PORT, mData.toString()});
+                                    "Registered to new server at " + dp.getSourceIP().getHostAddress() + " on port " + Constants.DEFAULT_PORT + " with client ID " + mData.toString());
                             result = GenericResponses.OK;
 
                         } else {
-                            log.log(Level.WARNING, "Illegal data received with LOGIN message - [{0}].", mData.toString());
+                            log.log(Level.WARNING, "Illegal data received with LOGIN message - [" + mData.toString() + "].");
                         }
                     } else if (header.equals(SystemMessageHeaders.LOGOUT)) {
                         serverInterface.disconnectFromServer();
                     }
-                }                
+                }
             }
         }
 

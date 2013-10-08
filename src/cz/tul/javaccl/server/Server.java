@@ -34,7 +34,7 @@ public abstract class Server implements IService {
     public static Server initNewServer(final int port) throws IOException {
         final ServerImpl result = new ServerImpl(port);
         result.start();
-        log.log(Level.INFO, "New server created on port {0}", new Object[]{port});
+        log.log(Level.INFO, "New server created on port " + port);
 
         return result;
     }

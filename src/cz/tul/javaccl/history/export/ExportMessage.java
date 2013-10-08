@@ -27,7 +27,7 @@ public class ExportMessage implements ExportUnit {
 
     @Override
     public Element exportData(Document doc, Object data) {
-        log.log(Level.FINE, "Exporting message class to XML - {0}", data.toString());
+        log.log(Level.FINE, "Exporting message class to XML - " + data.toString());
         Element result = null;
         if (data instanceof Message) {
             final Message m = (Message) data;

@@ -55,7 +55,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
                 // Send the broadcast
                 sendPacket = new DatagramPacket(msg, messageLength, broadcast, Constants.DEFAULT_PORT);
                 s.send(sendPacket);
-                log.log(Level.FINE, "Discovery packet sent to: {0}; Interface: {1}", new Object[]{broadcast.getHostAddress(), networkInterface.getDisplayName()});
+                log.log(Level.FINE, "Discovery packet sent to: " + broadcast.getHostAddress() + "; Interface: " + networkInterface.getDisplayName());
             }
         }
     }

@@ -95,7 +95,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
         jobQueue.add(result);
         allJobs.add(result);
 
-        log.log(Level.CONFIG, "Job with ID {0} submitted.", result.getId());
+        log.log(Level.CONFIG, "Job with ID " + result.getId() + " submitted.");
         wakeUp();
 
         return result;
@@ -139,7 +139,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
             try {
                 jr.getJob().cancelJob();
             } catch (ConnectionException ex) {
-                log.log(Level.WARNING, "Could not contact client {0} for job cancelation.", jr.getOwner().getTargetId());
+                log.log(Level.WARNING, "Could not contact client " + jr.getOwner().getTargetId() + " for job cancelation.");
             }
 
         }
@@ -188,10 +188,10 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                             j.cancelJob();
                             j.setStatus(JobStatus.SUBMITTED);
                         } catch (ConnectionException ex) {
-                            log.log(Level.WARNING, "Could not contact client with ID {0} for job cancelation.", jr.getOwner().getTargetId());
+                            log.log(Level.WARNING, "Could not contact client with ID " + jr.getOwner().getTargetId() + " for job cancelation.");
                         }
                         storeJobAction(j, jr.getOwner().getTargetId(), JobMessageHeaders.JOB_CANCEL);
-                        log.log(Level.CONFIG, "Job with id {0} hasnt been accepted in time, so it was cancelled and returned to queue.", new Object[]{j.getId()});
+                        log.log(Level.CONFIG, "Job with id " + j.getId() + " hasnt been accepted in time, so it was cancelled and returned to queue.");
                         if (!jobQueue.contains(j)) {
                             jobQueue.addFirst(j);
                         }
@@ -229,10 +229,10 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                                 j.cancelJob();
                                 j.setStatus(JobStatus.SUBMITTED);
                             } catch (ConnectionException ex) {
-                                log.log(Level.WARNING, "Could not contact client with ID {0} for job cancelation.", jr.getOwner().getTargetId());
+                                log.log(Level.WARNING, "Could not contact client with ID " + jr.getOwner().getTargetId() + " for job cancelation.");
                             }
                             storeJobAction(j, jr.getOwner().getTargetId(), JobMessageHeaders.JOB_CANCEL);
-                            log.log(Level.CONFIG, "Jobs (id {0}) owner went offline, so it was cancelled and returned to queue.", new Object[]{j.getId()});
+                            log.log(Level.CONFIG, "Jobs (id " + j.getId() + ") owner went offline, so it was cancelled and returned to queue.");
                             if (!jobQueue.contains(j)) {
                                 jobQueue.addFirst(j);
                             }
@@ -254,13 +254,13 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
             job = jobQueue.poll();
             comm = pickClient(job, clients);
             if (comm != null && assignJob(job, comm)) {
-                log.log(Level.CONFIG, "Job with ID {0} assigned to client with ID {1}.", new Object[]{job.getId(), comm.getTargetId()});
+                log.log(Level.CONFIG, "Job with ID " + job.getId() + " assigned to client with ID " + comm.getTargetId());
             } else {
                 putBack.add(job);
                 if (comm != null) {
-                    log.log(Level.WARNING, "Failed to assign job to client with ID {0}", comm.getTargetId());
+                    log.log(Level.WARNING, "Failed to assign job to client with ID " + comm.getTargetId());
                 } else {
-                    log.log(Level.WARNING, "Failed to pick client even after checking if any client is aviable.");
+                    log.log(Level.WARNING, "Failed to pick client even after checking if any client is available.");
                 }
             }
         }
@@ -372,11 +372,11 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
             if ((Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - cal.getTimeInMillis()) > JOB_CANCEL_WAIT_TIME) {
                 return cancelTimes.get(cal);
             } else {
-                log.log(Level.FINE, "No communicator assigned for job {0}, too soon after last job cancel", job.getId());
+                log.log(Level.FINE, "No communicator assigned for job " + job.getId() + ", too soon after last job cancel");
                 return null;
             }
         } else {
-            log.log(Level.FINE, "No communicator assigned for job {0}, no aviable found.", job.getId());
+            log.log(Level.FINE, "No communicator assigned for job " + job.getId() + ", no available found.");
             return null;
         }
     }
@@ -482,7 +482,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 }
             } else {
                 return GenericResponses.ILLEGAL_HEADER;
-            }            
+            }
         } else {
             return GenericResponses.ILLEGAL_DATA;
         }
@@ -496,13 +496,13 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 if (ssj.getId().equals(id)) {
                     ssj.setStatus(JobStatus.ACCEPTED);
                     jr.updateTime();
-                    log.log(Level.CONFIG, "Job with ID {0} has been accepted.", id);
+                    log.log(Level.CONFIG, "Job with ID " + id + " has been accepted.");
                     storeJobAction(ssj, jr.getOwner().getTargetId(), JobMessageHeaders.JOB_ACCEPT);
                     return GenericResponses.OK;
                 }
             }
         }
-        log.log(Level.WARNING, "JobAccept received for illegal UUID - {0}", id);
+        log.log(Level.WARNING, "JobAccept received for illegal UUID - " + id);
         return GenericResponses.UUID_UNKNOWN;
     }
 
@@ -518,14 +518,14 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                     jobQueue.addFirst(j);
                     j.setStatus(JobStatus.SUBMITTED);
                     it.remove();
-                    log.log(Level.CONFIG, "Job with ID {0} has been cancelled.", id);
+                    log.log(Level.CONFIG, "Job with ID " + id + " has been cancelled.");
                     storeJobAction(j, jr.getOwner().getTargetId(), JobMessageHeaders.JOB_CANCEL);
                     wakeUp();
                     return GenericResponses.OK;
                 }
             }
         }
-        log.log(Level.WARNING, "JobCancel received for illegal UUID - {0}", id);
+        log.log(Level.WARNING, "JobCancel received for illegal UUID - " + id);
         return GenericResponses.UUID_UNKNOWN;
     }
 
@@ -541,14 +541,14 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 if (j.getId().equals(id)) {
                     j.setResult(jt.getTask());
                     it.remove();
-                    log.log(Level.CONFIG, "Job with ID {0} has been computed succefully.", id);
+                    log.log(Level.CONFIG, "Job with ID " + id + " has been computed succefully.");
                     storeJobAction(j, jr.getOwner().getTargetId(), JobMessageHeaders.JOB_RESULT);
                     wakeUp();
                     return GenericResponses.OK;
                 }
             }
         }
-        log.log(Level.WARNING, "JobCancel received for illegal UUID - {0}", id);
+        log.log(Level.WARNING, "JobCancel received for illegal UUID - " + id);
         return GenericResponses.UUID_UNKNOWN;
     }
 
@@ -582,7 +582,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                     job.setStatus(JobStatus.CANCELED);
                     jr.updateTime();
                     it.remove();
-                    log.log(Level.CONFIG, "Job with ID {0} has been cancelled by server.", j.getId());
+                    log.log(Level.CONFIG, "Job with ID " + j.getId() + " has been cancelled by server.");
                 }
             }
         }

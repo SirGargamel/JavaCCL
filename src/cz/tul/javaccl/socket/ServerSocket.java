@@ -76,7 +76,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
 
     @Override
     public void setClientListener(final UUID clientId, final Listener<DataPacket> dataListener) {
-        log.log(Level.FINE, "Added new listener {0} for client with ID {1}", new Object[]{dataListener.toString(), clientId.toString()});
+        log.log(Level.FINE, "Added new listener " + dataListener.toString() + " for client with ID " + clientId.toString());
         listenersClient.put(clientId, dataListener);
     }
 
@@ -94,7 +94,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         if (clientId != null) {
             dataStorageClient.removeListener(clientId);
             listenersClient.remove(clientId);
-            log.log(Level.FINE, "Removed listener for ID {1}", new Object[]{clientId});
+            log.log(Level.FINE, "Removed listener for ID " + clientId);
         } else {
             log.log(Level.FINE, "NULL client id received for deregistration");
         }
@@ -102,7 +102,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
 
     @Override
     public void setIdListener(final Object id, final Listener<Identifiable> idListener) {
-        log.log(Level.FINE, "Added new listener {0} for ID {1}", new Object[]{idListener.toString(), id.toString()});
+        log.log(Level.FINE, "Added new listener " + idListener.toString() + " for ID " + id.toString());
         listenersId.put(id, idListener);
     }
 
@@ -120,7 +120,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         if (id != null) {
             dataStorageId.removeListener(id);
             listenersId.remove(id);
-            log.log(Level.FINE, "Removed listener for ID {0}", new Object[]{id.toString()});
+            log.log(Level.FINE, "Removed listener for ID " + id.toString());
         } else {
             log.log(Level.FINE, "NULL message id received for deregistration");
         }
@@ -129,13 +129,13 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     @Override
     public void addMessageObserver(Observer msgObserver) {
         dataListeners.add(msgObserver);
-        log.log(Level.FINE, "Added new message observer - {0}", new Object[]{msgObserver.toString()});
+        log.log(Level.FINE, "Added new message observer - " + msgObserver.toString());
     }
 
     @Override
     public void removeMessageObserver(Observer msgObserver) {
         dataListeners.remove(msgObserver);
-        log.log(Level.FINE, "Removed message observer - {0}", new Object[]{msgObserver.toString()});
+        log.log(Level.FINE, "Removed message observer - " + msgObserver.toString());
     }
 
     @Override
@@ -145,7 +145,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
             try {
                 s = socket.accept();
                 s.setSoTimeout(Constants.DEFAULT_TIMEOUT);
-                log.log(Level.FINE, "Connection accepted from IP {0}:{1}", new Object[]{s.getInetAddress().getHostAddress(), s.getPort()});
+                log.log(Level.FINE, "Connection accepted from IP " + s.getInetAddress().getHostAddress() + ":" + s.getPort());
                 final SocketReader sr = new SocketReader(s, this, mpd);
                 sr.registerHistory(hm);
                 for (Observer o : dataListeners) {
@@ -209,26 +209,26 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                 if (data instanceof Message) {
                     final UUID mId = ((Message) data).getId();
                     final String header = ((Message) data).getHeader();
-                    if ((mId.equals(Constants.ID_SYS_MSG) && (header.equals(SystemMessageHeaders.LOGIN)) 
+                    if ((mId.equals(Constants.ID_SYS_MSG) && (header.equals(SystemMessageHeaders.LOGIN))
                             || header.equals(SystemMessageHeaders.STATUS_CHECK))) {
                         allowed = true;
                     }
                 }
                 if (!allowed) {
-                    log.log(Level.FINE, "Data with null id received and its not a sys msg [{0}].", data.toString());
+                    log.log(Level.FINE, "Data with null id received and its not a sys msg [" + data.toString() + "].");
                     return GenericResponses.UUID_NOT_ALLOWED;
                 }
             } else if (!idFilter.isTargetIdValid(dp.getTargetID())) {
-                log.log(Level.FINE, "Received data not for this client - client id is {0}, data packet [{1}]", new Object[]{clientId, dp.toString()});
+                log.log(Level.FINE, "Received data not for this client - client id " + clientId + ", data packet [" + dp.toString() + "]");
                 return GenericResponses.ILLEGAL_TARGET_ID;
             } else if (!idFilter.isIdAllowed(clientId)) {
-                log.log(Level.FINE, "Received data from unregistered client - id {0}, data [{1}]", new Object[]{clientId, data.toString()});
+                log.log(Level.FINE, "Received data from unregistered client - id " + clientId + ", data [" + data.toString() + "]");
                 return GenericResponses.UUID_NOT_ALLOWED;
             } else {
-                log.log(Level.CONFIG, "Data [{0}] received, forwarding to listeners.", data.toString());
+                log.log(Level.CONFIG, "Data [" + data.toString() + "] received, forwarding to listeners.");
             }
         } else {
-            log.log(Level.CONFIG, "Data [{0}] received, forwarding to listeners.", data.toString());
+            log.log(Level.CONFIG, "Data [" + data.toString() + "] received, forwarding to listeners.");
         }
 
         boolean sysMsg = false;

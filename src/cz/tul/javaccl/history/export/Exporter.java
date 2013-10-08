@@ -36,7 +36,7 @@ public abstract class Exporter {
 
         Class<?> c = data.getClass();
         if (exporters.containsKey(c)) {
-            log.log(Level.CONFIG, "Exporting object using {0} exporter.", c.getName());
+            log.log(Level.CONFIG, "Exporting object using " + c.getName() + " exporter.");
             result = exporters.get(c).exportData(doc, data);
         } else {
             log.log(Level.CONFIG, "Exporting object using default exporter.");
@@ -54,7 +54,7 @@ public abstract class Exporter {
      */
     public static void registerExporterUnit(final ExportUnit eu) {
         exporters.put(eu.getExportedClass(), eu);
-        log.log(Level.FINE, "New exporter for class {0} registered.", eu.getExportedClass().getName());
+        log.log(Level.FINE, "New exporter for class " + eu.getExportedClass().getName() + " registered.");
     }
 
     private Exporter() {

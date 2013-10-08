@@ -53,10 +53,10 @@ public class ServerSettings implements Serializable {
                             } catch (ArrayIndexOutOfBoundsException ex) {
                                 log.log(Level.WARNING, "Unkonwn host found in settings", ex);
                             } catch (ConnectionException ex) {
-                                log.log(Level.WARNING, "Could not connect client with IP {0} on port {1}.", new Object[]{split[0], split[1]});
+                                log.log(Level.WARNING, "Could not connect client with IP " + split[0] + " on port " + split[1]);
                             }
                     } else {
-                        log.log(Level.CONFIG, "Unknown field - {0}", f);
+                        log.log(Level.CONFIG, "Unknown field - " + f);
                     }                   
                 }
             } catch (IOException ex) {

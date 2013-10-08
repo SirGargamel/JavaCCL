@@ -33,7 +33,7 @@ public abstract class Client implements IService {
     public static Client initNewClient(final int port) throws IOException {
         ClientImpl result = new ClientImpl();
         result.start(port);
-        log.log(Level.INFO, "New client created on port {0}", port);
+        log.log(Level.INFO, "New client created on port " + port);
 
         return result;
     }

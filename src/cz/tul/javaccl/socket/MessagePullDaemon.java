@@ -102,7 +102,7 @@ public class MessagePullDaemon extends Thread implements IService {
                                 out = new ObjectOutputStream(s.getOutputStream());
                                 out.writeObject(m);
                                 out.flush();
-                                log.log(Level.FINE, "Message pull request sent to {0}:{1}", new Object[]{ipComm.getHostAddress(), port});
+                                log.log(Level.FINE, "Message pull request sent to " + ipComm.getHostName() + ":" + port);
 
                                 ObjectInputStream in = null;
                                 try {
@@ -113,12 +113,12 @@ public class MessagePullDaemon extends Thread implements IService {
 
                                         if (dataIn instanceof GenericResponses) {
                                             if (!dataIn.equals(GenericResponses.OK)) {
-                                                log.log(Level.WARNING, "Error occured during message pull request - {0}", dataIn.toString());
+                                                log.log(Level.WARNING, "Error occured during message pull request - " + dataIn.toString());
                                             }
                                         } else if (dataIn instanceof DataPacket) {
                                             final DataPacket dp = (DataPacket) dataIn;
                                             response = dpHandler.handleDataPacket(dp);
-                                            log.log(Level.FINE, "Pulled message [{0}], responding with {1}.", new Object[]{dataIn, response});
+                                            log.log(Level.FINE, "Pulled message [" + dataIn + "], responding with " + response);
                                             out.writeObject(response);
                                             out.flush();
                                         } else {
@@ -138,7 +138,7 @@ public class MessagePullDaemon extends Thread implements IService {
                                 }
                             }
                         } catch (SocketTimeoutException ex) {
-                            log.log(Level.CONFIG, "Client on IP {0} is not responding to request.", ipComm.getHostAddress());
+                            log.log(Level.CONFIG, "Client on IP " + ipComm.getHostAddress() + " is not responding to request.");
                         } catch (IOException ex) {
                             log.log(Level.WARNING, "Error operating socket.", ex);
                         } finally {
@@ -210,17 +210,17 @@ public class MessagePullDaemon extends Thread implements IService {
                         final Queue<DataPacket> q = communicator.getUnsentData();
                         if (!q.isEmpty()) {
                             msg = q.poll();
-                            log.log(Level.FINE, "Data prepared for UUID msg pull [{0}].", msg);
+                            log.log(Level.FINE, "Data prepared for UUID msg pull [" + msg + "].");
                         } else {
                             msg = GenericResponses.OK;
-                            log.log(Level.FINE, "No data for UUID {0}.", id);
+                            log.log(Level.FINE, "No data for UUID " + id);
                         }
                     }
                 }
             }
             if (msg == null) {
                 msg = GenericResponses.UUID_UNKNOWN;
-                log.log(Level.CONFIG, "Unknown UUID requested data - {0}.", id);
+                log.log(Level.CONFIG, "Unknown UUID requested data - " + id);
             }
         } else {
             msg = GenericResponses.ILLEGAL_DATA;

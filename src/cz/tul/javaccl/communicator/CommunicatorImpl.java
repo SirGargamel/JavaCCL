@@ -158,16 +158,16 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             out.flush();
 
             if (dp.getData() != null) {
-                log.log(Level.CONFIG, "Data sent to client with ID {0} - [{1}]", new Object[]{getTargetId(), dp.getData().toString()});
+                log.log(Level.CONFIG, "Data sent to client with ID " + getTargetId() + " - [" + dp.getData().toString() + "]");
             } else {
-                log.log(Level.CONFIG, "NULL data sent to client with ID {0} - [{1}]", new Object[]{getTargetId()});
+                log.log(Level.CONFIG, "NULL data sent to client with ID " + getTargetId());
             }
 
             ObjectInputStream in = null;
             try {
                 in = new ObjectInputStream(s.getInputStream());
                 response = in.readObject();
-                log.log(Level.FINE, "Received reply from client - {0}", response);
+                log.log(Level.FINE, "Received reply from client - " + response);
             } catch (IOException ex) {
                 log.log(Level.WARNING, "Error receiving response from output socket", ex);
             } catch (ClassNotFoundException ex) {
@@ -263,10 +263,10 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                         || targetId == null && response == null) {
                     stat = Status.ONLINE;
                 } else {
-                    log.log(Level.FINE, "STATUS_CHECK response received for another ID. {0} , {1}", new Object[]{response, targetId});
+                    log.log(Level.FINE, "STATUS_CHECK response received for another ID - " + response + " , " + targetId);
                 }
             } catch (IOException ex) {
-                log.log(Level.FINE, "Client on IP {0} did not open stream for answer.", address.getHostAddress());
+                log.log(Level.FINE, "Client on IP " + address.getHostAddress() + " did not open stream for answer.");
             } catch (ClassNotFoundException ex) {
                 log.log(Level.WARNING, "Illegal class received from client for KEEP_ALIVE", ex);
             } finally {
@@ -275,7 +275,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                 }
             }
         } catch (SocketTimeoutException ex) {
-            log.log(Level.FINE, "Client on IP {0} is not responding to request.", address.getHostAddress());
+            log.log(Level.FINE, "Client on IP " + address.getHostAddress() + " is not responding to request.");
         } catch (IOException ex) {
         } finally {
             if (s != null) {

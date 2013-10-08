@@ -82,7 +82,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     public boolean registerToServer(final InetAddress address, final int port) throws ConnectionException {
         final CommunicatorInner oldComm = comm;
 
-        log.log(Level.CONFIG, "Registering new server IP and port - {0}:{1}", new Object[]{address.getHostAddress(), port});
+        log.log(Level.CONFIG, "Registering new server IP and port - " + address.getHostAddress() + ":" + port);
         boolean result = false;
         comm = CommunicatorImpl.initNewCommunicator(address, port);
         comm.setTargetId(Constants.ID_SERVER);
@@ -94,10 +94,10 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
                 comm.setSourceId(((UUID) id));
                 result = true;
                 setMaxNumberOfConcurrentAssignments(concurentJobCount);
-                log.log(Level.INFO, "Client has been registered to new server, new ID has been received - {0}", comm.getSourceId());
+                log.log(Level.INFO, "Client has been registered to new server, new ID has been received - " + comm.getSourceId());
             } else {
                 comm = oldComm;
-                log.log(Level.WARNING, "Invalid response received - {0}", id.toString());
+                log.log(Level.WARNING, "Invalid response received - " + id.toString());
             }
         } catch (ConnectionException ex) {
             comm = oldComm;
@@ -129,7 +129,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         if (comm != null) {
             serverStatus = comm.isOnline();
         }
-        log.log(Level.INFO, "Is server running - {0}", serverStatus);
+        log.log(Level.INFO, "Is server running - " + serverStatus);
         return serverStatus;
     }
 
@@ -141,7 +141,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     @Override
     public Object sendDataToServer(final Object data, final int timeout) throws ConnectionException {
         if (data != null) {
-            log.log(Level.INFO, "Sending data to server - {0}", new Object[] {data.toString()});
+            log.log(Level.INFO, "Sending data to server - " + data.toString());
         } else {
             log.log(Level.INFO, "Sending NULL data to server.");
         }
@@ -289,7 +289,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
             final Object response = sendDataToServer(m);
             return GenericResponses.OK.equals(response);
         } catch (ConnectionException ex) {
-            log.log(Level.WARNING, "Communication with server failed - {0}, {1}", new Object[] {ex.getExceptionCause(), ex.getLocalizedMessage()});
+            log.log(Level.WARNING, "Communication with server failed - " + ex.getExceptionCause() + ":" + ex.getLocalizedMessage());
             return false;
         }
 
