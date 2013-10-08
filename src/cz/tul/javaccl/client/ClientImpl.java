@@ -82,27 +82,29 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     public boolean registerToServer(final InetAddress address, final int port) throws ConnectionException {
         final CommunicatorInner oldComm = comm;
 
-        log.log(Level.CONFIG, "Registering new server IP and port - " + address.getHostAddress() + ":" + port);
+        log.log(Level.INFO, "Registering new server IP and port - " + address.getHostAddress() + ":" + port);
         boolean result = false;
         comm = CommunicatorImpl.initNewCommunicator(address, port);
         comm.setTargetId(Constants.ID_SERVER);
         comm.registerHistory(history);
         final Message login = new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.LOGIN, serverSocket.getPort());
-        try {
+        try {            
             final Object id = comm.sendData(login);
             if (id instanceof UUID) {
                 comm.setSourceId(((UUID) id));
                 result = true;
-                setMaxNumberOfConcurrentAssignments(concurentJobCount);
                 log.log(Level.INFO, "Client has been registered to new server, new ID has been received - " + comm.getSourceId());
+                setMaxNumberOfConcurrentAssignments(concurentJobCount);
             } else {
                 comm = oldComm;
                 log.log(Level.WARNING, "Invalid response received - " + id.toString());
+                log.log(Level.INFO, "Registration failed");
             }
         } catch (ConnectionException ex) {
             comm = oldComm;
+            log.log(Level.INFO, "Registration failed");
             throw ex;
-        }
+        }               
 
         return result;
     }
@@ -280,19 +282,21 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
 
     @Override
     public boolean setMaxNumberOfConcurrentAssignments(final int assignmentCount) {
-        final Message m = new Message(
-                Constants.ID_JOB_MANAGER,
-                JobMessageHeaders.JOB_COUNT,
-                new JobCount(getLocalID(), assignmentCount));
+        boolean result = false;
+        if (isServerUp()) {
+            final Message m = new Message(
+                    Constants.ID_JOB_MANAGER,
+                    JobMessageHeaders.JOB_COUNT,
+                    new JobCount(getLocalID(), assignmentCount));
 
-        try {
-            final Object response = sendDataToServer(m);
-            return GenericResponses.OK.equals(response);
-        } catch (ConnectionException ex) {
-            log.log(Level.WARNING, "Communication with server failed - " + ex.getExceptionCause() + ":" + ex.getLocalizedMessage());
-            return false;
+            try {
+                final Object response = sendDataToServer(m);
+                return GenericResponses.OK.equals(response);
+            } catch (ConnectionException ex) {
+                log.log(Level.WARNING, "Communication with server failed - " + ex.getExceptionCause());                
+            }
         }
-
+        return result;
     }
 
     @Override
