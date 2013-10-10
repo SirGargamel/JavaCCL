@@ -95,7 +95,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
         jobQueue.add(result);
         allJobs.add(result);
 
-        log.log(Level.CONFIG, "Job with ID " + result.getId() + " submitted.");
+        log.log(Level.FINE, "Job with ID " + result.getId() + " submitted.");
         wakeUp();
 
         return result;
@@ -108,7 +108,8 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 try {
                     this.wait(WAIT_TIME);
                 } catch (InterruptedException ex) {
-                    log.log(Level.WARNING, "Waiting for all jobs to complete failed.", ex);
+                    log.log(Level.WARNING, "Waiting for all jobs to complete failed.");
+                    log.log(Level.FINE, "Waiting for all jobs to complete failed.", ex);
                 }
             }
         }
@@ -165,7 +166,8 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 try {
                     this.wait(WAIT_TIME);
                 } catch (InterruptedException ex) {
-                    log.log(Level.WARNING, "Waiting of JobManager has been interrupted.", ex);
+                    log.log(Level.WARNING, "Waiting of JobManager has been interrupted.");
+                    log.log(Level.FINE, "Waiting of JobManager has been interrupted.", ex);
                 }
             }
         }
@@ -191,7 +193,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                             log.log(Level.WARNING, "Could not contact client with ID " + jr.getOwner().getTargetId() + " for job cancelation.");
                         }
                         storeJobAction(j, jr.getOwner().getTargetId(), JobMessageHeaders.JOB_CANCEL);
-                        log.log(Level.CONFIG, "Job with id " + j.getId() + " hasnt been accepted in time, so it was cancelled and returned to queue.");
+                        log.log(Level.INFO, "Job with id " + j.getId() + " hasnt been accepted in time, so it was cancelled and returned to queue.");
                         if (!jobQueue.contains(j)) {
                             jobQueue.addFirst(j);
                         }
@@ -232,7 +234,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                                 log.log(Level.WARNING, "Could not contact client with ID " + jr.getOwner().getTargetId() + " for job cancelation.");
                             }
                             storeJobAction(j, jr.getOwner().getTargetId(), JobMessageHeaders.JOB_CANCEL);
-                            log.log(Level.CONFIG, "Jobs (id " + j.getId() + ") owner went offline, so it was cancelled and returned to queue.");
+                            log.log(Level.INFO, "Jobs (id " + j.getId() + ") owner went offline, so it was cancelled and returned to queue.");
                             if (!jobQueue.contains(j)) {
                                 jobQueue.addFirst(j);
                             }
@@ -254,7 +256,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
             job = jobQueue.poll();
             comm = pickClient(job, clients);
             if (comm != null && assignJob(job, comm)) {
-                log.log(Level.CONFIG, "Job with ID " + job.getId() + " assigned to client with ID " + comm.getTargetId());
+                log.log(Level.INFO, "Job with ID " + job.getId() + " assigned to client with ID " + comm.getTargetId());
             } else {
                 putBack.add(job);
                 if (comm != null) {
@@ -496,7 +498,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 if (ssj.getId().equals(id)) {
                     ssj.setStatus(JobStatus.ACCEPTED);
                     jr.updateTime();
-                    log.log(Level.CONFIG, "Job with ID " + id + " has been accepted.");
+                    log.log(Level.INFO, "Job with ID " + id + " has been accepted.");
                     storeJobAction(ssj, jr.getOwner().getTargetId(), JobMessageHeaders.JOB_ACCEPT);
                     return GenericResponses.OK;
                 }
@@ -518,7 +520,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                     jobQueue.addFirst(j);
                     j.setStatus(JobStatus.SUBMITTED);
                     it.remove();
-                    log.log(Level.CONFIG, "Job with ID " + id + " has been cancelled.");
+                    log.log(Level.INFO, "Job with ID " + id + " has been cancelled.");
                     storeJobAction(j, jr.getOwner().getTargetId(), JobMessageHeaders.JOB_CANCEL);
                     wakeUp();
                     return GenericResponses.OK;
@@ -541,14 +543,14 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 if (j.getId().equals(id)) {
                     j.setResult(jt.getTask());
                     it.remove();
-                    log.log(Level.CONFIG, "Job with ID " + id + " has been computed succefully.");
+                    log.log(Level.INFO, "Job with ID " + id + " has been computed succefully.");
                     storeJobAction(j, jr.getOwner().getTargetId(), JobMessageHeaders.JOB_RESULT);
                     wakeUp();
                     return GenericResponses.OK;
                 }
             }
         }
-        log.log(Level.WARNING, "JobCancel received for illegal UUID - " + id);
+        log.log(Level.WARNING, "JobResult received for illegal UUID - " + id);
         return GenericResponses.UUID_UNKNOWN;
     }
 
@@ -582,7 +584,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                     job.setStatus(JobStatus.CANCELED);
                     jr.updateTime();
                     it.remove();
-                    log.log(Level.CONFIG, "Job with ID " + j.getId() + " has been cancelled by server.");
+                    log.log(Level.INFO, "Job with ID " + j.getId() + " has been cancelled by server.");
                 }
             }
         }
