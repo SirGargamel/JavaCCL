@@ -38,21 +38,6 @@ public class JobTest {
     private Server s;
     private Client c;
 
-    @BeforeClass
-    public static void setUpClass() {
-        Utils.adjustMainHandlersLoggingLevel(Level.CONFIG);
-        Utils.adjustMainLoggerLevel(Level.CONFIG);
-        Utils.adjustClassLoggingLevel(ServerSocket.class, Level.INFO);
-        Utils.adjustClassLoggingLevel(ClientImpl.class, Level.SEVERE);
-        Utils.adjustClassLoggingLevel(CommunicatorImpl.class, Level.WARNING);
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        Utils.adjustMainHandlersLoggingLevel(Level.INFO);
-        Utils.adjustMainLoggerLevel(Level.INFO);
-    }
-
     @Before
     public void setUp() {
         try {

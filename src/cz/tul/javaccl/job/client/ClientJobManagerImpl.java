@@ -83,7 +83,8 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
                     try {
                         this.wait(WAIT_TIME);
                     } catch (InterruptedException ex) {
-                        log.log(Level.WARNING, "Waiting for server being available for data request has been interrupted.", ex);
+                        log.log(Level.WARNING, "Waiting for server being available for data request has been interrupted.");
+                        log.log(Level.FINE, "Waiting for server being available for data request has been interrupted.", ex);
                     }
                 }
             } while (!server.isServerUp());

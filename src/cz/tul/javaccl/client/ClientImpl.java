@@ -127,8 +127,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         boolean serverStatus = false;
         if (comm != null) {
             serverStatus = comm.isOnline();
-        }
-        log.log(Level.INFO, "Is server running - " + serverStatus);
+        }        
         return serverStatus;
     }
 
@@ -190,11 +189,11 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         if (sdd != null) {
             sdd.start();
         } else if (!isServerUp()) {
-            log.info("Could not init server discovery, trying to connect to local host.");
+            log.fine("Could not init server discovery, trying to connect to local host.");
             try {
                 registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK), Constants.DEFAULT_PORT);
             } catch (ConnectionException ex) {
-                log.info("Could not reach server at localhost on default port.");
+                log.fine("Could not reach server at localhost on default port.");
             }
         }
     }
@@ -202,11 +201,9 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     @Override
     public void stopService() {
         try {
-            if (comm != null) {
-                sendDataToServer(new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.LOGOUT, comm.getSourceId()));
-            }
+            deregisterFromServer();
         } catch (ConnectionException ex) {
-            log.warning("Server connection timed out.");
+            log.warning("Server could not be reached for deregistration.");
         }
         disconnectFromServer();
 
@@ -216,7 +213,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         if (sdd != null) {
             sdd.stopService();
         }
-        log.fine("Client has been stopped.");
+        log.info("Client has been stopped.");
     }
 
     @Override

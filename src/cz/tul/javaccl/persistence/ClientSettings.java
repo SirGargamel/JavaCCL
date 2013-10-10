@@ -33,7 +33,7 @@ public class ClientSettings {
      * @return true for successfull deserialization
      */
     public static boolean deserialize(final File settingsFile, final ServerInterface reg) {
-        log.log(Level.CONFIG, "Deserializing client settings.");
+        log.log(Level.FINE, "Deserializing client settings.");
         boolean result = false;
 
         if (settingsFile.canRead()) {
@@ -51,13 +51,16 @@ public class ClientSettings {
                             }
                         } catch (UnknownHostException ex) {
                             result = false;
-                            log.log(Level.WARNING, "Unkonwn server ip found in settings", ex);
+                            log.log(Level.WARNING, "Unkonwn server ip found in settings");
+                            log.log(Level.FINE, "Unkonwn server ip found in settings", ex);
                         } catch (NumberFormatException ex) {
                             result = false;
-                            log.log(Level.WARNING, "Unkonwn server port found in settings", ex);
+                            log.log(Level.WARNING, "Unkonwn server port found in settings");
+                            log.log(Level.FINE, "Unkonwn server port found in settings", ex);
                         } catch (ArrayIndexOutOfBoundsException ex) {
                             result = false;
-                            log.log(Level.WARNING, "Unkonwn server info found in settings.", ex);
+                            log.log(Level.WARNING, "Unkonwn server info found in settings.");
+                            log.log(Level.FINE, "Unkonwn server info found in settings.", ex);
                         }
                     } else {
                         log.log(Level.FINE, "Unknown field - " + f);
@@ -74,9 +77,11 @@ public class ClientSettings {
                     }
                 }
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Error accessing client settings at " + settingsFile.getAbsolutePath() + ".", ex);
+                log.log(Level.WARNING, "Error accessing client settings at " + settingsFile.getAbsolutePath() + ".");
+                log.log(Level.FINE, "Error accessing client settings at " + settingsFile.getAbsolutePath() + ".", ex);
             } catch (SAXException ex) {
-                log.log(Level.WARNING, "Wrong format of input XML.", ex);
+                log.log(Level.WARNING, "Wrong format of input XML.");
+                log.log(Level.FINE, "Wrong format of input XML.", ex);
             }
         }
 
@@ -91,7 +96,7 @@ public class ClientSettings {
      * @return true for successfull save
      */
     public static boolean serialize(final File settingsFile, final Communicator serverCommunicator) {
-        log.log(Level.CONFIG, "Serializing client settings.");
+        log.log(Level.FINE, "Serializing client settings.");
 
         SimpleXMLSettingsFile xml = new SimpleXMLSettingsFile();
 
@@ -103,7 +108,8 @@ public class ClientSettings {
         try {
             result = xml.storeXML(settingsFile);
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error accessing client settings at " + settingsFile.getAbsolutePath() + ".", ex);
+            log.log(Level.WARNING, "Error accessing client settings at " + settingsFile.getAbsolutePath() + ".");
+            log.log(Level.FINE, "Error accessing client settings at " + settingsFile.getAbsolutePath() + ".", ex);
         }
 
         return result;

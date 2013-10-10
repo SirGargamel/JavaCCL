@@ -33,7 +33,7 @@ public class ServerSettings implements Serializable {
      * @return true for successfull load
      */
     public static boolean deserialize(final File settingsFile, final ClientManager clientManager) {
-        log.log(Level.CONFIG, "Deserializing server settings.");
+        log.log(Level.FINE, "Deserializing server settings.");
         boolean result = false;
 
         if (settingsFile.canRead()) {
@@ -42,27 +42,32 @@ public class ServerSettings implements Serializable {
                 for (String f : fields.keySet()) {
                     if (f != null && f.equals(FIELD_NAME_CLIENT)) {
                         String[] split = fields.get(f).split(Constants.DELIMITER);
-                            try {
-                                if (clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1])) != null) {
-                                    result = true;
-                                }
-                            } catch (UnknownHostException ex) {
-                                log.log(Level.WARNING, "Unkonwn host found in settings", ex);
-                            } catch (NumberFormatException  ex) {
-                                log.log(Level.WARNING, "Unkonwn host found in settings", ex);
-                            } catch (ArrayIndexOutOfBoundsException ex) {
-                                log.log(Level.WARNING, "Unkonwn host found in settings", ex);
-                            } catch (ConnectionException ex) {
-                                log.log(Level.WARNING, "Could not connect client with IP " + split[0] + " on port " + split[1]);
+                        try {
+                            if (clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1])) != null) {
+                                result = true;
                             }
+                        } catch (UnknownHostException ex) {
+                            log.log(Level.WARNING, "Unkonwn host found in settings");
+                            log.log(Level.FINE, "Unkonwn host found in settings", ex);
+                        } catch (NumberFormatException ex) {
+                            log.log(Level.WARNING, "Unkonwn host found in settings");
+                            log.log(Level.FINE, "Unkonwn host found in settings", ex);
+                        } catch (ArrayIndexOutOfBoundsException ex) {
+                            log.log(Level.WARNING, "Unkonwn host found in settings");
+                            log.log(Level.FINE, "Unkonwn host found in settings", ex);
+                        } catch (ConnectionException ex) {
+                            log.log(Level.WARNING, "Could not connect client with IP " + split[0] + " on port " + split[1] + " - " + ex.getExceptionCause());
+                        }
                     } else {
-                        log.log(Level.CONFIG, "Unknown field - " + f);
-                    }                   
+                        log.log(Level.FINE, "Unknown field - " + f);
+                    }
                 }
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Error accessing server settings at " + settingsFile.getAbsolutePath() + ".", ex);
+                log.log(Level.WARNING, "Error accessing server settings at " + settingsFile.getAbsolutePath() + ".");
+                log.log(Level.FINE, "Error accessing server settings at " + settingsFile.getAbsolutePath() + ".", ex);
             } catch (SAXException ex) {
-                log.log(Level.WARNING, "Wrong format of input XML.", ex);
+                log.log(Level.WARNING, "Wrong format of input XML.");
+                log.log(Level.FINE, "Wrong format of input XML.", ex);
             }
         }
 
@@ -77,7 +82,7 @@ public class ServerSettings implements Serializable {
      * @return true for successfull save
      */
     public static boolean serialize(final File settingsFile, final ClientManager clientManager) {
-        log.log(Level.CONFIG, "Serializing server settings.");
+        log.log(Level.FINE, "Serializing server settings.");
         final SimpleXMLSettingsFile xml = new SimpleXMLSettingsFile();
 
         final Collection<Communicator> comms = clientManager.getClients();
@@ -94,7 +99,8 @@ public class ServerSettings implements Serializable {
         try {
             result = xml.storeXML(settingsFile);
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error accessing server settings at " + settingsFile.getAbsolutePath() + ".", ex);
+            log.log(Level.WARNING, "Error accessing server settings at " + settingsFile.getAbsolutePath() + ".");
+            log.log(Level.FINE, "Error accessing server settings at " + settingsFile.getAbsolutePath() + ".", ex);
         }
 
         return result;

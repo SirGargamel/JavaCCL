@@ -117,13 +117,16 @@ public class History implements HistoryManager {
             exportDocumentToXML(target, doc);
             result = true;
 
-            log.log(Level.CONFIG, "History successfully exported to " + target.getAbsolutePath() + ", sorted using " + sorter.getClass().getCanonicalName());
+            log.log(Level.FINE, "History successfully exported to " + target.getAbsolutePath() + ", sorted using " + sorter.getClass().getCanonicalName());
         } catch (ParserConfigurationException ex) {
-            log.log(Level.WARNING, "Failed to create DocumentBuilder.", ex);
+            log.log(Level.WARNING, "Failed to create DocumentBuilder.");
+            log.log(Level.FINE, "Failed to create DocumentBuilder.", ex);
         } catch (TransformerConfigurationException ex) {
-            log.log(Level.WARNING, "Failed to create Transformer.", ex);
+            log.log(Level.WARNING, "Failed to create Transformer.");
+            log.log(Level.FINE, "Failed to create Transformer.", ex);
         } catch (TransformerException ex) {
-            log.log(Level.WARNING, "Failed to transform history into XML.", ex);
+            log.log(Level.WARNING, "Failed to transform history into XML.");
+            log.log(Level.FINE, "Failed to transform history into XML.", ex);
         }
 
         return result;
@@ -150,7 +153,6 @@ public class History implements HistoryManager {
     @Override
     public void enableAutomticExportBeforeShutdown(final File target, final HistorySorter sorter) {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-
             @Override
             public void run() {
                 export(target, sorter);

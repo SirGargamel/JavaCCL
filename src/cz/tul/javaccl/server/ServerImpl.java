@@ -55,7 +55,8 @@ public final class ServerImpl extends Server implements IService {
         try {
             cdd = new ClientDiscoveryDaemon(serverSocket.getPort());
         } catch (SocketException ex) {
-            log.log(Level.WARNING, "Failed to create ClientDiscoveryDaemon", ex);
+            log.log(Level.WARNING, "Failed to create ClientDiscoveryDaemon");
+            log.log(Level.FINE, "Failed to create ClientDiscoveryDaemon", ex);
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {

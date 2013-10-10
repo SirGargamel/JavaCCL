@@ -56,7 +56,9 @@ class ClientDB implements ClientManager, Observer, IDFilter {
 
             prepareAllowedIDs();
 
-            log.log(Level.CONFIG, "New client with IP " + address.getHostAddress() + " on port " + port + " registered");
+            log.log(Level.INFO, "New client with IP " + address.getHostAddress() + " on port " + port + " registered");
+        } else {
+            log.log(Level.INFO, "Failed to register client with IP " + address.getHostAddress() + " and port " + port);
         }
 
         return cc;
@@ -74,7 +76,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
             clients.add(ccI);
             prepareAllowedIDs();
 
-            log.log(Level.CONFIG, "New client with IP " + address.getHostAddress() + " on port " + port + " with ID " + clientId + " registered");
+            log.log(Level.INFO, "New client with IP " + address.getHostAddress() + " on port " + port + " with ID " + clientId + " registered");
         }
 
         return ccI;
@@ -96,7 +98,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
                 }
             }
         }
-        log.log(Level.CONFIG, "Client with ID " + id + " deregistered");
+        log.log(Level.INFO, "Client with ID " + id + " deregistered");
     }
 
     @Override

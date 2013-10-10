@@ -45,7 +45,7 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                         try {
                             UUID clientId = UUID.randomUUID();
                             clientManager.addClient(dp.getSourceIP(), Integer.parseInt(m.getData().toString()), clientId);
-                            log.log(Level.CONFIG, "LOGIN received from " + dp.getSourceIP().getHostAddress() + ", assigning id " + clientId);
+                            log.log(Level.FINE, "LOGIN received from " + dp.getSourceIP().getHostAddress() + ", assigning id " + clientId);
                             return clientId;
                         } catch (NumberFormatException ex) {
                             log.log(Level.WARNING, "Illegal login data received - " + m.getData().toString());

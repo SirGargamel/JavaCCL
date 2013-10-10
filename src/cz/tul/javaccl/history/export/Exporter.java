@@ -36,10 +36,10 @@ public abstract class Exporter {
 
         Class<?> c = data.getClass();
         if (exporters.containsKey(c)) {
-            log.log(Level.CONFIG, "Exporting object using " + c.getName() + " exporter.");
+            log.log(Level.FINE, "Exporting object using " + c.getName() + " exporter.");
             result = exporters.get(c).exportData(doc, data);
         } else {
-            log.log(Level.CONFIG, "Exporting object using default exporter.");
+            log.log(Level.FINE, "Exporting object using default exporter.");
             result = doc.createElement(data.getClass().getSimpleName());
             result.appendChild(doc.createTextNode(data.toString()));
         }

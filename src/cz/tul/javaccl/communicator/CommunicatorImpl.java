@@ -131,7 +131,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                     response = waitForResponse(dp, timeout);
                     readAndReply = true;
                 } catch (InterruptedException ex) {
-                    log.log(Level.WARNING, "Waiting for response has been interrupted.", ex);
+                    log.log(Level.WARNING, "Waiting for response has been interrupted.");
+                    log.log(Level.FINE, "Waiting for response has been interrupted.", ex);
                 }
             }
         } else {
@@ -157,21 +158,17 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             out.writeObject(dp);
             out.flush();
 
-            if (dp.getData() != null) {
-                log.log(Level.CONFIG, "Data sent to client with ID " + getTargetId() + " - [" + dp.getData().toString() + "]");
-            } else {
-                log.log(Level.CONFIG, "NULL data sent to client with ID " + getTargetId());
-            }
-
             ObjectInputStream in = null;
             try {
                 in = new ObjectInputStream(s.getInputStream());
                 response = in.readObject();
                 log.log(Level.FINE, "Received reply from client - " + response);
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Error receiving response from output socket", ex);
+                log.log(Level.WARNING, "Error receiving response from output socket.");
+                log.log(Level.FINE, "Error receiving response from output socket.", ex);
             } catch (ClassNotFoundException ex) {
-                log.log(Level.WARNING, "Unknown class object received.", ex);
+                log.log(Level.WARNING, "Unknown class object received.");
+                log.log(Level.FINE, "Unknown class object received.", ex);
                 response = GenericResponses.ILLEGAL_DATA;
             } finally {
                 if (in != null) {
@@ -183,13 +180,15 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         } catch (NotSerializableException ex) {
             throw new IllegalArgumentException("Data for sending (and all of its members) must be serializable (eg. implement Serializable or Externalizable interface.)");
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Cannot write to output socket.", ex);
+            log.log(Level.WARNING, "Cannot write to output socket.");
+            log.log(Level.FINE, "Cannot write to output socket.", ex);
         } finally {
             if (s != null) {
                 try {
                     s.close();
                 } catch (IOException ex) {
                     log.warning("Error closing socket.");
+                    log.log(Level.FINE, "Error closing socket.", ex);
                 }
             }
         }
@@ -220,7 +219,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                         responses.put(question, response);
                     }
                 } catch (ConnectionException ex) {
-                    log.warning("Online client conneciton timed out.");
+                    log.warning("Online client conneciton failed - " + ex.getExceptionCause());
                 }
 
             }
@@ -263,12 +262,13 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                         || targetId == null && response == null) {
                     stat = Status.ONLINE;
                 } else {
-                    log.log(Level.FINE, "STATUS_CHECK response received for another ID - " + response + " , " + targetId);
+                    log.log(Level.WARNING, "STATUS_CHECK response received for another ID - " + response + " , " + targetId);
                 }
             } catch (IOException ex) {
                 log.log(Level.FINE, "Client on IP " + address.getHostAddress() + " did not open stream for answer.");
             } catch (ClassNotFoundException ex) {
-                log.log(Level.WARNING, "Illegal class received from client for KEEP_ALIVE", ex);
+                log.log(Level.WARNING, "Illegal class received from client for KEEP_ALIVE");
+                log.log(Level.FINE, "Illegal class received from client for KEEP_ALIVE", ex);
             } finally {
                 if (in != null) {
                     in.close();
@@ -276,13 +276,14 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             }
         } catch (SocketTimeoutException ex) {
             log.log(Level.FINE, "Client on IP " + address.getHostAddress() + " is not responding to request.");
-        } catch (IOException ex) {
+        } catch (IOException ex) {            
         } finally {
-            if (s != null) {
+            if (s != null && !s.isClosed()) {
                 try {
                     s.close();
                 } catch (IOException ex) {
                     log.warning("Error closing socket.");
+                    log.log(Level.FINE, "Error closing socket.", ex);
                 }
             }
         }

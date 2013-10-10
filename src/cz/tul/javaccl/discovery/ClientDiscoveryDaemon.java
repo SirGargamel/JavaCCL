@@ -40,16 +40,19 @@ public class ClientDiscoveryDaemon extends DiscoveryDaemon implements IService {
             try {
                 broadcastMessage(message);
             } catch (SocketException ex) {
-                log.log(Level.WARNING, "Error while checking status of network interfaces", ex);
+                log.log(Level.WARNING, "Error while checking status of network interfaces");
+                log.log(Level.FINE, "Error while checking status of network interfaces", ex);
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Error writing to socket", ex);
+                log.log(Level.WARNING, "Error writing to socket");
+                log.log(Level.FINE, "Error writing to socket", ex);
             }
 
             synchronized (this) {
                 try {
                     this.wait(DELAY);
                 } catch (InterruptedException ex) {
-                    log.log(Level.WARNING, "Waiting of ClientDiscoveryDaemon has been interrupted.", ex);
+                    log.log(Level.WARNING, "Waiting of ClientDiscoveryDaemon has been interrupted.");
+                    log.log(Level.FINE, "Waiting of ClientDiscoveryDaemon has been interrupted.", ex);
                 }
             }
         }

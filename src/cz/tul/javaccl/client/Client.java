@@ -2,6 +2,7 @@ package cz.tul.javaccl.client;
 
 import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.IService;
+import cz.tul.javaccl.Utils;
 import cz.tul.javaccl.communicator.Communicator;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import cz.tul.javaccl.history.HistoryManager;
@@ -22,6 +23,10 @@ import java.util.logging.Logger;
 public abstract class Client implements IService {
     
     private static final Logger log = Logger.getLogger(Client.class.getName());
+    
+    static {
+        Utils.initLogging();
+    }
     
     /**
      * Create and initialize new instance of client at given port.
@@ -50,7 +55,8 @@ public abstract class Client implements IService {
             try {
                 c = initNewClient(++port);
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Error initializing server on port " + (port - 1), ex);
+                log.log(Level.WARNING, "Error initializing server on port " + (port - 1));
+                log.log(Level.FINE, "Error initializing server on port " + (port - 1), ex);
             }
 
         }

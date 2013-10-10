@@ -35,27 +35,27 @@ public class ClientSideJob implements Assignment {
 
     @Override
     public Object requestData(Object dataId) throws ConnectionException {
-        log.log(Level.CONFIG, "Requesting data with ID " + dataId + " for task with ID " + jobId);
+        log.log(Level.INFO, "Requesting data with ID " + dataId + " for task with ID " + jobId);
         return jobManager.requestData(jobId, dataId);
     }
 
     @Override
     public void submitResult(Object result) throws ConnectionException {
-        log.log(Level.CONFIG, "Submitting result for task with ID " + jobId);
+        log.log(Level.INFO, "Submitting result for task with ID " + jobId);
         isDone = true;        
         jobManager.submitResult(jobId, result);
     }
 
     @Override
     public Object getTask() throws ConnectionException {
-        log.log(Level.CONFIG, "Accepting task with ID " + jobId);
+        log.log(Level.INFO, "Accepting task with ID " + jobId);
         jobManager.acceptJob(jobId);
         return task;
     }
 
     @Override
     public void cancel(final String reason) throws ConnectionException {
-        log.log(Level.CONFIG, "Canceling task with ID " + jobId);        
+        log.log(Level.INFO, "Canceling task with ID " + jobId);        
         jobManager.cancelJob(jobId);
     }
 

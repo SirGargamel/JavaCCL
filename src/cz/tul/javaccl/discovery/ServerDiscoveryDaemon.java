@@ -49,6 +49,7 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
                     this.wait(DELAY);
                 } catch (InterruptedException ex) {
                     log.warning("Waiting of ServerDiscoveryDaemon has been interrupted.");
+                    log.log(Level.FINE, "Waiting of ServerDiscoveryDaemon has been interrupted.", ex);
                 }
             }
         }
@@ -64,18 +65,17 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
 
     private void listenForDiscoveryPacket() {
         try {
-            //Receive a packet
+            // Receive a packet
             byte[] recvBuf = new byte[15000];
             DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
-            log.log(Level.FINE, "Starting listening for discovery packets");
+            log.log(Level.FINE, "Starting listening for discovery packets.");
             s.receive(packet);
 
-            //Packet received                    
-            log.log(Level.CONFIG, "Discovery packet received from " + packet.getAddress().getHostAddress());
+            // Packet received            
             String message = new String(packet.getData()).trim();
-            log.log(Level.CONFIG, "Discovery packet received from " + packet.getAddress().getHostAddress() + " - " + message.toString());
+            log.log(Level.FINE, "Discovery packet received from " + packet.getAddress().getHostAddress() + " - " + message.toString());
 
-            //See if the packet holds the right message                    
+            // See if the packet holds the right message                    
             if (message.startsWith(Constants.DISCOVERY_QUESTION)) {
                 final String portS = message.substring(Constants.DISCOVERY_QUESTION.length() + Constants.DELIMITER.length());
                 try {
@@ -83,13 +83,13 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
                     try {
                         sr.registerToServer(packet.getAddress(), port);
                     } catch (ConnectionException ex) {
-                        log.log(Level.WARNING, "Could not contact server at IP " + packet.getAddress() + " and port " + port);
+                        log.log(Level.WARNING, "Could not contact server at IP " + packet.getAddress() + " and port " + port + " - " + ex.getExceptionCause());
                     }
                 } catch (NumberFormatException ex) {
                     try {
                         sr.registerToServer(packet.getAddress(), Constants.DEFAULT_PORT);
                     } catch (ConnectionException ex2) {
-                        log.log(Level.WARNING, "Could not contact server at IP " + packet.getAddress() + " on default port " + Constants.DEFAULT_PORT);
+                        log.log(Level.WARNING, "Could not contact server at IP " + packet.getAddress() + " on default port " + Constants.DEFAULT_PORT + " - " + ex2.getExceptionCause());
                     }
                 }
             } else if (message.startsWith(Constants.DISCOVERY_INFO)) {
@@ -102,13 +102,13 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
                     try {
                         sr.registerToServer(ip, port);
                     } catch (ConnectionException ex) {
-                        log.log(Level.WARNING, "Could not contact server at IP " + ip + " and port " + port);
+                        log.log(Level.WARNING, "Could not contact server at IP " + ip + " and port " + port + " - " + ex.getExceptionCause());
                     }
                 } catch (NumberFormatException ex) {
                     try {
                         sr.registerToServer(packet.getAddress(), Constants.DEFAULT_PORT);
                     } catch (ConnectionException ex2) {
-                        log.log(Level.WARNING, "Could not contact server at IP " + packet.getAddress() + " on default port " + Constants.DEFAULT_PORT);
+                        log.log(Level.WARNING, "Could not contact server at IP " + packet.getAddress() + " on default port " + Constants.DEFAULT_PORT + " - " + ex2.getExceptionCause());
                     }
                 }
             }
@@ -118,10 +118,12 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
             if (run == false) {
                 // everything is fine, wa wanted to interrupt socket receive method
             } else {
-                log.log(Level.WARNING, "Error operating socket.", ex);
+                log.log(Level.WARNING, "Error operating socket.");
+                log.log(Level.FINE, "Error operating socket.", ex);
             }
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error receiving or answering to client discovery packet", ex);
+            log.log(Level.WARNING, "Error receiving or answering to client discovery packet");
+            log.log(Level.FINE, "Error receiving or answering to client discovery packet", ex);
         }
     }
 
@@ -137,9 +139,11 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
         try {
             broadcastMessage(sb.toString().getBytes());
         } catch (SocketException ex) {
-            log.log(Level.WARNING, "Error while checking status of network interfaces", ex);
+            log.log(Level.WARNING, "Error while checking status of network interfaces");
+            log.log(Level.FINE, "Error while checking status of network interfaces", ex);
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error writing to socket", ex);
+            log.log(Level.WARNING, "Error operating socket.");
+                log.log(Level.FINE, "Error operating socket.", ex);
         }
     }
 }

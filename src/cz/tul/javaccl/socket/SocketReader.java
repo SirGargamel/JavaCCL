@@ -97,17 +97,20 @@ class SocketReader extends Observable implements Runnable {
                 sendReply(ip, dataIn, dataRead, GenericResponses.ILLEGAL_DATA);
             }
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error reading data from socket.", ex);
+            log.log(Level.WARNING, "Error reading data from socket.");
+            log.log(Level.FINE, "Error reading data from socket.", ex);
             sendReply(ip, dataIn, dataRead, GenericResponses.CONNECTION_ERROR);
         } catch (ClassNotFoundException ex) {
-            log.log(Level.WARNING, "Invalid data received from sender.", ex);
+            log.log(Level.WARNING, "Invalid data received from sender.");
+            log.log(Level.FINE, "Invalid data received from sender.", ex);
             sendReply(ip, dataIn, dataRead, GenericResponses.ILLEGAL_DATA);
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(SocketReader.class.getName()).log(Level.SEVERE, null, ex);
+                    log.log(Level.WARNING, "Error operating socket.");
+                    log.log(Level.FINE, "Error operating socket.", ex);
                 }
             }
         }
@@ -117,6 +120,7 @@ class SocketReader extends Observable implements Runnable {
                 socket.close();
             }
         } catch (Exception ex) {
+            log.log(Level.WARNING, "Error closing socket.");
             log.log(Level.FINE, "Error closing socket.", ex);
         }
     }
@@ -129,13 +133,15 @@ class SocketReader extends Observable implements Runnable {
             out.flush();
             log.log(Level.FINE, "Reply sent.");
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error writing result data to socket.", ex);
+            log.log(Level.WARNING, "Error writing result data to socket.");
+            log.log(Level.FINE, "Error writing result data to socket.", ex);
         } finally {
             if (out != null) {
                 try {
                     out.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(SocketReader.class.getName()).log(Level.SEVERE, null, ex);
+                    log.log(Level.WARNING, "Error closing socket.");
+                    log.log(Level.FINE, "Error closing socket.", ex);
                 }
             }
         }

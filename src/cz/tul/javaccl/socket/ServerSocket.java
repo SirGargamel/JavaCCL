@@ -156,7 +156,8 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                 // nothing bad happened
                 // required for proper shutdown                
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Server socket IO error occured during connection accepting.", ex);
+                log.log(Level.WARNING, "Server socket IO error occured during connection accepting.");
+                log.log(Level.FINE, "Server socket IO error occured during connection accepting.", ex);
             }
         }
     }
@@ -225,10 +226,10 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                 log.log(Level.FINE, "Received data from unregistered client - id " + clientId + ", data [" + data.toString() + "]");
                 return GenericResponses.UUID_NOT_ALLOWED;
             } else {
-                log.log(Level.CONFIG, "Data [" + data.toString() + "] received, forwarding to listeners.");
+                log.log(Level.FINE, "Data [" + data.toString() + "] received, forwarding to listeners.");
             }
         } else {
-            log.log(Level.CONFIG, "Data [" + data.toString() + "] received, forwarding to listeners.");
+            log.log(Level.FINE, "Data [" + data.toString() + "] received, forwarding to listeners.");
         }
 
         boolean sysMsg = false;

@@ -47,7 +47,7 @@ class SystemMessageHandler implements Listener<Identifiable> {
                         if (mData instanceof UUID) {
                             serverInterface.setServerInfo(dp.getSourceIP(), Constants.DEFAULT_PORT, (UUID) mData);
                             log.log(
-                                    Level.CONFIG,
+                                    Level.INFO,
                                     "Registered to new server at " + dp.getSourceIP().getHostAddress() + " on port " + Constants.DEFAULT_PORT + " with client ID " + mData.toString());
                             result = GenericResponses.OK;
 
