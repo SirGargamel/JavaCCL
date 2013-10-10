@@ -1,6 +1,5 @@
 package cz.tul.javaccl.server;
 
-import cz.tul.javaccl.ComponentSwitches;
 import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.client.Client;
 import cz.tul.javaccl.client.ClientImpl;
@@ -25,22 +24,18 @@ import org.junit.Before;
 public class ClientDBTest {
 
     private static final int PORT_CLIENT_1 = 5253;
-    private static final int PORT_CLIENT_2 = 5254;
-    private boolean tempDiscovery;
+    private static final int PORT_CLIENT_2 = 5254;    
     private static Client c1, c2;
     private static Server s;
 
     @Before
-    public void setUp() {
-        tempDiscovery = ComponentSwitches.useClientDiscovery;
-        ComponentSwitches.useClientDiscovery = false;
-        
-        s = ServerImpl.initNewServer();
+    public void setUp() {        
         try {
+            s = ServerImpl.initNewServer(5251);
             c1 = ClientImpl.initNewClient(PORT_CLIENT_1);
             c2 = ClientImpl.initNewClient(PORT_CLIENT_2);
         } catch (IOException ex) {
-            fail("Failed to initialize clients.");
+            fail("Initialization failed.");
         }
     }
 
@@ -49,8 +44,6 @@ public class ClientDBTest {
         c1.stopService();
         c2.stopService();
         s.stopService();
-        
-        ComponentSwitches.useClientDiscovery = tempDiscovery;
     }
 
     /**

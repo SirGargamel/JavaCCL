@@ -1,6 +1,5 @@
 package cz.tul.javaccl.server;
 
-import cz.tul.javaccl.ComponentSwitches;
 import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.IService;
 import cz.tul.javaccl.communicator.Communicator;
@@ -32,7 +31,7 @@ import java.util.logging.Logger;
  */
 public final class ServerImpl extends Server implements IService {
 
-    private static final Logger log = Logger.getLogger(ServerImpl.class.getName());        
+    private static final Logger log = Logger.getLogger(ServerImpl.class.getName());
     private final ClientDB clients;
     private final ServerSocket serverSocket;
     private final HistoryManager history;
@@ -53,12 +52,10 @@ public final class ServerImpl extends Server implements IService {
 
         getListenerRegistrator().setIdListener(Constants.ID_SYS_MSG, new SystemMessagesHandler(clients));
 
-        if (ComponentSwitches.useClientDiscovery) {
-            try {
-                cdd = new ClientDiscoveryDaemon(serverSocket.getPort());
-            } catch (SocketException ex) {
-                log.log(Level.WARNING, "Failed to create ClientDiscoveryDaemon", ex);
-            }
+        try {
+            cdd = new ClientDiscoveryDaemon(serverSocket.getPort());
+        } catch (SocketException ex) {
+            log.log(Level.WARNING, "Failed to create ClientDiscoveryDaemon", ex);
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -138,12 +135,12 @@ public final class ServerImpl extends Server implements IService {
     public void stopService() {
         for (Communicator comm : clients.getClients()) {
             try {
-                comm.sendData(new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.LOGOUT, null));            
+                comm.sendData(new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.LOGOUT, null));
             } catch (ConnectionException ex) {
                 log.warning("Client connection timed out.");
             }
         }
-        
+
         if (cdd != null) {
             cdd.stopService();
         }
@@ -158,12 +155,12 @@ public final class ServerImpl extends Server implements IService {
     public Communicator getClient(UUID id) {
         return clients.getClient(id);
     }
-    
+
     @Override
     public boolean loadSettings(final File settingsFile) {
         return ServerSettings.deserialize(settingsFile, clients);
     }
-    
+
     @Override
     public boolean saveSettings(final File settingsFile) {
         return ServerSettings.serialize(settingsFile, clients);

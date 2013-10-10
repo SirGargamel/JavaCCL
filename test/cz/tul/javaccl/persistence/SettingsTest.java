@@ -1,10 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package cz.tul.javaccl.persistence;
 
-import cz.tul.javaccl.ComponentSwitches;
 import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.client.Client;
 import cz.tul.javaccl.client.ClientImpl;
@@ -37,20 +32,10 @@ public class SettingsTest {
     private static final int CLIENT_PORT = 5253;
     private static Server s;
     private static Client c;
-    private static boolean discovery, autoconnect;
-    private static File serializationTarget;
-
-    public SettingsTest() {
-    }
+    private static File serializationTarget;    
 
     @BeforeClass
-    public static void setUpClass() {        
-        discovery = ComponentSwitches.useClientDiscovery;
-        ComponentSwitches.useClientDiscovery = false;
-
-        autoconnect = ComponentSwitches.useClientAutoConnectLocalhost;
-        ComponentSwitches.useClientAutoConnectLocalhost = false;
-
+    public static void setUpClass() {
         serializationTarget = new File(System.getProperty("user.home") + File.separator + TEST_FILE_NAME);
 
         try {
@@ -69,24 +54,18 @@ public class SettingsTest {
     @AfterClass
     public static void tearDownClass() {
         serializationTarget.delete();
-        
-        c.stopService();
-        s.stopService();
-
-        ComponentSwitches.useClientDiscovery = discovery;
-        ComponentSwitches.useClientAutoConnectLocalhost = autoconnect;
     }
-    
+
     @Before
-    public void setUp() {                
-        s = ServerImpl.initNewServer();
-        try {
+    public void setUp() {        
+        try {            
             c = ClientImpl.initNewClient(CLIENT_PORT);
+            s = ServerImpl.initNewServer();
         } catch (IOException ex) {
-            fail("Failed to initialize client.");
+            fail("Initialization failed.");
         }
     }
-    
+
     @After
     public void tearDown() {
         c.stopService();
@@ -123,7 +102,7 @@ public class SettingsTest {
 
         boolean result = ServerSettings.serialize(serializationTarget, s.getClientManager());
         assertEquals(true, result);
-        
+
         assertFiles(new File(SettingsTest.class.getResource("testSettingsServer.xml").getFile()), serializationTarget);
     }
 
@@ -146,7 +125,7 @@ public class SettingsTest {
     @Test
     public void testSerializeClient() {
         System.out.println("serializeClient");
-        c.stopService();        
+        c.stopService();
         try {
             c = ClientImpl.initNewClient(CLIENT_PORT);
             c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK));
@@ -160,7 +139,7 @@ public class SettingsTest {
 
         boolean result = ClientSettings.serialize(serializationTarget, c.getServerComm());
         assertEquals(true, result);
-        
+
         assertFiles(new File(SettingsTest.class.getResource("testSettingsClient.xml").getFile()), serializationTarget);
     }
 
@@ -170,13 +149,13 @@ public class SettingsTest {
         BufferedReader expectedR = null, actualR = null;
         try {
             expectedR = new BufferedReader(new FileReader(expected));
-            actualR = new BufferedReader(new FileReader(actual)) ;           
-                while ((expectedLine = expectedR.readLine()) != null) {
-                    actualLine = actualR.readLine();
-                    assertNotNull("Expected had more lines then the actual.", actualLine);
-                    assertEquals(expectedLine.trim(), actualLine.trim());
-                }
-                assertNull("Actual had more lines then the expected.", actualR.readLine());            
+            actualR = new BufferedReader(new FileReader(actual));
+            while ((expectedLine = expectedR.readLine()) != null) {
+                actualLine = actualR.readLine();
+                assertNotNull("Expected had more lines then the actual.", actualLine);
+                assertEquals(expectedLine.trim(), actualLine.trim());
+            }
+            assertNull("Actual had more lines then the expected.", actualR.readLine());
         } catch (IOException ex) {
             fail("Could not access tested files - " + ex.getLocalizedMessage());
         } finally {

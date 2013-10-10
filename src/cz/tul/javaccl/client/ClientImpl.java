@@ -2,7 +2,6 @@ package cz.tul.javaccl.client;
 
 import cz.tul.javaccl.discovery.ServerDiscoveryDaemon;
 import cz.tul.javaccl.socket.ClientLister;
-import cz.tul.javaccl.ComponentSwitches;
 import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.IService;
@@ -57,12 +56,10 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
 
         history = new History();
 
-        if (ComponentSwitches.useClientDiscovery) {
-            try {
-                sdd = new ServerDiscoveryDaemon(this);
-            } catch (SocketException ex) {
-                log.log(Level.FINE, "Failed to initiate server discovery daemon.", ex);
-            }
+        try {
+            sdd = new ServerDiscoveryDaemon(this);
+        } catch (SocketException ex) {
+            log.log(Level.FINE, "Failed to initiate server discovery daemon.", ex);
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -88,7 +85,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         comm.setTargetId(Constants.ID_SERVER);
         comm.registerHistory(history);
         final Message login = new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.LOGIN, serverSocket.getPort());
-        try {            
+        try {
             final Object id = comm.sendData(login);
             if (id instanceof UUID) {
                 comm.setSourceId(((UUID) id));
@@ -104,7 +101,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
             comm = oldComm;
             log.log(Level.INFO, "Registration failed");
             throw ex;
-        }               
+        }
 
         return result;
     }
@@ -190,16 +187,14 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         jm = new ClientJobManagerImpl(this);
         getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jm);
 
-        if (ComponentSwitches.useClientDiscovery) {
-            if (sdd != null) {
-                sdd.start();
-            } else if (ComponentSwitches.useClientAutoConnectLocalhost && !isServerUp()) {
-                log.info("Could not init server discovery, trying to connect to local host.");
-                try {
-                    registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK), Constants.DEFAULT_PORT);
-                } catch (ConnectionException ex) {
-                    log.info("Could not reach server at localhost on default port.");
-                }
+        if (sdd != null) {
+            sdd.start();
+        } else if (!isServerUp()) {
+            log.info("Could not init server discovery, trying to connect to local host.");
+            try {
+                registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK), Constants.DEFAULT_PORT);
+            } catch (ConnectionException ex) {
+                log.info("Could not reach server at localhost on default port.");
             }
         }
     }
@@ -293,7 +288,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
                 final Object response = sendDataToServer(m);
                 return GenericResponses.OK.equals(response);
             } catch (ConnectionException ex) {
-                log.log(Level.WARNING, "Communication with server failed - " + ex.getExceptionCause());                
+                log.log(Level.WARNING, "Communication with server failed - " + ex.getExceptionCause());
             }
         }
         return result;

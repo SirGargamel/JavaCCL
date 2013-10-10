@@ -1,6 +1,5 @@
 package cz.tul.javaccl.client;
 
-import cz.tul.javaccl.ComponentSwitches;
 import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import cz.tul.javaccl.exceptions.ConnectionExceptionCause;
@@ -8,29 +7,14 @@ import cz.tul.javaccl.server.Server;
 import cz.tul.javaccl.server.ServerImpl;
 import java.io.IOException;
 import java.net.Inet4Address;
-import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Before;
 
 /**
  *
  * @author Petr Jecmen
  */
 public class ClientImplTest {
-    
-    private boolean tempDiscovery;
-    
-    @Before
-    public void setUp() {
-        tempDiscovery = ComponentSwitches.useClientDiscovery;
-        ComponentSwitches.useClientDiscovery = false;
-    }
-    
-    @After
-    public void tearDown() {
-        ComponentSwitches.useClientDiscovery = tempDiscovery;
-    }
 
     /**
      * Test of setMaxNumberOfConcurrentAssignments method, of class ClientImpl.
@@ -39,7 +23,7 @@ public class ClientImplTest {
     public void testSendDataToServer() {
         System.out.println("sendDataToServer");
         try {
-            Server s = ServerImpl.initNewServer();
+            Server s = ServerImpl.initNewServer(5251);
             Client c = ClientImpl.initNewClient(5253);
 
             try {
@@ -50,7 +34,7 @@ public class ClientImplTest {
             }
 
             try {
-                c.registerToServer(Inet4Address.getByName(Constants.IP_LOOPBACK));
+                c.registerToServer(Inet4Address.getByName(Constants.IP_LOOPBACK), 5251);
             } catch (ConnectionException ex) {
                 fail("Registration failed.");
             }
