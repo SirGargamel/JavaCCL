@@ -47,5 +47,8 @@ public enum GenericResponses implements Serializable {
      * Error occured during communication
      */
     CONNECTION_ERROR,
+    /**
+     * Unspecified type of error
+     */
     GENERAL_ERROR;
 }
