@@ -87,7 +87,7 @@ public class SystemMessagesHandlerTest {
         assertEquals(2, cm.getActionCount());
     }
 
-    private static class ClientMan implements ClientManager {
+    private static class ClientMan extends ClientManager {
 
         private int actionCount;
 

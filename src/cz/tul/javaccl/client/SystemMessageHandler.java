@@ -1,5 +1,7 @@
 package cz.tul.javaccl.client;
 
+import cz.tul.javaccl.CCLObservable;
+import static cz.tul.javaccl.CCLObservable.DEREGISTER;
 import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.communicator.DataPacketImpl;
@@ -17,7 +19,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-class SystemMessageHandler implements Listener<Identifiable> {
+class SystemMessageHandler extends CCLObservable implements Listener<Identifiable> {
 
     private static final Logger log = Logger.getLogger(SystemMessageHandler.class.getName());
     private final IDFilter idFIlter;
@@ -56,6 +58,7 @@ class SystemMessageHandler implements Listener<Identifiable> {
                         }
                     } else if (header.equals(SystemMessageHeaders.LOGOUT)) {
                         serverInterface.disconnectFromServer();
+                        notifyChange(DEREGISTER, null);
                     }
                 }
             }

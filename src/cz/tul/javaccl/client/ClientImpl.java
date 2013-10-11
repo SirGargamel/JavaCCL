@@ -29,6 +29,8 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,7 +41,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class ClientImpl extends Client implements IService, ServerInterface, IDFilter, ClientLister {
+public class ClientImpl extends Client implements IService, ServerInterface, IDFilter, ClientLister, Observer {
 
     private static final Logger log = Logger.getLogger(ClientImpl.class.getName());
     private ServerSocket serverSocket;
@@ -90,6 +92,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
                 comm.setSourceId(((UUID) id));
                 result = true;
                 log.log(Level.INFO, "Client has been registered to new server, new ID has been received - " + comm.getSourceId());
+                notifyChange(REGISTER, new Object[] {address, port});
                 setMaxNumberOfConcurrentAssignments(concurentJobCount);
             } else {
                 comm = oldComm;
@@ -120,6 +123,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
             final Message m = new Message(SystemMessageHeaders.LOGOUT, comm.getTargetId());
             sendDataToServer(m);
             comm = null;
+            notifyChange(DEREGISTER, null);
         }
     }
 
@@ -182,10 +186,11 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         serverSocket.registerHistory(history);
 
         csm = new SystemMessageHandler(this, this);
+        csm.addObserver(this);
         getListenerRegistrator().setIdListener(Constants.ID_SYS_MSG, csm);
 
         jm = new ClientJobManagerImpl(this);
-        getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jm);
+        getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jm);               
 
         if (sdd != null) {
             sdd.start();
@@ -305,5 +310,11 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     @Override
     public void disconnectFromServer() {
         comm = null;
+    }
+    
+    @Override
+    public void update(Observable o, Object arg) {
+        setChanged();
+        notifyObservers(arg);
     }
 }

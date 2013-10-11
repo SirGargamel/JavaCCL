@@ -1,5 +1,6 @@
 package cz.tul.javaccl.server;
 
+import static cz.tul.javaccl.CCLObservable.REGISTER;
 import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.communicator.Communicator;
 import cz.tul.javaccl.communicator.CommunicatorImpl;
@@ -27,7 +28,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-class ClientDB implements ClientManager, Observer, IDFilter {
+class ClientDB extends ClientManager implements Observer, IDFilter {
 
     private static final Logger log = Logger.getLogger(ClientDB.class.getName());
     private final Set<Communicator> clients;
@@ -56,6 +57,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
 
             prepareAllowedIDs();
 
+            notifyChange(REGISTER, new Object[] {address, port, id});
             log.log(Level.INFO, "New client with IP " + address.getHostAddress() + " on port " + port + " registered");
         } else {
             log.log(Level.INFO, "Failed to register client with IP " + address.getHostAddress() + " and port " + port);
@@ -76,6 +78,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
             clients.add(ccI);
             prepareAllowedIDs();
 
+            notifyChange(REGISTER, new Object[] {address, port, clientId});
             log.log(Level.INFO, "New client with IP " + address.getHostAddress() + " on port " + port + " with ID " + clientId + " registered");
         }
 
@@ -98,6 +101,7 @@ class ClientDB implements ClientManager, Observer, IDFilter {
                 }
             }
         }
+        notifyChange(DEREGISTER, new Object[] {id});
         log.log(Level.INFO, "Client with ID " + id + " deregistered");
     }
 

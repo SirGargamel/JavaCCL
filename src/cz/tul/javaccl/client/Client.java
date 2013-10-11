@@ -1,5 +1,6 @@
 package cz.tul.javaccl.client;
 
+import cz.tul.javaccl.CCLObservable;
 import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.IService;
 import cz.tul.javaccl.Utils;
@@ -20,14 +21,14 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public abstract class Client implements IService {
-    
+public abstract class Client extends CCLObservable implements IService {
+
     private static final Logger log = Logger.getLogger(Client.class.getName());
-    
+
     static {
         Utils.initLogging();
     }
-    
+
     /**
      * Create and initialize new instance of client at given port.
      *

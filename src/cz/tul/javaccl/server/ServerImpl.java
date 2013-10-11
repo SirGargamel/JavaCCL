@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,7 +31,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public final class ServerImpl extends Server implements IService {
+public final class ServerImpl extends Server implements IService, Observer {
 
     private static final Logger log = Logger.getLogger(ServerImpl.class.getName());
     private final ClientDB clients;
@@ -126,6 +128,7 @@ public final class ServerImpl extends Server implements IService {
     }
 
     void start() {
+        clients.addObserver(this);
         if (cdd != null) {
             cdd.start();
         }
@@ -165,5 +168,11 @@ public final class ServerImpl extends Server implements IService {
     @Override
     public boolean saveSettings(final File settingsFile) {
         return ServerSettings.serialize(settingsFile, clients);
+    }
+    
+    @Override
+    public void update(Observable o, Object arg) {
+        setChanged();
+        notifyObservers(arg);
     }
 }
