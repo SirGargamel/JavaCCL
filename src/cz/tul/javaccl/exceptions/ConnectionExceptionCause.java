@@ -23,6 +23,10 @@ public enum ConnectionExceptionCause {
      */
     CONNECTION_ERROR,
     /**
+     * Could not reach target.
+     */
+    TARGET_OFFLINE,
+    /**
      * Unknow error occured.
      */
     UNKNOWN

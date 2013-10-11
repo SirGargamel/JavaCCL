@@ -136,7 +136,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                 }
             }
         } else {
-            throw new ConnectionException(ConnectionExceptionCause.CONNECTION_ERROR);
+            throw new ConnectionException(ConnectionExceptionCause.TARGET_OFFLINE);
         }
 
         if (hm != null) {
