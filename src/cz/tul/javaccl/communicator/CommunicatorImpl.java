@@ -7,6 +7,8 @@ import cz.tul.javaccl.exceptions.ConnectionExceptionCause;
 import cz.tul.javaccl.history.HistoryManager;
 import cz.tul.javaccl.messaging.Message;
 import cz.tul.javaccl.messaging.SystemMessageHeaders;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
@@ -153,14 +155,14 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             s = new Socket(address, port);
             s.setSoTimeout(timeout);
 
-            final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-
+            final ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(s.getOutputStream()));
+            out.flush();
             out.writeObject(dp);
             out.flush();
 
             ObjectInputStream in = null;
             try {
-                in = new ObjectInputStream(s.getInputStream());
+                in = new ObjectInputStream(new BufferedInputStream(s.getInputStream()));
                 response = in.readObject();
                 log.log(Level.FINE, "Received reply from client - " + response);
             } catch (IOException ex) {
@@ -249,14 +251,14 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             s = new Socket(address, port);
             s.setSoTimeout(STATUS_CHECK_TIMEOUT);
 
-            final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
+            final ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(s.getOutputStream()));
 
             out.writeObject(dp);
             out.flush();
 
             ObjectInputStream in = null;
             try {
-                in = new ObjectInputStream(s.getInputStream());
+                in = new ObjectInputStream(new BufferedInputStream(s.getInputStream()));
                 Object response = in.readObject();
                 if ((targetId != null && targetId.equals(response))
                         || targetId == null && response == null) {
@@ -276,7 +278,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             }
         } catch (SocketTimeoutException ex) {
             log.log(Level.FINE, "Client on IP " + address.getHostAddress() + " is not responding to request.");
-        } catch (IOException ex) { 
+        } catch (IOException ex) {
             log.log(Level.FINE, "Status check IO error.", ex);
         } finally {
             if (s != null && !s.isClosed()) {

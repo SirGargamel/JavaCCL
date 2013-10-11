@@ -9,6 +9,8 @@ import cz.tul.javaccl.communicator.Status;
 import cz.tul.javaccl.history.HistoryManager;
 import cz.tul.javaccl.messaging.Message;
 import cz.tul.javaccl.messaging.SystemMessageHeaders;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -99,14 +101,15 @@ public class MessagePullDaemon extends Thread implements IService {
                             s = new Socket(ipComm, port);
                             ObjectOutputStream out = null;
                             try {
-                                out = new ObjectOutputStream(s.getOutputStream());
+                                out = new ObjectOutputStream(new BufferedOutputStream(s.getOutputStream()));
+                                out.flush();
                                 out.writeObject(m);
                                 out.flush();
                                 log.log(Level.FINE, "Message pull request sent to " + ipComm.getHostName() + ":" + port);
 
                                 ObjectInputStream in = null;
                                 try {
-                                    in = new ObjectInputStream(s.getInputStream());
+                                    in = new ObjectInputStream(new BufferedInputStream(s.getInputStream()));                                    
                                     try {
                                         dataIn = in.readObject();
                                         dataRead = true;
@@ -232,7 +235,8 @@ public class MessagePullDaemon extends Thread implements IService {
 
         ObjectOutputStream out = null;
         try {
-            out = new ObjectOutputStream(s.getOutputStream());
+            out = new ObjectOutputStream(new BufferedOutputStream(s.getOutputStream()));
+            out.flush();
             out.writeObject(msg);
             out.flush();
 
