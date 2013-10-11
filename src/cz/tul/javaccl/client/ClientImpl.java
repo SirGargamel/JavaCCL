@@ -42,7 +42,6 @@ import java.util.logging.Logger;
 public class ClientImpl extends Client implements IService, ServerInterface, IDFilter, ClientLister {
 
     private static final Logger log = Logger.getLogger(ClientImpl.class.getName());
-    private static final int TIMEOUT = 5000;
     private ServerSocket serverSocket;
     private final HistoryManager history;
     private CommunicatorInner comm;
@@ -135,7 +134,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
 
     @Override
     public Object sendDataToServer(final Object data) throws ConnectionException {
-        return sendDataToServer(data, TIMEOUT);
+        return sendDataToServer(data, Constants.DEFAULT_TIMEOUT);
     }
 
     @Override
@@ -148,7 +147,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         if (comm == null) {
             throw new ConnectionException(ConnectionExceptionCause.CONNECTION_ERROR);
         } else {
-            return comm.sendData(data, TIMEOUT);
+            return comm.sendData(data, timeout);
         }
     }
 
