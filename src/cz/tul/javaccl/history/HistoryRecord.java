@@ -1,7 +1,10 @@
 package cz.tul.javaccl.history;
 
+import cz.tul.javaccl.history.export.Exporter;
 import java.net.InetAddress;
 import java.util.Date;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * Data class for storing info about message history. Time is time of logging,
@@ -14,16 +17,16 @@ public class HistoryRecord {
 
     private final InetAddress ipSource;
     private final InetAddress ipDestination;
-    private final Object data;
-    private final Object answer;
+    private final Element data;
+    private final Element answer;
     private final Date time;
     private final boolean accepted;
 
-    HistoryRecord(final InetAddress ipSource, final InetAddress ipDestination, final Object data, final boolean accepted, final Object answer) {
+    HistoryRecord(final InetAddress ipSource, final InetAddress ipDestination, final Object data, final boolean accepted, final Object answer, final Document doc) {
         this.ipSource = ipSource;
         this.ipDestination = ipDestination;
-        this.data = data;
-        this.answer = answer;
+        this.data = Exporter.exportObject(data, doc);
+        this.answer = Exporter.exportObject(answer, doc);
         this.accepted = accepted;
 
         time = new Date();
@@ -46,14 +49,14 @@ public class HistoryRecord {
     /**
      * @return sent data
      */
-    public Object getData() {
+    public Element getData() {
         return data;
     }
 
     /**
      * @return response to message
      */
-    public Object getAnswer() {
+    public Element getAnswer() {
         return answer;
     }
 

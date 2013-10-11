@@ -57,6 +57,7 @@ public class History implements HistoryManager {
     }
     private final List<HistoryRecord> records;
     private final InetAddress localHost;
+    private Document defaultDoc;
 
     /**
      * New instance of History conainer.
@@ -78,12 +79,20 @@ public class History implements HistoryManager {
         }
         localHost = local;
         isEnabled = true;
+
+        try {
+            defaultDoc = prepareDocument();
+        } catch (ParserConfigurationException ex) {
+            log.log(Level.WARNING, "Failed to create DocumentBuilder, disabling history logging.");
+            log.log(Level.FINE, "Failed to create DocumentBuilder.", ex);
+            isEnabled = false;
+        }
     }
 
     @Override
     public void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted, final Object answer) {
         if (isEnabled) {
-            final HistoryRecord r = new HistoryRecord(localHost, ipDestination, data, accepted, answer);
+            final HistoryRecord r = new HistoryRecord(localHost, ipDestination, data, accepted, answer, defaultDoc);
             records.add(r);
             log.log(Level.FINE, "Sent message stored to history - " + r);
         }
@@ -92,7 +101,7 @@ public class History implements HistoryManager {
     @Override
     public void logMessageReceived(final InetAddress ipSource, final Object data, final boolean accepted, final Object answer) {
         if (isEnabled) {
-            final HistoryRecord r = new HistoryRecord(ipSource, localHost, data, accepted, answer);
+            final HistoryRecord r = new HistoryRecord(ipSource, localHost, data, accepted, answer, defaultDoc);
             records.add(r);
             log.log(Level.FINE, "Received message stored to history - " + r);
         }
@@ -118,15 +127,15 @@ public class History implements HistoryManager {
             result = true;
 
             log.log(Level.FINE, "History successfully exported to " + target.getAbsolutePath() + ", sorted using " + sorter.getClass().getCanonicalName());
-        } catch (ParserConfigurationException ex) {
-            log.log(Level.WARNING, "Failed to create DocumentBuilder.");
-            log.log(Level.FINE, "Failed to create DocumentBuilder.", ex);
         } catch (TransformerConfigurationException ex) {
-            log.log(Level.WARNING, "Failed to create Transformer.");
+            log.log(Level.WARNING, "Failed to create Transformer, export failed.");
             log.log(Level.FINE, "Failed to create Transformer.", ex);
         } catch (TransformerException ex) {
-            log.log(Level.WARNING, "Failed to transform history into XML.");
+            log.log(Level.WARNING, "Failed to transform history into XML, export failed.");
             log.log(Level.FINE, "Failed to transform history into XML.", ex);
+        } catch (ParserConfigurationException ex) {
+            log.log(Level.WARNING, "Failed to create DocumentBuilder, export failed.");
+            log.log(Level.FINE, "Failed to create DocumentBuilder.", ex);
         }
 
         return result;
@@ -138,10 +147,7 @@ public class History implements HistoryManager {
         log.log(Level.FINE, "New export unit registered - " + eu.getClass().getCanonicalName());
     }
 
-    /**
-     * @return
-     */
-    public List<HistoryRecord> getRecords() {
+    List<HistoryRecord> getRecords() {
         return records;
     }
 

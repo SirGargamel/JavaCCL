@@ -40,8 +40,8 @@ public abstract class HistorySorter {
         appendStringDataToNode(result, doc, "Time", DATE_FORMAT.format(r.getTime()));
         appendStringDataToNode(result, doc, "Accepted", String.valueOf(r.wasAccepted()));
 
-        result.appendChild(Exporter.exportObject(r.getData(), doc));
-        result.appendChild(Exporter.exportObject(r.getAnswer(), doc));
+        result.appendChild(doc.importNode(r.getData(), true));
+        result.appendChild(doc.importNode(r.getAnswer(), true));
 
         return result;
     }

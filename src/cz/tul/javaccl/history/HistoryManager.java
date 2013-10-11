@@ -42,23 +42,26 @@ public interface HistoryManager {
     void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted, final Object response);
 
     /**
-     * Register new {@link ExportUnit}.
+     * Register new {@link ExportUnit}, units need to be registered at the start
+     * of the program, because they are used during history logging to produce
+     * XML output of data to lower memory footprint.
      *
      * @param eu new export unit
      */
     void registerExporter(final ExportUnit eu);
 
-    /**     
+    /**
      * @param enable false for disabling storing info to history
      */
     void enable(final boolean enable);
 
     /**
      * When the instance of history is being shutdown, it will export all
-     * recorder data to the target file, records are
-     * sorted using given sorter (you can use null for no sorting).
+     * recorder data to the target file, records are sorted using given sorter
+     * (you can use null for no sorting).
+     *
      * @param target target file
-     * @param sorter 
+     * @param sorter
      */
     void enableAutomticExportBeforeShutdown(final File target, final HistorySorter sorter);
 }

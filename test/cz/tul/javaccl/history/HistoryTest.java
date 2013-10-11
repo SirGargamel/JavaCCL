@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -34,6 +35,8 @@ import org.junit.AfterClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -45,6 +48,7 @@ public class HistoryTest {
     private static final String COMPARE_FILE_NAME = "exportCompare.xml";
     private static final String IP_SOURCE_TEMPLATE = "<IPSource></IPSource>";
     private static final String IP_DESTINATION_TEMPLATE = "<IPDestination></IPDestination>";
+    private static final String FIELD_NAME_HEADER = "Header";
     private static File exportTarget, compareTarget;
 
     public HistoryTest() {
@@ -69,7 +73,6 @@ public class HistoryTest {
         InetAddress ipLocal = InetAddress.getByName(Constants.IP_LOOPBACK);
 
         HistoryManager h = new History();
-
 
         synchronized (this) {
             try {
@@ -123,6 +126,9 @@ public class HistoryTest {
         UUID uuid2 = UUID.fromString("550e8400-e29b-41d4-a716-446655440111");
 
         final Server s = (ServerImpl) ServerImpl.initNewServer();
+        History h = (History) s.getHistory();
+        h.registerExporter(new ExportMessage());
+
         final ClientImpl c;
         try {
             s.getHistory().enable(false);
@@ -131,25 +137,23 @@ public class HistoryTest {
 
             synchronized (this) {
                 try {
-                    s.getHistory().enable(true);
-                    s.getClient(ipLocal).sendData(new Message(uuid, "Header", "data1"));
+                    h.enable(true);
+                    s.getClient(ipLocal).sendData(new Message(uuid, FIELD_NAME_HEADER, "data1"));
                     this.wait(50);
-                    c.sendDataToServer(new Message(uuid, "Header", "dataBack"));
+                    c.sendDataToServer(new Message(uuid, FIELD_NAME_HEADER, "dataBack"));
                     this.wait(50);
-                    s.getClient(ipLocal).sendData(new Message(uuid2, "Header", "data2"));
+                    s.getClient(ipLocal).sendData(new Message(uuid2, FIELD_NAME_HEADER, "data2"));
                 } catch (InterruptedException ex) {
                     fail("Waiting interrupted - " + ex.getLocalizedMessage());
                 }
             }
 
-            s.getHistory().enable(false);
+            h.enable(false);
 
             c.stopService();
             s.stopService();
 
-            History h = (History) s.getHistory();
             cleanUp(h.getRecords());
-            h.registerExporter(new ExportMessage());
 
             prepareFile(exportTarget);
             prepareFile(compareTarget);
@@ -204,13 +208,13 @@ public class HistoryTest {
     private static void prepareLocalIp(final File fileIn, final File fileOut) {
         // insert local IP at right spots
         BufferedReader in = null;
-            BufferedWriter out = null;
+        BufferedWriter out = null;
         try {
             final String ipSource = "<IPSource>" + InetAddress.getLocalHost().getHostAddress() + "</IPSource>";
             final String ipDest = "<IPDestination>" + InetAddress.getLocalHost().getHostAddress() + "</IPDestination>";
 
             String line;
-            
+
             in = new BufferedReader(new FileReader(fileIn));
             out = new BufferedWriter(new FileWriter(fileOut));
             while (in.ready()) {
@@ -222,7 +226,8 @@ public class HistoryTest {
                 } else {
                     out.append(line);
                 }
-                out.newLine();            }
+                out.newLine();
+            }
         } catch (UnknownHostException ex) {
             fail("Cannot obtain local IP.");
         } catch (IOException ex) {
@@ -264,20 +269,20 @@ public class HistoryTest {
         // remove status checks, logins etc.
         Iterator<HistoryRecord> it = records.iterator();
 
-        HistoryRecord hr;
-        Message m;
-        Object data;
-        while (it.hasNext()) {
+        List<HistoryRecord> remove = new LinkedList<HistoryRecord>();
+        Element data;
+        NodeList nl;
+        for (HistoryRecord hr : records) {
             hr = it.next();
-
             data = hr.getData();
-            if (data instanceof Message) {
-                m = (Message) data;
-                if (m.getHeader().equals(SystemMessageHeaders.STATUS_CHECK)
-                        || m.getHeader().equals(SystemMessageHeaders.LOGIN)) {
-                    it.remove();
+            nl = data.getElementsByTagName(FIELD_NAME_HEADER);
+            for (int i = 0; i < nl.getLength(); i++) {
+                if (SystemMessageHeaders.STATUS_CHECK.equals(nl.item(i).getTextContent())) {
+                    remove.add(hr);
                 }
             }
         }
+
+        records.removeAll(remove);
     }
 }

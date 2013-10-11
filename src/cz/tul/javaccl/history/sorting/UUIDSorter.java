@@ -11,6 +11,8 @@ import java.util.UUID;
 import java.util.logging.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Extracts messages and groups them according to their IDs.
@@ -20,6 +22,7 @@ import org.w3c.dom.Element;
 public class UUIDSorter extends HistorySorter {
 
     private static final Logger log = Logger.getLogger(UUIDSorter.class.getName());
+    private static final String FIELD_NAME_UUID = "UUID";
 
     @Override
     public List<Element> sortHistory(final Collection<HistoryRecord> records, final Document doc) {
@@ -27,17 +30,21 @@ public class UUIDSorter extends HistorySorter {
 
         // group Nodes by UUID        
         final SortedMap<UUID, List<HistoryRecord>> idGroups = new TreeMap<UUID, List<HistoryRecord>>();
-        List<HistoryRecord> l;
-        Message m;
-        Object o;
+        List<HistoryRecord> l;        
+        Element o;
+        NodeList nl;
+        Node uuidNode;
+        UUID uuid;
         for (HistoryRecord r : records) {
             o = r.getData();
-            if (o instanceof Message) {
-                m = (Message) o;
-                l = idGroups.get(m.getId());
+            nl = o.getElementsByTagName(FIELD_NAME_UUID);
+            if (nl.getLength() > 0) {
+                uuidNode = nl.item(0);
+                uuid = UUID.fromString(uuidNode.getFirstChild().getTextContent());
+                l = idGroups.get(uuid);
                 if (l == null) {
                     l = new ArrayList<HistoryRecord>();
-                    idGroups.put(m.getId(), l);
+                    idGroups.put(uuid, l);
                 }
                 l.add(r);
             }
