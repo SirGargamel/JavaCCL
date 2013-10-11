@@ -55,8 +55,8 @@ public abstract class Client implements IService {
             try {
                 c = initNewClient(++port);
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Error initializing server on port " + (port - 1));
-                log.log(Level.FINE, "Error initializing server on port " + (port - 1), ex);
+                log.log(Level.WARNING, "Error initializing client on port " + (port - 1));
+                log.log(Level.FINE, "Error initializing client on port " + (port - 1), ex);
             }
 
         }
