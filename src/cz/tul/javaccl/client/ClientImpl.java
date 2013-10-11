@@ -117,9 +117,11 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
 
     @Override
     public void deregisterFromServer() throws ConnectionException {
-        final Message m = new Message(SystemMessageHeaders.LOGOUT, comm.getTargetId());
-        sendDataToServer(m);
-        comm = null;
+        if (comm != null) {
+            final Message m = new Message(SystemMessageHeaders.LOGOUT, comm.getTargetId());
+            sendDataToServer(m);
+            comm = null;
+        }
     }
 
     @Override
@@ -127,7 +129,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         boolean serverStatus = false;
         if (comm != null) {
             serverStatus = comm.isOnline();
-        }        
+        }
         return serverStatus;
     }
 
