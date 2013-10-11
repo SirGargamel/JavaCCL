@@ -276,7 +276,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             }
         } catch (SocketTimeoutException ex) {
             log.log(Level.FINE, "Client on IP " + address.getHostAddress() + " is not responding to request.");
-        } catch (IOException ex) {            
+        } catch (IOException ex) { 
+            log.log(Level.FINE, "Status check IO error.", ex);
         } finally {
             if (s != null && !s.isClosed()) {
                 try {
