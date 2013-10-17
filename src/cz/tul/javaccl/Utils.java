@@ -78,7 +78,7 @@ public class Utils {
                 fh.setLevel(Level.FINE);
 
                 final Handler console = new ConsoleHandler();
-                fh.setFormatter(new SimpleFormatter());
+                console.setFormatter(new SimpleFormatter());
                 console.setLevel(Level.INFO);
 
                 final Logger l = Logger.getLogger("");
