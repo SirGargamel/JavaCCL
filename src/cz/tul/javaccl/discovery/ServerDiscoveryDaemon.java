@@ -38,7 +38,7 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
     @Override
     public void run() {
         while (run) {
-            if (!sr.isServerUp()) {
+            if (sr.getServerComm() == null) {
                 listenForDiscoveryPacket();
             } else {
                 broadcastServerInfo();
