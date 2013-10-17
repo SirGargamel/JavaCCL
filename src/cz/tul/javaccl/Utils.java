@@ -17,7 +17,8 @@ import java.util.logging.XMLFormatter;
 public class Utils {
 
     private static final Logger log = Logger.getLogger(Utils.class.getName());
-    private static final String LOG_FILE_NAME = "systemLog.xml";
+    private static final String LOG_FILE_NAME_S = "systemLogServer.xml";
+    private static final String LOG_FILE_NAME_C = "systemLogClient.xml";
     private static boolean loggingInitialized = false;
 
     /**
@@ -64,10 +65,15 @@ public class Utils {
     /**
      * initialize file logging
      */
-    public static void initLogging() {
+    public static void initLogging(final boolean isServer) {
         if (!loggingInitialized) {
             try {
-                final Handler fh = new FileHandler(LOG_FILE_NAME, true);
+                final Handler fh;
+                if (isServer) {
+                    fh = new FileHandler(LOG_FILE_NAME_S, true);
+                } else {
+                    fh = new FileHandler(LOG_FILE_NAME_C, true);
+                }
                 fh.setFormatter(new XMLFormatter());
                 fh.setLevel(Level.FINE);
 
