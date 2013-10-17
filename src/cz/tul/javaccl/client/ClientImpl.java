@@ -289,10 +289,16 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
 
             try {
                 final Object response = sendDataToServer(m);
-                return GenericResponses.OK.equals(response);
+                result = GenericResponses.OK.equals(response);
             } catch (ConnectionException ex) {
                 log.log(Level.WARNING, "Communication with server failed - " + ex.getExceptionCause());
             }
+        }
+        
+        if (result) {
+            log.log(Level.FINE, "Concurrent job count set on server to " + assignmentCount);
+        } else {
+            log.log(Level.FINE, "Failed to update concurrent job count on server.");
         }
         return result;
     }
