@@ -93,19 +93,11 @@ public class HistoryRecord {
         sb.append(" on ");
         sb.append(time);
         sb.append(". Data - ");
-        if (data != null) {
-            sb.append(data.toString());
-        } else {
-            sb.append("NULL");
-        }
+        sb.append(data);
         sb.append(". Was accepted - ");
         sb.append(accepted);
         sb.append(" with answer - ");
-        if (answer != null) {
-            sb.append(answer.toString());
-        } else {
-            sb.append("NULL");
-        }
+        sb.append(answer);
 
         return sb.toString();
     }
