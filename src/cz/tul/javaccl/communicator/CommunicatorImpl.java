@@ -8,7 +8,6 @@ import cz.tul.javaccl.history.HistoryManager;
 import cz.tul.javaccl.messaging.Message;
 import cz.tul.javaccl.messaging.SystemMessageHeaders;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
@@ -153,8 +152,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             s = new Socket(address, port);
             s.setSoTimeout(timeout);
 
-            final ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(s.getOutputStream()));
-            out.flush();
+            final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());            
             out.writeObject(dp);
             out.flush();
 
@@ -249,7 +247,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             s = new Socket(address, port);
             s.setSoTimeout(STATUS_CHECK_TIMEOUT);
 
-            final ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(s.getOutputStream()));
+            final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
 
             out.writeObject(dp);
             out.flush();

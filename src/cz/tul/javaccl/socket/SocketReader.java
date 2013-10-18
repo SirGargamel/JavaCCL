@@ -6,7 +6,6 @@ import cz.tul.javaccl.history.HistoryManager;
 import cz.tul.javaccl.messaging.Message;
 import cz.tul.javaccl.messaging.SystemMessageHeaders;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -129,8 +128,7 @@ class SocketReader extends Observable implements Runnable {
     private void sendReply(final InetAddress ip, Object dataIn, boolean dataRead, final Object response) {
         ObjectOutputStream out = null;
         try {
-            out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-            out.flush();
+            out = new ObjectOutputStream(socket.getOutputStream());            
             out.writeObject(response);
             out.flush();
             log.log(Level.FINE, "Reply sent.");
