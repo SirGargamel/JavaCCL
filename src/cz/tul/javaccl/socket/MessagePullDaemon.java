@@ -104,8 +104,7 @@ public class MessagePullDaemon extends Thread implements IService {
                                 out = new ObjectOutputStream(new BufferedOutputStream(s.getOutputStream()));
                                 out.flush();
                                 out.writeObject(m);
-                                out.flush();
-                                log.log(Level.FINE, "Message pull request sent to " + ipComm.getHostName() + ":" + port);
+                                out.flush();                                
 
                                 ObjectInputStream in = null;
                                 try {
