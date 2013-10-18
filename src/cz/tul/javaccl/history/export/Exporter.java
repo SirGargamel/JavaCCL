@@ -32,14 +32,18 @@ public abstract class Exporter {
      * @return XML node containing given objects data
      */
     public static Element exportObject(Object data, Document doc) {
-        Element result;
+        final Element result;
 
-        Class<?> c = data.getClass();
-        if (exporters.containsKey(c)) {            
-            result = exporters.get(c).exportData(doc, data);
-        } else {            
-            result = doc.createElement(data.getClass().getSimpleName());
-            result.appendChild(doc.createTextNode(data.toString()));
+        if (data != null) {
+            Class<?> c = data.getClass();
+            if (exporters.containsKey(c)) {
+                result = exporters.get(c).exportData(doc, data);
+            } else {
+                result = doc.createElement(data.getClass().getSimpleName());
+                result.appendChild(doc.createTextNode(data.toString()));
+            }
+        } else {
+            result = doc.createElement("null");
         }
 
         return result;
