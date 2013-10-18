@@ -7,7 +7,6 @@ import cz.tul.javaccl.exceptions.ConnectionExceptionCause;
 import cz.tul.javaccl.history.HistoryManager;
 import cz.tul.javaccl.messaging.Message;
 import cz.tul.javaccl.messaging.SystemMessageHeaders;
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
@@ -158,7 +157,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
             ObjectInputStream in = null;
             try {
-                in = new ObjectInputStream(new BufferedInputStream(s.getInputStream()));
+                in = new ObjectInputStream(s.getInputStream());
                 response = in.readObject();
                 log.log(Level.FINE, "Received reply from client - " + response);
             } catch (IOException ex) {
@@ -254,7 +253,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
             ObjectInputStream in = null;
             try {
-                in = new ObjectInputStream(new BufferedInputStream(s.getInputStream()));
+                in = new ObjectInputStream(s.getInputStream());
                 Object response = in.readObject();
                 if ((targetId != null && targetId.equals(response))
                         || targetId == null && response == null) {

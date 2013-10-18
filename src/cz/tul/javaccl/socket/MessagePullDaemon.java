@@ -9,7 +9,6 @@ import cz.tul.javaccl.communicator.Status;
 import cz.tul.javaccl.history.HistoryManager;
 import cz.tul.javaccl.messaging.Message;
 import cz.tul.javaccl.messaging.SystemMessageHeaders;
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -106,7 +105,7 @@ public class MessagePullDaemon extends Thread implements IService {
 
                                 ObjectInputStream in = null;
                                 try {
-                                    in = new ObjectInputStream(new BufferedInputStream(s.getInputStream()));                                    
+                                    in = new ObjectInputStream(s.getInputStream());                                    
                                     try {
                                         dataIn = in.readObject();
                                         dataRead = true;

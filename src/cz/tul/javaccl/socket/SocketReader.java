@@ -5,7 +5,6 @@ import cz.tul.javaccl.communicator.DataPacketImpl;
 import cz.tul.javaccl.history.HistoryManager;
 import cz.tul.javaccl.messaging.Message;
 import cz.tul.javaccl.messaging.SystemMessageHeaders;
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -73,7 +72,7 @@ class SocketReader extends Observable implements Runnable {
 
         ObjectInputStream in = null;
         try {
-            in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+            in = new ObjectInputStream(socket.getInputStream());
             dataIn = in.readObject();
             dataRead = true;
 
