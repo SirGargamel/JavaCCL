@@ -1,10 +1,19 @@
 package cz.tul.javaccl.history;
 
 import cz.tul.javaccl.history.export.Exporter;
+import java.io.StringWriter;
 import java.net.InetAddress;
 import java.util.Date;
+import java.util.logging.Logger;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * Data class for storing info about message history. Time is time of logging,
@@ -15,6 +24,7 @@ import org.w3c.dom.Element;
  */
 public class HistoryRecord {
 
+    private static final Logger log = Logger.getLogger(HistoryRecord.class.getName());
     private final InetAddress ipSource;
     private final InetAddress ipDestination;
     private final Element data;
@@ -93,12 +103,33 @@ public class HistoryRecord {
         sb.append(" on ");
         sb.append(time);
         sb.append(". Data - ");
-        sb.append(data);
-        sb.append(". Was accepted - ");
-        sb.append(accepted);
-        sb.append(" with answer - ");
-        sb.append(answer);
+        sb.append(nodeToString(data));
+        if (accepted) {
+            sb.append(". Was accepted with answer - ");
+            sb.append(nodeToString(answer));
+        } else {
+            sb.append(". The message hasn't been accepted.");
+        }
 
         return sb.toString();
+    }
+
+    private static String nodeToString(Node node) {
+        String result;
+        if (node != null) {
+            StringWriter sw = new StringWriter();
+            try {
+                Transformer t = TransformerFactory.newInstance().newTransformer();
+                t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");                
+                t.transform(new DOMSource(node), new StreamResult(sw));
+            } catch (TransformerException te) {
+                log.warning("nodeToString Transformer Exception");
+            }
+            result = sw.toString();
+            result = result.replaceAll("<", "[").replaceAll(">", "]");
+        } else {
+            result = "null";
+        }
+        return result;
     }
 }

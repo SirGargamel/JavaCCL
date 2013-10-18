@@ -10,16 +10,13 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
  * @author Petr Jecmen
  */
 abstract class DiscoveryDaemon extends Thread implements IService {
-
-    private static final Logger log = Logger.getLogger(DiscoveryDaemon.class.getName());
+    
     protected static final int DELAY = 10000;
     protected final DatagramSocket s;
 
@@ -34,8 +31,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
         // Try the 255.255.255.255 first
         final int messageLength = msg.length;
         DatagramPacket sendPacket = new DatagramPacket(msg, messageLength, InetAddress.getByName("255.255.255.255"), Constants.DEFAULT_PORT);
-        s.send(sendPacket);
-        log.log(Level.FINE, "Discovery packet sent to: 255.255.255.255 (DEFAULT)");
+        s.send(sendPacket);        
 
         // Broadcast the message over all the network interfaces
         Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -54,8 +50,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
 
                 // Send the broadcast
                 sendPacket = new DatagramPacket(msg, messageLength, broadcast, Constants.DEFAULT_PORT);
-                s.send(sendPacket);
-                log.log(Level.FINE, "Discovery packet sent to: " + broadcast.getHostAddress() + "; Interface: " + networkInterface.getDisplayName());
+                s.send(sendPacket);                
             }
         }
     }

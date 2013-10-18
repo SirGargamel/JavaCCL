@@ -260,7 +260,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
             } else {
                 putBack.add(job);
                 if (comm != null) {
-                    log.log(Level.WARNING, "Failed to assign job to client with ID " + comm.getTargetId());
+                    log.log(Level.WARNING, "Failed to assign job with id " + job.getId() + " to client with ID " + comm.getTargetId());
                 } else {
                     log.log(Level.WARNING, "Failed to pick client even after checking if any client is available.");
                 }
@@ -297,7 +297,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
             activeJobs.remove(jr);
             job.setStatus(JobStatus.SUBMITTED);
             storeJobAction(job, null, JobMessageHeaders.JOB_CANCEL);
-            return false;
+            result = false;
         }
 
         return result;

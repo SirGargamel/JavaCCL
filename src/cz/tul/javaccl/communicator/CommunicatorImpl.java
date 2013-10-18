@@ -18,13 +18,13 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,9 +53,9 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         return new CommunicatorImpl(address, port);
     }
     private final int MSG_PULL_TIME_LIMIT = 2000;
-    private final int STATUS_CHECK_TIMEOUT = 200;
+    private final int STATUS_CHECK_TIMEOUT = 250;
     private final int STATUS_CHECK_INTERVAL = 500;
-    private final int REPONSE_CHECK_INTERVAL = 100;
+    private final int REPONSE_CHECK_INTERVAL = 250;
     private final InetAddress address;
     private final int port;
     private final Queue<DataPacket> unsentData;
@@ -78,7 +78,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         this.port = port;
 
         unsentData = new LinkedList<DataPacket>();
-        responses = new HashMap<DataPacket, Object>();
+        responses = new ConcurrentHashMap<DataPacket, Object>();
 
         status = Status.OFFLINE;
 
@@ -109,7 +109,6 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     @Override
     public Object sendData(final Object data, final int timeout) throws IllegalArgumentException, ConnectionException {
-
         boolean readAndReply = false;
         Object response = dummy;
         Status stat = getStatus();
@@ -221,7 +220,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                         responses.put(question, response);
                     }
                 } catch (ConnectionException ex) {
-                    log.warning("Online client conneciton failed - " + ex.getExceptionCause());
+                    log.warning("Online client connection failed - " + ex.getExceptionCause());
                 }
 
             }
@@ -371,7 +370,9 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     @Override
     public void storeResponse(final DataPacket question, final Object response) {
-        responses.put(question, response);
+        synchronized (responses) {
+            responses.put(question, response);
+        }
     }
 
     @Override
