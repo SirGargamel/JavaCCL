@@ -54,9 +54,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
     private final Deque<ServerSideJob> jobQueue;
     private final Map<Communicator, Calendar> lastTimeOnline;
     private final Map<Communicator, Integer> jobCount;
-    private final Set<JobRecord> activeJobs;
-    private final Collection<Job> allJobs;
-    private final Collection<Job> allJobsOuter;
+    private final Set<JobRecord> activeJobs;    
     private final Map<Job, List<JobAction>> jobHistory;
     private boolean run;
 
@@ -70,9 +68,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
         this.clientManager = clientManager;
         this.listenerRegistrator = listenerRegistrator;
         lastTimeOnline = new ConcurrentHashMap<Communicator, Calendar>();
-        jobQueue = new LinkedBlockingDeque<ServerSideJob>();
-        allJobs = new LinkedList<Job>();
-        allJobsOuter = Collections.unmodifiableCollection(allJobs);
+        jobQueue = new LinkedBlockingDeque<ServerSideJob>();        
         jobHistory = new HashMap<Job, List<JobAction>>();
         activeJobs = new HashSet<JobRecord>();
         jobCount = new HashMap<Communicator, Integer>();
@@ -92,8 +88,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
     @Override
     public Job submitJob(final Object task) throws IllegalArgumentException {
         final ServerSideJob result = new ServerSideJob(task, this);
-        jobQueue.add(result);
-        allJobs.add(result);
+        jobQueue.add(result);        
 
         log.log(Level.FINE, "Job with ID " + result.getId() + " submitted.");
         wakeUp();
@@ -103,7 +98,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
 
     @Override
     public void waitForAllJobs() {
-        while (!allJobsDone()) {
+        while (!activeJobs.isEmpty()) {
             synchronized (this) {
                 try {
                     this.wait(WAIT_TIME);
@@ -113,19 +108,6 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 }
             }
         }
-    }
-
-    private boolean allJobsDone() {
-        boolean result = true;
-
-        for (Job j : allJobs) {
-            if (!j.isDone()) {
-                result = false;
-                break;
-            }
-        }
-
-        return result;
     }
 
     @Override
@@ -146,11 +128,6 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
         }
 
         lastTimeOnline.clear();
-    }
-
-    @Override
-    public Collection<Job> getAllJobs() {
-        return allJobsOuter;
     }
 
     @Override

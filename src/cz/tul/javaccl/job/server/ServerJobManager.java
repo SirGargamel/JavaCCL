@@ -9,11 +9,7 @@ import java.util.Collection;
  * @author Petr Ječmen
  */
 public interface ServerJobManager {
-
-    /**
-     * @return collection of all submitted jobs
-     */
-    Collection<Job> getAllJobs();
+    
 
     /**
      * Force all jobs to stop computation.

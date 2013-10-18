@@ -2,10 +2,8 @@ package cz.tul.javaccl.job;
 
 import cz.tul.javaccl.Constants;
 import cz.tul.javaccl.GenericResponses;
-import cz.tul.javaccl.Utils;
 import cz.tul.javaccl.client.Client;
 import cz.tul.javaccl.client.ClientImpl;
-import cz.tul.javaccl.communicator.CommunicatorImpl;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import cz.tul.javaccl.job.client.Assignment;
 import cz.tul.javaccl.job.client.AssignmentListener;
@@ -13,7 +11,6 @@ import cz.tul.javaccl.job.server.Job;
 import cz.tul.javaccl.server.DataStorage;
 import cz.tul.javaccl.server.Server;
 import cz.tul.javaccl.server.ServerImpl;
-import cz.tul.javaccl.socket.ServerSocket;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -21,13 +18,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.logging.Level;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.BeforeClass;
 
 /**
  *
@@ -187,7 +181,7 @@ public class JobTest {
 
                     Integer count = (Integer) tsk;
 
-                    synchronized (JobTest.this) {                        
+                    synchronized (JobTest.this) {
                         JobTest.this.wait(count);
                     }
 
@@ -365,16 +359,17 @@ public class JobTest {
 
         int cnt = 0, val;
         final int jobCount = clientCount * (rnd.nextInt(3) + 2);
+        Set<Job> allJobs = new HashSet<Job>(jobCount);
         for (int i = 0; i < jobCount; i++) {
             val = (rnd.nextInt(4) + 1) * 10;
             cnt += val;
-            s.submitJob(val);
+            allJobs.add(s.submitJob(val));
         }
 
         s.getJobManager().waitForAllJobs();
 
         // check all result if OK
-        for (Job j : s.getJobManager().getAllJobs()) {
+        for (Job j : allJobs) {
             assertEquals(GenericResponses.OK, j.getResult(true));
         }
 
@@ -467,16 +462,17 @@ public class JobTest {
 
         int cnt = 0, val;
         final int jobCount = clientCount * (rnd.nextInt(3) + 2);
+        Set<Job> allJobs = new HashSet<Job>(jobCount);
         for (int i = 0; i < jobCount; i++) {
             val = (rnd.nextInt(4) + 1) * 10;
             cnt += val;
-            s.submitJob(val);
+            allJobs.add(s.submitJob(val));
         }
 
         s.getJobManager().waitForAllJobs();
 
         // check all result if OK
-        for (Job j : s.getJobManager().getAllJobs()) {
+        for (Job j : allJobs) {
             assertEquals(GenericResponses.OK, j.getResult(true));
         }
 
@@ -585,16 +581,17 @@ public class JobTest {
 
         int cnt = 0, val;
         final int jobCount = clientCount * (rnd.nextInt(6) + 5);
+        Set<Job> allJobs = new HashSet<Job>(jobCount);
         for (int i = 0; i < jobCount; i++) {
             val = (rnd.nextInt(4) + 1) * 10;
             cnt += val;
-            s.submitJob(val);
+            allJobs.add(s.submitJob(val));
         }
 
         s.getJobManager().waitForAllJobs();
 
         // check all result if OK
-        for (Job j : s.getJobManager().getAllJobs()) {
+        for (Job j : allJobs) {
             assertEquals(GenericResponses.OK, j.getResult(true));
         }
 
@@ -902,7 +899,7 @@ public class JobTest {
         try {
             final Counter counter = new Counter();
             final int multiplier = 3;
-            
+
             final AssignmentListener al = new AssignmentListener() {
                 @Override
                 public void receiveTask(Assignment task) {
@@ -917,8 +914,8 @@ public class JobTest {
 
                         synchronized (JobTest.this) {
                             JobTest.this.wait(count);
-                        }                                                
-                        
+                        }
+
                         task.submitResult(multiplier * count);
                     } catch (ConnectionException ex) {
                         fail("Connection to server failed - " + ex);
@@ -959,7 +956,7 @@ public class JobTest {
                 synchronized (this) {
                     this.wait(totalCount / 4);
                 }
-                failingClient.stopService();                
+                failingClient.stopService();
             } catch (InterruptedException ex) {
                 fail("Failed to wait before client goes offline.");
             }
@@ -967,7 +964,7 @@ public class JobTest {
             s.getJobManager().waitForAllJobs();
 
             for (Job j : jobs) {
-                counter.add((Integer) j.getResult(true));                
+                counter.add((Integer) j.getResult(true));
             }
 
             assertEquals(totalCount, counter.getCount());
