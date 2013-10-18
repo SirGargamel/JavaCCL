@@ -63,8 +63,7 @@ class SocketReader extends Observable implements Runnable {
      * @param hm instance of history manager
      */
     public void registerHistory(final HistoryManager hm) {
-        this.hm = hm;
-        log.fine("History registered.");
+        this.hm = hm;        
     }
 
     @Override

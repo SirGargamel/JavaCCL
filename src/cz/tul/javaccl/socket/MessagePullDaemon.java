@@ -183,8 +183,7 @@ public class MessagePullDaemon extends Thread implements IService {
      * @param hm instance of history manager
      */
     public void registerHistory(final HistoryManager hm) {
-        this.hm = hm;
-        log.fine("History registered.");
+        this.hm = hm;        
     }
 
     /**

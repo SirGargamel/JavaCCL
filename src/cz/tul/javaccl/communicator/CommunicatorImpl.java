@@ -93,8 +93,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
      */
     @Override
     public void registerHistory(final HistoryManager hm) {
-        this.hm = hm;
-        log.fine("History registered.");
+        this.hm = hm;        
     }
 
     @Override

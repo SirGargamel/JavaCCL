@@ -143,8 +143,7 @@ public class History implements HistoryManager {
 
     @Override
     public void registerExporter(final ExportUnit eu) {
-        Exporter.registerExporterUnit(eu);
-        log.log(Level.FINE, "New export unit registered - " + eu.getClass().getCanonicalName());
+        Exporter.registerExporterUnit(eu);        
     }
 
     List<HistoryRecord> getRecords() {

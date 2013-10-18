@@ -142,8 +142,7 @@ class ClientDB extends ClientManager implements Observer, IDFilter {
      * @param hm instance of history manager
      */
     public void registerHistory(final HistoryManager hm) {
-        this.hm = hm;
-        log.fine("History registered.");
+        this.hm = hm;        
     }
 
     @Override
