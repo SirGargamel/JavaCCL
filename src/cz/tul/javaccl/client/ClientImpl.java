@@ -97,11 +97,11 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
             } else {
                 comm = oldComm;
                 log.log(Level.WARNING, "Invalid response received - " + id.toString());
-                log.log(Level.INFO, "Registration failed");
+                log.log(Level.INFO, "Registration failed, server sent invalid data.");
             }
         } catch (ConnectionException ex) {
             comm = oldComm;
-            log.log(Level.INFO, "Registration failed");
+            log.log(Level.INFO, "Registration failed - " + ex.getExceptionCause());
             throw ex;
         }
 
