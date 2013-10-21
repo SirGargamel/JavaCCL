@@ -31,6 +31,14 @@ public interface JobConstants {
      * Telling the server how many concurrent job a client can compute.
      */
     String JOB_COUNT = "jobCount";
+
+    /**
+     * Telling the server how complex the job can be
+     */
     String JOB_COMPLEXITY = "jobComplexity";
-    int DEFAULT_COMPLEXITY = 100;
+
+    /**
+     * default job complexity
+     */
+    int DEFAULT_COMPLEXITY = 1000;
 }

@@ -64,6 +64,7 @@ public class Utils {
 
     /**
      * initialize file logging
+     * @param isServer true for instance of server
      */
     public static void initLogging(final boolean isServer) {
         if (!loggingInitialized) {

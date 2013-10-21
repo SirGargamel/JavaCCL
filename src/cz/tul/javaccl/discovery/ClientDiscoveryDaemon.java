@@ -41,7 +41,7 @@ public class ClientDiscoveryDaemon extends DiscoveryDaemon implements IService {
         super.stopService();        
         log.fine("ClientDiscoveryDaemon has been stopped.");
     }
-
+    
     @Override
     protected void receiveBroadcast(final String data, final InetAddress address) {
         // See if the packet holds the right message                    

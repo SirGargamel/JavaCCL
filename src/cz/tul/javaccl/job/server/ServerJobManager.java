@@ -1,7 +1,5 @@
 package cz.tul.javaccl.job.server;
 
-import java.util.Collection;
-
 /**
  * Interface for job management. Offers baisc function needed for successfull
  * computation.
@@ -24,6 +22,16 @@ public interface ServerJobManager {
      * @throws IllegalArgumentException Task object cannot be serialized 
      */
     Job submitJob(final Object task) throws IllegalArgumentException;
+    
+    /**
+     * Submit job with defined complexity for computation.
+     *
+     * @param task jobs task
+     * @param complexity jobs complexity
+     * @return interface for job control
+     * @throws IllegalArgumentException Task object cannot be serialized 
+     */
+    Job submitJob(final Object task, final int complexity) throws IllegalArgumentException;
 
     /**
      * Method waits until all jobs are completed.

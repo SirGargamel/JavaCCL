@@ -102,6 +102,9 @@ public class ServerSideJob implements Job {
         return jobId;
     }
 
+    /**     
+     * @return this jobs complexity
+     */
     public int getComplexity() {
         return complexity;
     }

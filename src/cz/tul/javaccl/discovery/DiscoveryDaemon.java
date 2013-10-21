@@ -87,6 +87,11 @@ abstract class DiscoveryDaemon extends Thread implements IService {
         }
     }
     
+    /**
+     * Handle received String data.
+     * @param data received data
+     * @param address source IP
+     */
     protected abstract void receiveBroadcast(final String data, final InetAddress address);
 
     @Override
