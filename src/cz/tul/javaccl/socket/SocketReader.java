@@ -129,8 +129,7 @@ class SocketReader extends Observable implements Runnable {
         try {
             out = new ObjectOutputStream(socket.getOutputStream());            
             out.writeObject(response);
-            out.flush();
-            log.log(Level.FINE, "Received [" + dataIn + "], replied with [" + response + "].");
+            out.flush();            
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error writing result data to socket.");
             log.log(Level.FINE, "Error writing result data to socket.", ex);
