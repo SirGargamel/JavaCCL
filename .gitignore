@@ -14,3 +14,5 @@
 systemLog.xml*
 jacoco.exec*
 /nbproject/private/
+/systemLogServer.xml*
+/systemLogClient.xml*
