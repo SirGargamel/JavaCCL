@@ -507,6 +507,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 if (j.getId().equals(id)) {
                     j.setResult(jt.getTask());
                     it.remove();
+                    jobHistory.remove(j);
                     log.log(Level.INFO, "Job with ID " + id + " has been computed succefully.");
                     storeJobAction(j, jr.getOwner().getTargetId(), JobConstants.JOB_RESULT);
                     wakeUp();
@@ -548,6 +549,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                     job.setStatus(JobStatus.CANCELED);
                     jr.updateTime();
                     it.remove();
+                    jobHistory.remove(j);
                     log.log(Level.INFO, "Job with ID " + j.getId() + " has been cancelled by server.");
                 }
             }
