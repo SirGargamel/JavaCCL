@@ -448,6 +448,14 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                         jobCount.put(clientManager.getClient(jc.getClientId()), jc.getValue());
                     }
                     return GenericResponses.OK;
+                }
+                if (header.equals(JobConstants.JOB_COMPLEXITY)) {
+                    Object count = m.getData();
+                    if (count instanceof ClientJobSettings) {
+                        ClientJobSettings jc = (ClientJobSettings) count;
+                        jobComplexity.put(clientManager.getClient(jc.getClientId()), jc.getValue());
+                    }
+                    return GenericResponses.OK;
                 } else {
                     return GenericResponses.ILLEGAL_HEADER;
                 }
