@@ -32,7 +32,7 @@ public class ClientDiscoveryDaemon extends DiscoveryDaemon implements IService {
     @Override
     public void run() {
         while (run) {
-            listenForDiscoveryPacket(-1);
+            listenForDiscoveryPacket(0);
         }
     }
 
