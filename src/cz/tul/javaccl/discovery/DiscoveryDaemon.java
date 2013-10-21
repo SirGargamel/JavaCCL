@@ -9,7 +9,10 @@ import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -17,15 +20,16 @@ import java.util.Enumeration;
  */
 abstract class DiscoveryDaemon extends Thread implements IService {
     
-    protected static final int DELAY = 10000;
-    protected final DatagramSocket s;
+    private static final Logger log = Logger.getLogger(DiscoveryDaemon.class.getName());
+    private final DatagramSocket s;
+    protected boolean run;
 
     public DiscoveryDaemon() throws SocketException {
         s = new DatagramSocket(Constants.DEFAULT_PORT);
         s.setBroadcast(true);
-        s.setSoTimeout(DELAY);
+        s.setSoTimeout(Constants.DEFAULT_TIMEOUT);
     }
-
+    
     protected void broadcastMessage(final byte[] msg) throws SocketException, IOException {
         // Find the clients using UDP broadcast                
         // Try the 255.255.255.255 first
@@ -54,9 +58,40 @@ abstract class DiscoveryDaemon extends Thread implements IService {
             }
         }
     }
+    
+    protected void listenForDiscoveryPacket(final int timeout) {
+        try {
+            // Receive a packet
+            byte[] recvBuf = new byte[15000];
+            DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
+            log.log(Level.FINE, "Starting listening for discovery packets.");
+            s.setSoTimeout(timeout);
+            s.receive(packet);
+
+            // Packet received            
+            String message = new String(packet.getData()).trim();
+            log.log(Level.FINE, "Discovery packet received from " + packet.getAddress().getHostAddress() + " - " + message.toString());
+            receiveBroadcast(message, packet.getAddress());
+        } catch (SocketTimeoutException ex) {
+            // everything is OK, we want to check server status again
+        } catch (SocketException ex) {
+            if (run == false) {
+                // everything is fine, we wanted to interrupt socket receive method
+            } else {
+                log.log(Level.WARNING, "Error operating socket.");
+                log.log(Level.FINE, "Error operating socket.", ex);
+            }
+        } catch (IOException ex) {
+            log.log(Level.WARNING, "Error receiving or answering to client discovery packet");
+            log.log(Level.FINE, "Error receiving or answering to client discovery packet", ex);
+        }
+    }
+    
+    protected abstract void receiveBroadcast(final String data, final InetAddress address);
 
     @Override
     public void stopService() {
+        run = false;
         s.close();
     }
 }

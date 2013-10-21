@@ -55,7 +55,7 @@ public final class ServerImpl extends Server implements IService, Observer {
         getListenerRegistrator().setIdListener(Constants.ID_SYS_MSG, new SystemMessagesHandler(clients));
 
         try {
-            cdd = new ClientDiscoveryDaemon(serverSocket.getPort());
+            cdd = new ClientDiscoveryDaemon(clients);
         } catch (SocketException ex) {
             log.log(Level.WARNING, "Failed to create ClientDiscoveryDaemon");
             log.log(Level.FINE, "Failed to create ClientDiscoveryDaemon", ex);

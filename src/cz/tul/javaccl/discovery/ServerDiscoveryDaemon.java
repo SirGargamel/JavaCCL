@@ -5,15 +5,14 @@ import cz.tul.javaccl.client.ServerInterface;
 import cz.tul.javaccl.communicator.Communicator;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Client side of DicoveryDaemon. Listens for server broadcast and responds to
+ * Client side of DiscoveryDaemon. Listens for server broadcast and responds to
  * them. Listens only when no server is aviable.
  *
  * @author Petr Ječmen
@@ -21,8 +20,8 @@ import java.util.logging.Logger;
 public class ServerDiscoveryDaemon extends DiscoveryDaemon {
 
     private static final Logger log = Logger.getLogger(ServerDiscoveryDaemon.class.getName());
+    private static final int DELAY = 5000;
     private final ServerInterface sr;
-    private boolean run;
 
     /**
      *
@@ -39,91 +38,32 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
     public void run() {
         while (run) {
             if (sr.getServerComm() == null) {
-                listenForDiscoveryPacket();
-            } else {
-                broadcastServerInfo();
+                broadcastServerDiscovery();
             }
-
-            synchronized (this) {
-                try {
-                    this.wait(DELAY);
-                } catch (InterruptedException ex) {
-                    log.warning("Waiting of ServerDiscoveryDaemon has been interrupted.");
-                    log.log(Level.FINE, "Waiting of ServerDiscoveryDaemon has been interrupted.", ex);
-                }
-            }
+            listenForDiscoveryPacket(DELAY);
         }
-        s.close();
     }
 
     @Override
     public void stopService() {
         super.stopService();
-        run = false;
         log.fine("ServerDiscoveryDaemon has been stopped.");
     }
 
-    private void listenForDiscoveryPacket() {
+    private void broadcastServerDiscovery() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(Constants.DISCOVERY_QUESTION);
+        sb.append(Constants.DELIMITER);
+        sb.append(sr.getLocalSocketPort());
+
         try {
-            // Receive a packet
-            byte[] recvBuf = new byte[15000];
-            DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
-            log.log(Level.FINE, "Starting listening for discovery packets.");
-            s.receive(packet);
-
-            // Packet received            
-            String message = new String(packet.getData()).trim();
-            log.log(Level.FINE, "Discovery packet received from " + packet.getAddress().getHostAddress() + " - " + message.toString());
-
-            // See if the packet holds the right message                    
-            if (message.startsWith(Constants.DISCOVERY_QUESTION)) {
-                final String portS = message.substring(Constants.DISCOVERY_QUESTION.length() + Constants.DELIMITER.length());
-                try {
-                    final int port = Integer.valueOf(portS);
-                    try {
-                        sr.registerToServer(packet.getAddress(), port);
-                    } catch (ConnectionException ex) {
-                        log.log(Level.WARNING, "Could not contact server at IP " + packet.getAddress() + " and port " + port + " - " + ex.getExceptionCause());
-                    }
-                } catch (NumberFormatException ex) {
-                    try {
-                        sr.registerToServer(packet.getAddress(), Constants.DEFAULT_PORT);
-                    } catch (ConnectionException ex2) {
-                        log.log(Level.WARNING, "Could not contact server at IP " + packet.getAddress() + " on default port " + Constants.DEFAULT_PORT + " - " + ex2.getExceptionCause());
-                    }
-                }
-            } else if (message.startsWith(Constants.DISCOVERY_INFO)) {
-                final String ipAndPort = message.substring(Constants.DISCOVERY_QUESTION.length() + Constants.DELIMITER.length());
-                final String ipS = ipAndPort.substring(0, ipAndPort.indexOf(Constants.DELIMITER));
-                final String portS = ipAndPort.substring(ipAndPort.indexOf(Constants.DELIMITER) + 1);
-                try {
-                    final int port = Integer.valueOf(portS);
-                    final InetAddress ip = InetAddress.getByName(ipS);
-                    try {
-                        sr.registerToServer(ip, port);
-                    } catch (ConnectionException ex) {
-                        log.log(Level.WARNING, "Could not contact server at IP " + ip + " and port " + port + " - " + ex.getExceptionCause());
-                    }
-                } catch (NumberFormatException ex) {
-                    try {
-                        sr.registerToServer(packet.getAddress(), Constants.DEFAULT_PORT);
-                    } catch (ConnectionException ex2) {
-                        log.log(Level.WARNING, "Could not contact server at IP " + packet.getAddress() + " on default port " + Constants.DEFAULT_PORT + " - " + ex2.getExceptionCause());
-                    }
-                }
-            }
-        } catch (SocketTimeoutException ex) {
-            // everything is OK, we want to check server status again
+            broadcastMessage(sb.toString().getBytes());
         } catch (SocketException ex) {
-            if (run == false) {
-                // everything is fine, wa wanted to interrupt socket receive method
-            } else {
-                log.log(Level.WARNING, "Error operating socket.");
-                log.log(Level.FINE, "Error operating socket.", ex);
-            }
+            log.log(Level.WARNING, "Error while checking status of network interfaces");
+            log.log(Level.FINE, "Error while checking status of network interfaces", ex);
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error receiving or answering to client discovery packet");
-            log.log(Level.FINE, "Error receiving or answering to client discovery packet", ex);
+            log.log(Level.WARNING, "Error operating socket.");
+            log.log(Level.FINE, "Error operating socket.", ex);
         }
     }
 
@@ -143,7 +83,39 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
             log.log(Level.FINE, "Error while checking status of network interfaces", ex);
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error operating socket.");
-                log.log(Level.FINE, "Error operating socket.", ex);
+            log.log(Level.FINE, "Error operating socket.", ex);
+        }
+    }
+
+    @Override
+    protected void receiveBroadcast(String data, InetAddress address) {
+        // See if the packet holds the right message                    
+        if (data.startsWith(Constants.DISCOVERY_QUESTION)) {
+            broadcastServerInfo();
+        } else if (sr.getServerComm() == null && data.startsWith(Constants.DISCOVERY_INFO)) {
+            final String ipAndPort = data.substring(Constants.DISCOVERY_QUESTION.length() + Constants.DELIMITER.length());
+            final String ipS = ipAndPort.substring(0, ipAndPort.indexOf(Constants.DELIMITER));
+            final String portS = ipAndPort.substring(ipAndPort.indexOf(Constants.DELIMITER));
+            InetAddress ip = null;
+            int port = Constants.DEFAULT_PORT;
+            try {
+                ip = InetAddress.getByName(ipS);
+                port = Integer.valueOf(portS);
+
+            } catch (UnknownHostException ex) {
+                log.warning("Illegal server IP received - " + ipS);
+            } catch (NumberFormatException ex) {
+                log.warning("Illegal port number received - " + portS);
+            }
+
+            if (ip != null) {
+                try {
+                    sr.registerToServer(ip, Integer.valueOf(port));
+                } catch (ConnectionException ex) {
+                    log.warning("Error contacting server.");
+                    log.log(Level.FINE, "Error contacting server.", ex);
+                }
+            }
         }
     }
 }
