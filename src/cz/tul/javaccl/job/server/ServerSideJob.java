@@ -1,6 +1,7 @@
 package cz.tul.javaccl.job.server;
 
 import cz.tul.javaccl.exceptions.ConnectionException;
+import cz.tul.javaccl.job.JobConstants;
 import cz.tul.javaccl.job.JobStatus;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -17,14 +18,20 @@ public class ServerSideJob implements Job {
     private final JobCancelManager jcm;
     private final Object task;
     private final UUID jobId;
+    private final int complexity;
     private Object result;
-    private JobStatus jobStatus;
+    private JobStatus jobStatus;    
 
-    ServerSideJob(final Object task, final JobCancelManager jobCancelManager) throws IllegalArgumentException {
+    ServerSideJob(final Object task, final JobCancelManager jobCancelManager, final int complexity) throws IllegalArgumentException {
         jcm = jobCancelManager;
         this.task = task;
         jobStatus = JobStatus.SUBMITTED;
         jobId = UUID.randomUUID();
+        this.complexity = complexity;
+    }
+    
+    ServerSideJob(final Object task, final JobCancelManager jobCancelManager) throws IllegalArgumentException {
+        this(task, jobCancelManager, JobConstants.DEFAULT_COMPLEXITY);
     }
 
     @Override
@@ -93,5 +100,9 @@ public class ServerSideJob implements Job {
     @Override
     public UUID getId() {
         return jobId;
+    }
+
+    public int getComplexity() {
+        return complexity;
     }
 }

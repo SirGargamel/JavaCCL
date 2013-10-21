@@ -3,7 +3,7 @@ package cz.tul.javaccl.job.client;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.client.ServerInterface;
 import cz.tul.javaccl.exceptions.ConnectionException;
-import cz.tul.javaccl.job.JobMessageHeaders;
+import cz.tul.javaccl.job.JobConstants;
 import cz.tul.javaccl.job.JobTask;
 import cz.tul.javaccl.messaging.Identifiable;
 import cz.tul.javaccl.socket.Listener;
@@ -51,22 +51,22 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
 
     @Override
     public void submitResult(final UUID jobId, final Object result) throws ConnectionException {
-        sendDataToServer(jobId, JobMessageHeaders.JOB_RESULT, result);
+        sendDataToServer(jobId, JobConstants.JOB_RESULT, result);
     }
 
     @Override
     public void cancelJob(final UUID jobId) throws ConnectionException {
-        sendDataToServer(jobId, JobMessageHeaders.JOB_CANCEL, null);
+        sendDataToServer(jobId, JobConstants.JOB_CANCEL, null);
     }
 
     @Override
     public void acceptJob(final UUID jobId) throws ConnectionException {
-        sendDataToServer(jobId, JobMessageHeaders.JOB_ACCEPT, null);
+        sendDataToServer(jobId, JobConstants.JOB_ACCEPT, null);
     }
 
     @Override
     public Object requestData(final UUID jobId, final Object dataId) throws ConnectionException {
-        return sendDataToServer(jobId, JobMessageHeaders.JOB_DATA_REQUEST, dataId);
+        return sendDataToServer(jobId, JobConstants.JOB_DATA_REQUEST, dataId);
     }
 
     private Object sendDataToServer(final UUID jobId, final String header, final Object result) throws ConnectionException {
@@ -100,7 +100,7 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
             final UUID id = jt.getJobId();
             final String descr = jt.getTaskDescription();
             if (descr != null) {
-                if (descr.equals(JobMessageHeaders.JOB_TASK)) {
+                if (descr.equals(JobConstants.JOB_TASK)) {
                     if (assignmentListener != null) {
                         final ClientSideJob job = new ClientSideJob(jt.getTask(), id, this);
                         jobs.put(job.getId(), job);
@@ -114,7 +114,7 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
                     } else {
                         result = GenericResponses.GENERAL_ERROR;
                     }
-                } else if (descr.equals(JobMessageHeaders.JOB_CANCEL)) {
+                } else if (descr.equals(JobConstants.JOB_CANCEL)) {
                     jobs.remove(id);
                     exec.submit(new Runnable() {
                         @Override

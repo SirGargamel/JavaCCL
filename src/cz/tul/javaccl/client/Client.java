@@ -160,6 +160,8 @@ public abstract class Client extends CCLObservable implements IService {
      * @return true for successfull change
      */
     public abstract boolean setMaxNumberOfConcurrentAssignments(final int assignmentCount);
+    
+    public abstract boolean setMaxJobComplexity(final int maxJobComplexity);
 
     /**
      * Load settings from given file.

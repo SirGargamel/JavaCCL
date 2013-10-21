@@ -13,8 +13,8 @@ import cz.tul.javaccl.exceptions.ConnectionExceptionCause;
 import cz.tul.javaccl.history.History;
 import cz.tul.javaccl.history.HistoryManager;
 import cz.tul.javaccl.history.sorting.DefaultSorter;
-import cz.tul.javaccl.job.JobCount;
-import cz.tul.javaccl.job.JobMessageHeaders;
+import cz.tul.javaccl.job.ClientJobSettings;
+import cz.tul.javaccl.job.JobConstants;
 import cz.tul.javaccl.job.client.AssignmentListener;
 import cz.tul.javaccl.job.client.ClientJobManagerImpl;
 import cz.tul.javaccl.messaging.Message;
@@ -51,9 +51,11 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     private ClientJobManagerImpl jm;
     private ServerDiscoveryDaemon sdd;
     private int concurentJobCount;
+    private int jobComplexity;
 
     ClientImpl() {
         concurentJobCount = 1;
+        jobComplexity = JobConstants.DEFAULT_COMPLEXITY;
 
         history = new History();
 
@@ -94,6 +96,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
                 log.log(Level.INFO, "Client has been registered to new server, new ID has been received - " + comm.getSourceId());
                 notifyChange(REGISTER, new Object[] {address, port});
                 setMaxNumberOfConcurrentAssignments(concurentJobCount);
+                setMaxJobComplexity(jobComplexity);
             } else {
                 comm = oldComm;
                 log.log(Level.WARNING, "Invalid response received - " + id.toString());
@@ -285,8 +288,8 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         if (isServerUp()) {
             final Message m = new Message(
                     Constants.ID_JOB_MANAGER,
-                    JobMessageHeaders.JOB_COUNT,
-                    new JobCount(getLocalID(), assignmentCount));
+                    JobConstants.JOB_COUNT,
+                    new ClientJobSettings(getLocalID(), assignmentCount));
 
             try {
                 final Object response = sendDataToServer(m);
@@ -323,5 +326,31 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     public void update(Observable o, Object arg) {
         setChanged();
         notifyObservers(arg);
+    }
+
+    @Override
+    public boolean setMaxJobComplexity(int maxJobComplexity) {
+        this.jobComplexity = maxJobComplexity;
+        boolean result = false;
+        if (isServerUp()) {
+            final Message m = new Message(
+                    Constants.ID_JOB_MANAGER,
+                    JobConstants.JOB_COMPLEXITY,
+                    new ClientJobSettings(getLocalID(), maxJobComplexity));
+
+            try {
+                final Object response = sendDataToServer(m);
+                result = GenericResponses.OK.equals(response);
+            } catch (ConnectionException ex) {
+                log.log(Level.WARNING, "Communication with server failed - " + ex.getExceptionCause());
+            }
+        }
+        
+        if (result) {
+            log.log(Level.FINE, "Maximal job complexity set on server to " + maxJobComplexity);
+        } else {
+            log.log(Level.FINE, "Failed to update maximal job complexity on server.");
+        }
+        return result;
     }
 }

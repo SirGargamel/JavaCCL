@@ -7,20 +7,20 @@ import java.util.UUID;
  *
  * @author Petr Jecmen
  */
-public class JobCount implements Serializable {
+public class ClientJobSettings implements Serializable {
 
     private final UUID clientId;
-    private final int jobCount;
+    private final int value;
 
     /**
      * New intance
      *
      * @param clientId UUID of the client
-     * @param jobCount maximal count of concurrent jobs
+     * @param value maximal count of concurrent jobs
      */
-    public JobCount(UUID clientId, int jobCount) {
+    public ClientJobSettings(UUID clientId, int value) {
         this.clientId = clientId;
-        this.jobCount = jobCount;
+        this.value = value;
     }
 
     /**
@@ -33,7 +33,7 @@ public class JobCount implements Serializable {
     /**
      * @return maximal count of concurrent jobs
      */
-    public int getJobCount() {
-        return jobCount;
+    public int getValue() {
+        return value;
     }
 }

@@ -5,7 +5,7 @@ package cz.tul.javaccl.job;
  *
  * @author Petr Ječmen
  */
-public interface JobMessageHeaders {
+public interface JobConstants {
 
     /**
      * Confirm job task by client.
@@ -31,4 +31,6 @@ public interface JobMessageHeaders {
      * Telling the server how many concurrent job a client can compute.
      */
     String JOB_COUNT = "jobCount";
+    String JOB_COMPLEXITY = "jobComplexity";
+    int DEFAULT_COMPLEXITY = 100;
 }
