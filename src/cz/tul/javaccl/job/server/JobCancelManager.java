@@ -16,5 +16,5 @@ public interface JobCancelManager {
      * computing the job
      */
     void cancelJobByServer(final ServerSideJob job) throws ConnectionException;
-    
+
 }

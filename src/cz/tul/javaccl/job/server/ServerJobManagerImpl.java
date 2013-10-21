@@ -88,7 +88,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
     public Job submitJob(final Object task) throws IllegalArgumentException {
         return submitJob(task, JobConstants.DEFAULT_COMPLEXITY);
     }
-    
+
     @Override
     public Job submitJob(Object task, int complexity) throws IllegalArgumentException {
         final ServerSideJob result = new ServerSideJob(task, this, complexity);
@@ -559,5 +559,5 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 }
             }
         }
-    }    
+    }
 }

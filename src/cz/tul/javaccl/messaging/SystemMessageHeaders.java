@@ -23,5 +23,5 @@ public interface SystemMessageHeaders {
     /**
      * request for pulling messages
      */
-    String MSG_PULL_REQUEST = "msgPullRequest";    
+    String MSG_PULL_REQUEST = "msgPullRequest";
 }

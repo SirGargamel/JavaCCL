@@ -95,7 +95,7 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
     public Object receiveData(final Identifiable data) {
         Object result = GenericResponses.ILLEGAL_DATA;
         if (data instanceof JobTask) {
-            result = GenericResponses.ILLEGAL_HEADER;            
+            result = GenericResponses.ILLEGAL_HEADER;
             final JobTask jt = (JobTask) data;
             final UUID id = jt.getJobId();
             final String descr = jt.getTaskDescription();
@@ -124,7 +124,7 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
                     });
                     result = GenericResponses.OK;
                 }
-            }           
+            }
         }
         return result;
     }

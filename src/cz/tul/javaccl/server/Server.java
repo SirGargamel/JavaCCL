@@ -23,13 +23,13 @@ import java.util.logging.Logger;
  * @author Petr Ječmen
  */
 public abstract class Server extends CCLObservable implements IService {
-    
+
     private static final Logger log = Logger.getLogger(Server.class.getName());
-    
+
     static {
         Utils.initLogging(true);
     }
-    
+
     /**
      * Create and initialize new instance of server.
      *
@@ -62,9 +62,9 @@ public abstract class Server extends CCLObservable implements IService {
                 log.log(Level.FINE, "Error initializing server on port " + (port - 1), ex);
             }
         }
-        
+
         if (s == null) {
-            log.log(Level.WARNING, "Error initializing server, no free port found");            
+            log.log(Level.WARNING, "Error initializing server, no free port found");
         }
 
         return s;

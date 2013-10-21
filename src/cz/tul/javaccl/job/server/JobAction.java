@@ -16,8 +16,9 @@ public class JobAction {
     private final UUID ownerId;
     private final String actionDescription;
 
-    /**     
+    /**
      * New isntance
+     *
      * @param job job for computatin
      * @param ownerId UUID of the client that is computing the job
      * @param msgHeader action description

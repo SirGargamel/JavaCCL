@@ -38,10 +38,10 @@ public class ClientDiscoveryDaemon extends DiscoveryDaemon implements IService {
 
     @Override
     public void stopService() {
-        super.stopService();        
+        super.stopService();
         log.fine("ClientDiscoveryDaemon has been stopped.");
     }
-    
+
     @Override
     protected void receiveBroadcast(final String data, final InetAddress address) {
         // See if the packet holds the right message                    
@@ -61,6 +61,6 @@ public class ClientDiscoveryDaemon extends DiscoveryDaemon implements IService {
                     log.log(Level.WARNING, "Could not contact server at IP " + address + " on default port " + Constants.DEFAULT_PORT + " - " + ex2.getExceptionCause());
                 }
             }
-        }        
+        }
     }
 }

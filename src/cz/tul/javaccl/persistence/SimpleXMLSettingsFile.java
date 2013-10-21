@@ -54,28 +54,28 @@ public class SimpleXMLSettingsFile {
             //read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
             doc.getDocumentElement().normalize();
 
-            Queue<Node> nodesForParsing = new ConcurrentLinkedQueue<Node>();            
+            Queue<Node> nodesForParsing = new ConcurrentLinkedQueue<Node>();
             addAllChildNodes(nodesForParsing, doc.getElementsByTagName(SETTINGS_NODE_NAME));
-            
+
             Node node;
             while (!nodesForParsing.isEmpty()) {
                 node = nodesForParsing.poll();
-                
+
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
                     Element eElement = (Element) node;
                     fields.put(eElement.getTagName(), eElement.getTextContent());
                 }
-                
+
                 addAllChildNodes(nodesForParsing, node.getChildNodes());
-            }                        
+            }
         } catch (ParserConfigurationException ex) {
             log.log(Level.SEVERE, "Illegal parser config used.", ex);
         }
 
         return fields;
     }
-    
-    private static void addAllChildNodes(final Queue<Node> processingQueue, final NodeList nodes) {        
+
+    private static void addAllChildNodes(final Queue<Node> processingQueue, final NodeList nodes) {
         for (int i = 0; i < nodes.getLength(); i++) {
             processingQueue.add(nodes.item(i));
         }
@@ -135,7 +135,7 @@ public class SimpleXMLSettingsFile {
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
             DOMSource source = new DOMSource(doc);
             StreamResult out = new StreamResult(target);
-            transformer.transform(source, out);            
+            transformer.transform(source, out);
 
             result = true;
         } catch (ParserConfigurationException ex) {

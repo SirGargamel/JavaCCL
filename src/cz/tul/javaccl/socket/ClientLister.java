@@ -8,10 +8,10 @@ import java.util.Collection;
  * @author Petr Ječmen
  */
 public interface ClientLister {
-    
-    /**     
+
+    /**
      * @return coolection representing all registered clients
      */
     Collection<Communicator> getClients();
-    
+
 }

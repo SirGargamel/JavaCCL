@@ -15,7 +15,7 @@ public class ClientSideJob implements Assignment {
     private static final Logger log = Logger.getLogger(ClientSideJob.class.getName());
     private final Object task;
     private final ClientJobManager jobManager;
-    private final UUID jobId;    
+    private final UUID jobId;
     private boolean isDone;
 
     /**
@@ -30,7 +30,7 @@ public class ClientSideJob implements Assignment {
         this.jobId = jobId;
         this.jobManager = jobManager;
 
-        isDone = false;        
+        isDone = false;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class ClientSideJob implements Assignment {
     @Override
     public void submitResult(Object result) throws ConnectionException {
         log.log(Level.INFO, "Submitting result for task with ID " + jobId);
-        isDone = true;        
+        isDone = true;
         jobManager.submitResult(jobId, result);
     }
 
@@ -55,7 +55,7 @@ public class ClientSideJob implements Assignment {
 
     @Override
     public void cancel(final String reason) throws ConnectionException {
-        log.log(Level.INFO, "Canceling task with ID " + jobId);        
+        log.log(Level.INFO, "Canceling task with ID " + jobId);
         jobManager.cancelJob(jobId);
     }
 
@@ -67,5 +67,5 @@ public class ClientSideJob implements Assignment {
     @Override
     public boolean isDone() {
         return isDone;
-    }    
+    }
 }

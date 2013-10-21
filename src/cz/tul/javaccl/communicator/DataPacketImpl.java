@@ -19,6 +19,7 @@ public class DataPacketImpl implements DataPacket {
 
     /**
      * New instance.
+     *
      * @param sourceID sender UUID
      * @param targetID target UUID
      * @param data tata for sending
@@ -27,7 +28,7 @@ public class DataPacketImpl implements DataPacket {
         this.sourceID = sourceID;
         this.targetID = targetID;
         this.data = data;
-    }    
+    }
 
     @Override
     public UUID getSourceID() {
@@ -37,7 +38,7 @@ public class DataPacketImpl implements DataPacket {
     @Override
     public UUID getTargetID() {
         return targetID;
-    }    
+    }
 
     /**
      * @return data for sending
@@ -60,7 +61,8 @@ public class DataPacketImpl implements DataPacket {
     }
 
     /**
-     * @param sourceAddress set IP, from which the DataPacketImpl has been received
+     * @param sourceAddress set IP, from which the DataPacketImpl has been
+     * received
      */
     public void setSourceIP(InetAddress sourceAddress) {
         this.sourceIP = sourceAddress;
@@ -68,16 +70,16 @@ public class DataPacketImpl implements DataPacket {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder();        
-        if (sourceID != null) {            
+        final StringBuilder sb = new StringBuilder();
+        if (sourceID != null) {
             sb.append(sourceID.toString());
-        }        
+        }
         if (targetID != null) {
             sb.append(" - ");
             sb.append(targetID.toString());
         }
         sb.append(" - [");
-        if (data != null) {            
+        if (data != null) {
             sb.append(data.toString());
         }
         sb.append("]");

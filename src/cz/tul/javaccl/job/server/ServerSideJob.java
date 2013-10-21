@@ -20,7 +20,7 @@ public class ServerSideJob implements Job {
     private final UUID jobId;
     private final int complexity;
     private Object result;
-    private JobStatus jobStatus;    
+    private JobStatus jobStatus;
 
     ServerSideJob(final Object task, final JobCancelManager jobCancelManager, final int complexity) throws IllegalArgumentException {
         jcm = jobCancelManager;
@@ -29,7 +29,7 @@ public class ServerSideJob implements Job {
         jobId = UUID.randomUUID();
         this.complexity = complexity;
     }
-    
+
     ServerSideJob(final Object task, final JobCancelManager jobCancelManager) throws IllegalArgumentException {
         this(task, jobCancelManager, JobConstants.DEFAULT_COMPLEXITY);
     }
@@ -68,7 +68,7 @@ public class ServerSideJob implements Job {
     }
 
     @Override
-    public void cancelJob() throws ConnectionException {        
+    public void cancelJob() throws ConnectionException {
         jcm.cancelJobByServer(this);
         synchronized (this) {
             this.notify();
@@ -102,7 +102,7 @@ public class ServerSideJob implements Job {
         return jobId;
     }
 
-    /**     
+    /**
      * @return this jobs complexity
      */
     public int getComplexity() {

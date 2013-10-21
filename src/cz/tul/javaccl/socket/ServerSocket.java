@@ -175,7 +175,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
      * @param hm instance of history manager
      */
     public void registerHistory(final HistoryManager hm) {
-        this.hm = hm;        
+        this.hm = hm;
     }
 
     @Override

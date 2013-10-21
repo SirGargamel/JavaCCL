@@ -36,7 +36,7 @@ class ClientDB extends ClientManager implements Observer, IDFilter {
     private HistoryManager hm;
 
     ClientDB() {
-        clients = Collections.synchronizedSet(new HashSet<Communicator>());        
+        clients = Collections.synchronizedSet(new HashSet<Communicator>());
         allowedIDs = Collections.emptySet();
         allowedIDs = Collections.unmodifiableCollection(allowedIDs);
     }
@@ -57,7 +57,7 @@ class ClientDB extends ClientManager implements Observer, IDFilter {
 
             prepareAllowedIDs();
 
-            notifyChange(REGISTER, new Object[] {address, port, id});
+            notifyChange(REGISTER, new Object[]{address, port, id});
             log.log(Level.INFO, "New client with IP " + address.getHostAddress() + " on port " + port + " registered");
         } else {
             log.log(Level.INFO, "Failed to register client with IP " + address.getHostAddress() + " and port " + port);
@@ -78,7 +78,7 @@ class ClientDB extends ClientManager implements Observer, IDFilter {
             clients.add(ccI);
             prepareAllowedIDs();
 
-            notifyChange(REGISTER, new Object[] {address, port, clientId});
+            notifyChange(REGISTER, new Object[]{address, port, clientId});
             log.log(Level.INFO, "New client with IP " + address.getHostAddress() + " on port " + port + " with ID " + clientId + " registered");
         }
 
@@ -101,7 +101,7 @@ class ClientDB extends ClientManager implements Observer, IDFilter {
                 }
             }
         }
-        notifyChange(DEREGISTER, new Object[] {id});
+        notifyChange(DEREGISTER, new Object[]{id});
         log.log(Level.INFO, "Client with ID " + id + " deregistered");
     }
 
@@ -142,7 +142,7 @@ class ClientDB extends ClientManager implements Observer, IDFilter {
      * @param hm instance of history manager
      */
     public void registerHistory(final HistoryManager hm) {
-        this.hm = hm;        
+        this.hm = hm;
     }
 
     @Override

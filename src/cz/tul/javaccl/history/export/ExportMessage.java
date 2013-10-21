@@ -13,7 +13,7 @@ import org.w3c.dom.Node;
  *
  * @author Petr Ječmen
  */
-public class ExportMessage implements ExportUnit {    
+public class ExportMessage implements ExportUnit {
 
     private static void appendStringDataToNode(final Node n, final Document d, final String name, final String data) {
         final Element e = d.createElement(name);
@@ -22,7 +22,7 @@ public class ExportMessage implements ExportUnit {
     }
 
     @Override
-    public Element exportData(Document doc, Object data) {        
+    public Element exportData(Document doc, Object data) {
         Element result = null;
         if (data instanceof Message) {
             final Message m = (Message) data;

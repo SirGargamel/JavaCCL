@@ -61,7 +61,7 @@ class SocketReader extends Observable implements Runnable {
      * @param hm instance of history manager
      */
     public void registerHistory(final HistoryManager hm) {
-        this.hm = hm;        
+        this.hm = hm;
     }
 
     @Override
@@ -127,9 +127,9 @@ class SocketReader extends Observable implements Runnable {
     private void sendReply(final InetAddress ip, Object dataIn, boolean dataRead, final Object response) {
         ObjectOutputStream out = null;
         try {
-            out = new ObjectOutputStream(socket.getOutputStream());            
+            out = new ObjectOutputStream(socket.getOutputStream());
             out.writeObject(response);
-            out.flush();            
+            out.flush();
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error writing result data to socket.");
             log.log(Level.FINE, "Error writing result data to socket.", ex);

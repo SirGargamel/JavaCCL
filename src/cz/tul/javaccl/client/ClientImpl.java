@@ -94,7 +94,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
                 comm.setSourceId(((UUID) id));
                 result = true;
                 log.log(Level.INFO, "Client has been registered to new server, new ID has been received - " + comm.getSourceId());
-                notifyChange(REGISTER, new Object[] {address, port});
+                notifyChange(REGISTER, new Object[]{address, port});
                 setMaxNumberOfConcurrentAssignments(concurentJobCount);
                 setMaxJobComplexity(jobComplexity);
             } else {
@@ -193,7 +193,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         getListenerRegistrator().setIdListener(Constants.ID_SYS_MSG, csm);
 
         jm = new ClientJobManagerImpl(this);
-        getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jm);               
+        getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jm);
 
         if (sdd != null) {
             sdd.start();
@@ -298,7 +298,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
                 log.log(Level.WARNING, "Communication with server failed - " + ex.getExceptionCause());
             }
         }
-        
+
         if (result) {
             log.log(Level.FINE, "Concurrent job count set on server to " + assignmentCount);
         } else {
@@ -321,7 +321,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     public void disconnectFromServer() {
         comm = null;
     }
-    
+
     @Override
     public void update(Observable o, Object arg) {
         setChanged();
@@ -345,7 +345,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
                 log.log(Level.WARNING, "Communication with server failed - " + ex.getExceptionCause());
             }
         }
-        
+
         if (result) {
             log.log(Level.FINE, "Maximal job complexity set on server to " + maxJobComplexity);
         } else {

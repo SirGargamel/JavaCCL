@@ -169,7 +169,7 @@ public final class ServerImpl extends Server implements IService, Observer {
     public boolean saveSettings(final File settingsFile) {
         return ServerSettings.serialize(settingsFile, clients);
     }
-    
+
     @Override
     public void update(Observable o, Object arg) {
         setChanged();

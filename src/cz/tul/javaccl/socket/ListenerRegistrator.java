@@ -46,6 +46,7 @@ public interface ListenerRegistrator {
 
     /**
      * Retrieve a queue with received messages with given ID.
+     *
      * @param id message ID
      * @return message queue
      */

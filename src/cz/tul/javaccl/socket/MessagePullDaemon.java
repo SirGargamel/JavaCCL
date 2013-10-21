@@ -99,13 +99,13 @@ public class MessagePullDaemon extends Thread implements IService {
                             s = new Socket(ipComm, port);
                             ObjectOutputStream out = null;
                             try {
-                                out = new ObjectOutputStream(s.getOutputStream());                                
+                                out = new ObjectOutputStream(s.getOutputStream());
                                 out.writeObject(m);
-                                out.flush();                                
+                                out.flush();
 
                                 ObjectInputStream in = null;
                                 try {
-                                    in = new ObjectInputStream(s.getInputStream());                                    
+                                    in = new ObjectInputStream(s.getInputStream());
                                     try {
                                         dataIn = in.readObject();
                                         dataRead = true;
@@ -180,7 +180,7 @@ public class MessagePullDaemon extends Thread implements IService {
      * @param hm instance of history manager
      */
     public void registerHistory(final HistoryManager hm) {
-        this.hm = hm;        
+        this.hm = hm;
     }
 
     /**
@@ -230,7 +230,7 @@ public class MessagePullDaemon extends Thread implements IService {
 
         ObjectOutputStream out = null;
         try {
-            out = new ObjectOutputStream(s.getOutputStream());            
+            out = new ObjectOutputStream(s.getOutputStream());
             out.writeObject(msg);
             out.flush();
 

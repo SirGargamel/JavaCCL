@@ -143,7 +143,7 @@ public class History implements HistoryManager {
 
     @Override
     public void registerExporter(final ExportUnit eu) {
-        Exporter.registerExporterUnit(eu);        
+        Exporter.registerExporterUnit(eu);
     }
 
     List<HistoryRecord> getRecords() {

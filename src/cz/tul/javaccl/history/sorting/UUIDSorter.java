@@ -30,7 +30,7 @@ public class UUIDSorter extends HistorySorter {
 
         // group Nodes by UUID        
         final SortedMap<UUID, List<HistoryRecord>> idGroups = new TreeMap<UUID, List<HistoryRecord>>();
-        List<HistoryRecord> l;        
+        List<HistoryRecord> l;
         Element o;
         NodeList nl;
         Node uuidNode;

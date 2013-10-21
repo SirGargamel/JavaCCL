@@ -91,7 +91,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
      */
     @Override
     public void registerHistory(final HistoryManager hm) {
-        this.hm = hm;        
+        this.hm = hm;
     }
 
     @Override
@@ -151,7 +151,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             s = new Socket(address, port);
             s.setSoTimeout(timeout);
 
-            final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());            
+            final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
             out.writeObject(dp);
             out.flush();
 

@@ -59,14 +59,14 @@ public class Message implements Serializable, Identifiable {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder(); 
+        StringBuilder result = new StringBuilder();
         result.append(id);
         result.append(" - ");
         result.append(header);
         result.append(" - ");
         if (data != null) {
             result.append(data.toString());
-        }        
+        }
 
         return result.toString();
     }

@@ -7,7 +7,6 @@ package cz.tul.javaccl.job.server;
  * @author Petr Ječmen
  */
 public interface ServerJobManager {
-    
 
     /**
      * Force all jobs to stop computation.
@@ -19,17 +18,17 @@ public interface ServerJobManager {
      *
      * @param task jobs task
      * @return interface for job control
-     * @throws IllegalArgumentException Task object cannot be serialized 
+     * @throws IllegalArgumentException Task object cannot be serialized
      */
     Job submitJob(final Object task) throws IllegalArgumentException;
-    
+
     /**
      * Submit job with defined complexity for computation.
      *
      * @param task jobs task
      * @param complexity jobs complexity
      * @return interface for job control
-     * @throws IllegalArgumentException Task object cannot be serialized 
+     * @throws IllegalArgumentException Task object cannot be serialized
      */
     Job submitJob(final Object task, final int complexity) throws IllegalArgumentException;
 

@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  * @author Petr Jecmen
  */
 abstract class DiscoveryDaemon extends Thread implements IService {
-    
+
     private static final Logger log = Logger.getLogger(DiscoveryDaemon.class.getName());
     private final DatagramSocket s;
     protected boolean run;
@@ -29,13 +29,13 @@ abstract class DiscoveryDaemon extends Thread implements IService {
         s.setBroadcast(true);
         s.setSoTimeout(Constants.DEFAULT_TIMEOUT);
     }
-    
+
     protected void broadcastMessage(final byte[] msg) throws SocketException, IOException {
         // Find the clients using UDP broadcast                
         // Try the 255.255.255.255 first
         final int messageLength = msg.length;
         DatagramPacket sendPacket = new DatagramPacket(msg, messageLength, InetAddress.getByName("255.255.255.255"), Constants.DEFAULT_PORT);
-        s.send(sendPacket);        
+        s.send(sendPacket);
 
         // Broadcast the message over all the network interfaces
         Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -54,11 +54,11 @@ abstract class DiscoveryDaemon extends Thread implements IService {
 
                 // Send the broadcast
                 sendPacket = new DatagramPacket(msg, messageLength, broadcast, Constants.DEFAULT_PORT);
-                s.send(sendPacket);                
+                s.send(sendPacket);
             }
         }
     }
-    
+
     protected void listenForDiscoveryPacket(final int timeout) {
         try {
             // Receive a packet
@@ -86,9 +86,10 @@ abstract class DiscoveryDaemon extends Thread implements IService {
             log.log(Level.FINE, "Error receiving or answering to client discovery packet", ex);
         }
     }
-    
+
     /**
      * Handle received String data.
+     *
      * @param data received data
      * @param address source IP
      */

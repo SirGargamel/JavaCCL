@@ -36,7 +36,7 @@ public class JobTask implements Serializable, Identifiable {
         return jobId;
     }
 
-    /**     
+    /**
      * @return description of the task that happened
      */
     public String getTaskDescription() {
@@ -54,7 +54,7 @@ public class JobTask implements Serializable, Identifiable {
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("JobTask - ");
-        sb.append(jobId);        
+        sb.append(jobId);
         sb.append(" - ");
         sb.append(taskDescription);
         if (task != null) {
