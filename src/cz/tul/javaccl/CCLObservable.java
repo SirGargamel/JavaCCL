@@ -3,6 +3,8 @@ package cz.tul.javaccl;
 import java.util.Observable;
 
 /**
+ * Extension of Observable class with custon predefined actions for easier
+ * action hnadling.
  *
  * @author Petr Jecmen
  */

@@ -3,6 +3,7 @@ package cz.tul.javaccl.job.server;
 import cz.tul.javaccl.exceptions.ConnectionException;
 
 /**
+ * Interface allowing job cancelation.
  *
  * @author Petr Ječmen
  */

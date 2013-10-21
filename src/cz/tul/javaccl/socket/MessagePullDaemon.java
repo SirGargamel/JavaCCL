@@ -25,6 +25,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Thread for pulling data from client / server, which cannot reach the first
+ * side directly (eg. passive mode).
  *
  * @author Petr Ječmen
  */

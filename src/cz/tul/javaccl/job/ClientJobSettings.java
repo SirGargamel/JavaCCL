@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.UUID;
 
 /**
+ * Class containing new value of client settings.
  *
  * @author Petr Jecmen
  */

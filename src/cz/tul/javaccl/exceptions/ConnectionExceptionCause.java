@@ -1,6 +1,7 @@
 package cz.tul.javaccl.exceptions;
 
 /**
+ * Description of why the exception has been thrown.
  *
  * @author Petr Jecmen
  */

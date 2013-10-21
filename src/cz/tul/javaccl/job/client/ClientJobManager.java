@@ -4,6 +4,7 @@ import cz.tul.javaccl.exceptions.ConnectionException;
 import java.util.UUID;
 
 /**
+ * Interface job managing job computation on the client side.
  *
  * @author Petr Ječmen
  */

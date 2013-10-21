@@ -6,6 +6,7 @@ import java.util.Queue;
 import java.util.UUID;
 
 /**
+ * Extension to {@link Communicator} interface used only inside the library.
  *
  * @author Petr Ječmen
  */

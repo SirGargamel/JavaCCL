@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Implementation of {@link ClientJobManager} interface.
  *
  * @author Petr Ječmen
  */

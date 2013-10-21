@@ -5,6 +5,8 @@ import java.net.InetAddress;
 import java.util.UUID;
 
 /**
+ * Interface for contacting some another instance of JavaCCL entity (client or
+ * server).
  *
  * @author Petr Ječmen
  */

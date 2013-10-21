@@ -1,6 +1,8 @@
 package cz.tul.javaccl.exceptions;
 
 /**
+ * Exception signaling that comething went wrong during the communication
+ * process.
  *
  * @author Petr Jecmen
  */
@@ -9,8 +11,8 @@ public class ConnectionException extends Exception {
     private final ConnectionExceptionCause exceptionCause;
 
     /**
-     * Creates a new instance of <code>ConnectionException</code> without detail
-     * message.
+     * Creates a new instance of <code>ConnectionException</code> withgiven
+     * cause.
      *
      * @param cause cause of the exception
      */

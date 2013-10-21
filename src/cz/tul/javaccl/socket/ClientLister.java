@@ -4,6 +4,7 @@ import cz.tul.javaccl.communicator.Communicator;
 import java.util.Collection;
 
 /**
+ * Interface for obtaining list of clients.
  *
  * @author Petr Ječmen
  */

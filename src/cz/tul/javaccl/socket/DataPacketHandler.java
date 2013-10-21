@@ -3,6 +3,7 @@ package cz.tul.javaccl.socket;
 import cz.tul.javaccl.communicator.DataPacket;
 
 /**
+ * Interface for handling received data packets.
  *
  * @author Petr Ječmen
  */
