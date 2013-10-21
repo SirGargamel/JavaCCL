@@ -280,6 +280,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
 
     @Override
     public boolean setMaxNumberOfConcurrentAssignments(final int assignmentCount) {
+        concurentJobCount = assignmentCount;
         boolean result = false;
         if (isServerUp()) {
             final Message m = new Message(
