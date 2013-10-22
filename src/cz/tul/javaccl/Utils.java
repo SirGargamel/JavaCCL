@@ -19,7 +19,6 @@ public class Utils {
     private static final Logger log = Logger.getLogger(Utils.class.getName());
     private static final String LOG_FILE_NAME_S = "systemLogServer.xml";
     private static final String LOG_FILE_NAME_C = "systemLogClient.xml";
-    private static boolean loggingInitialized = false;
 
     /**
      * enable logging of all actions
@@ -63,49 +62,59 @@ public class Utils {
     }
 
     /**
-     * initialize file logging
-     *
-     * @param isServer true for instance of server
+     * Initialize console logging
      */
-    public static void initLogging(final boolean isServer) {
-        if (!loggingInitialized) {
-            try {
-                final Handler fh;
-                if (isServer) {
-                    fh = new FileHandler(LOG_FILE_NAME_S, true);
-                } else {
-                    fh = new FileHandler(LOG_FILE_NAME_C, true);
+    public static void initLogging() {
+        try {
+            final Handler console = new ConsoleHandler();
+            console.setFormatter(new SimpleFormatter());
+            console.setLevel(Level.INFO);
+
+            final Logger l = Logger.getLogger("");
+            l.setLevel(Level.FINE);
+
+            boolean addConsole = true;
+            for (Handler h : l.getHandlers()) {
+                if (h instanceof ConsoleHandler) {
+                    addConsole = false;
+                    break;
                 }
-                fh.setFormatter(new XMLFormatter());
-                fh.setLevel(Level.FINE);
-
-                final Handler console = new ConsoleHandler();
-                console.setFormatter(new SimpleFormatter());
-                console.setLevel(Level.INFO);
-
-                final Logger l = Logger.getLogger("");
-                l.setLevel(Level.FINE);
-                l.addHandler(fh);
-
-                boolean addConsole = true;
-                for (Handler h : l.getHandlers()) {
-                    if (h instanceof ConsoleHandler) {
-                        addConsole = false;
-                        break;
-                    }
-                }
-                if (addConsole) {
-                    l.addHandler(console);
-                }
-
-                loggingInitialized = true;
-            } catch (IOException ex) {
-                log.log(Level.WARNING, "Error preparing file logger.");
-                log.log(Level.FINE, "Error preparing file logger.", ex);
-            } catch (SecurityException ex) {
-                log.log(Level.SEVERE, "Error preparing file logger.", ex);
-                log.log(Level.FINE, "Error preparing file logger.", ex);
             }
+            if (addConsole) {
+                l.addHandler(console);
+            }
+        } catch (SecurityException ex) {
+            log.log(Level.SEVERE, "Error preparing file logger.", ex);
+            log.log(Level.FINE, "Error preparing file logger.", ex);
+        }
+    }
+
+    /**
+     * Creates a log file and stores all logging info in this file. Server and
+     * client have separate log files.
+     *
+     * @param isServer to determine which file to use for logging
+     */
+    public static void enableFileLogging(final boolean isServer) {
+        try {
+            final Handler fh;
+            if (isServer) {
+                fh = new FileHandler(LOG_FILE_NAME_S, true);
+            } else {
+                fh = new FileHandler(LOG_FILE_NAME_C, true);
+            }
+            fh.setFormatter(new XMLFormatter());
+            fh.setLevel(Level.FINE);
+
+            final Logger l = Logger.getLogger("");
+            l.setLevel(Level.FINE);
+            l.addHandler(fh);
+        } catch (IOException ex) {
+            log.log(Level.WARNING, "Error preparing file logger.");
+            log.log(Level.FINE, "Error preparing file logger.", ex);
+        } catch (SecurityException ex) {
+            log.log(Level.SEVERE, "Error preparing file logger.", ex);
+            log.log(Level.FINE, "Error preparing file logger.", ex);
         }
     }
 
