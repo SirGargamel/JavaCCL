@@ -131,7 +131,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     }
 
     @Override
-    public boolean isServerUp() {        
+    public boolean isServerUp() {
         return comm == null ? false : comm.isOnline();
     }
 
@@ -284,8 +284,8 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         if (isServerUp()) {
             final Message m = new Message(
                     Constants.ID_JOB_MANAGER,
-                    JobConstants.JOB_COUNT,
-                    new ClientJobSettings(getLocalID(), assignmentCount));
+                    JobConstants.JOB_CLIENT_SETTINGS,
+                    new ClientJobSettings(getLocalID(), JobConstants.JOB_COUNT, assignmentCount));
 
             try {
                 final Object response = sendDataToServer(m);
@@ -299,6 +299,32 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
             log.log(Level.FINE, "Concurrent job count set on server to " + assignmentCount);
         } else {
             log.log(Level.FINE, "Failed to update concurrent job count on server.");
+        }
+        return result;
+    }
+
+    @Override
+    public boolean setMaxJobComplexity(int maxJobComplexity) {
+        this.jobComplexity = maxJobComplexity;
+        boolean result = false;
+        if (isServerUp()) {
+            final Message m = new Message(
+                    Constants.ID_JOB_MANAGER,
+                    JobConstants.JOB_CLIENT_SETTINGS,
+                    new ClientJobSettings(getLocalID(), JobConstants.JOB_COMPLEXITY, maxJobComplexity));
+
+            try {
+                final Object response = sendDataToServer(m);
+                result = GenericResponses.OK.equals(response);
+            } catch (ConnectionException ex) {
+                log.log(Level.WARNING, "Communication with server failed - " + ex.getExceptionCause());
+            }
+        }
+
+        if (result) {
+            log.log(Level.FINE, "Maximal job complexity set on server to " + maxJobComplexity);
+        } else {
+            log.log(Level.FINE, "Failed to update maximal job complexity on server.");
         }
         return result;
     }
@@ -322,31 +348,5 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     public void update(Observable o, Object arg) {
         setChanged();
         notifyObservers(arg);
-    }
-
-    @Override
-    public boolean setMaxJobComplexity(int maxJobComplexity) {
-        this.jobComplexity = maxJobComplexity;
-        boolean result = false;
-        if (isServerUp()) {
-            final Message m = new Message(
-                    Constants.ID_JOB_MANAGER,
-                    JobConstants.JOB_COMPLEXITY,
-                    new ClientJobSettings(getLocalID(), maxJobComplexity));
-
-            try {
-                final Object response = sendDataToServer(m);
-                result = GenericResponses.OK.equals(response);
-            } catch (ConnectionException ex) {
-                log.log(Level.WARNING, "Communication with server failed - " + ex.getExceptionCause());
-            }
-        }
-
-        if (result) {
-            log.log(Level.FINE, "Maximal job complexity set on server to " + maxJobComplexity);
-        } else {
-            log.log(Level.FINE, "Failed to update maximal job complexity on server.");
-        }
-        return result;
     }
 }

@@ -36,6 +36,10 @@ public interface JobConstants {
      * Telling the server how complex the job can be
      */
     String JOB_COMPLEXITY = "jobComplexity";
+    /**
+     * data contains new settings for client
+     */
+    String JOB_CLIENT_SETTINGS = "jobClientSettings";
 
     /**
      * default job complexity

@@ -11,17 +11,20 @@ import java.util.UUID;
 public class ClientJobSettings implements Serializable {
 
     private final UUID clientId;
+    private final String settings;
     private final int value;
 
     /**
      * New intance
      *
      * @param clientId UUID of the client
+     * @param settings which settings to change
      * @param value maximal count of concurrent jobs
      */
-    public ClientJobSettings(UUID clientId, int value) {
+    public ClientJobSettings(final UUID clientId, final String settings, final int value) {
         this.clientId = clientId;
         this.value = value;
+        this.settings = settings;
     }
 
     /**
@@ -31,10 +34,28 @@ public class ClientJobSettings implements Serializable {
         return clientId;
     }
 
+    public String getSettings() {
+        return settings;
+    }
+
     /**
      * @return maximal count of concurrent jobs
      */
     public int getValue() {
         return value;
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append("Client ID ");
+        sb.append(clientId);
+        sb.append(", ");
+        sb.append(settings);
+        sb.append(" - ");
+        sb.append(value);
+        
+        return sb.toString();
     }
 }

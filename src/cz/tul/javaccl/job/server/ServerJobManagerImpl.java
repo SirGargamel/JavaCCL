@@ -439,21 +439,22 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
 
             final String header = m.getHeader();
             if (header != null) {
-                if (header.equals(JobConstants.JOB_COUNT)) {
+                if (header.equals(JobConstants.JOB_CLIENT_SETTINGS)) {
                     Object count = m.getData();
                     if (count instanceof ClientJobSettings) {
                         ClientJobSettings jc = (ClientJobSettings) count;
-                        jobCount.put(clientManager.getClient(jc.getClientId()), jc.getValue());
+                        if (JobConstants.JOB_COUNT.equals(jc.getSettings())) {
+                            jobCount.put(clientManager.getClient(jc.getClientId()), jc.getValue());
+                            return GenericResponses.OK;
+                        } else if (JobConstants.JOB_COMPLEXITY.equals(jc.getSettings())) {
+                            jobComplexity.put(clientManager.getClient(jc.getClientId()), jc.getValue());
+                            return GenericResponses.OK;
+                        } else {
+                            return GenericResponses.ILLEGAL_HEADER;
+                        }
+                    } else {
+                        return GenericResponses.ILLEGAL_DATA;
                     }
-                    return GenericResponses.OK;
-                }
-                if (header.equals(JobConstants.JOB_COMPLEXITY)) {
-                    Object count = m.getData();
-                    if (count instanceof ClientJobSettings) {
-                        ClientJobSettings jc = (ClientJobSettings) count;
-                        jobComplexity.put(clientManager.getClient(jc.getClientId()), jc.getValue());
-                    }
-                    return GenericResponses.OK;
                 } else {
                     return GenericResponses.ILLEGAL_HEADER;
                 }
