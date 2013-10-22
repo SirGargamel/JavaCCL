@@ -64,7 +64,7 @@ public class Utils {
     /**
      * Initialize console logging
      */
-    public static void initLogging() {
+    public static void initConsoleLogging() {
         try {
             final Handler console = new ConsoleHandler();
             console.setFormatter(new SimpleFormatter());

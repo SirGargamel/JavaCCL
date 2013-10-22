@@ -26,7 +26,7 @@ public abstract class Client extends CCLObservable implements IService {
     private static final Logger log = Logger.getLogger(Client.class.getName());
 
     static {
-        Utils.initLogging(false);
+        Utils.initConsoleLogging();
     }
 
     /**
