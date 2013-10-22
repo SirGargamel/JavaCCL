@@ -131,12 +131,8 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     }
 
     @Override
-    public boolean isServerUp() {
-        boolean serverStatus = false;
-        if (comm != null) {
-            serverStatus = comm.isOnline();
-        }
-        return serverStatus;
+    public boolean isServerUp() {        
+        return comm == null ? false : comm.isOnline();
     }
 
     @Override
