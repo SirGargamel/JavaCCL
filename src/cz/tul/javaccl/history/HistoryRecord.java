@@ -4,6 +4,7 @@ import cz.tul.javaccl.history.export.Exporter;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.util.Date;
+import java.util.UUID;
 import java.util.logging.Logger;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -27,17 +28,21 @@ public class HistoryRecord {
     private static final Logger log = Logger.getLogger(HistoryRecord.class.getName());
     private final InetAddress ipSource;
     private final InetAddress ipDestination;
+    private final UUID id;
     private final Element data;
     private final Element answer;
     private final Date time;
     private final boolean accepted;
+    private final boolean send;
 
-    HistoryRecord(final InetAddress ipSource, final InetAddress ipDestination, final Object data, final boolean accepted, final Object answer, final Document doc) {
+    HistoryRecord(final InetAddress ipSource, final InetAddress ipDestination, final UUID sourceId, final Object data, final boolean accepted, final Object answer, final Document doc, final boolean send) {
         this.ipSource = ipSource;
         this.ipDestination = ipDestination;
+        this.id = sourceId;
         this.data = Exporter.exportObject(data, doc);
         this.answer = Exporter.exportObject(answer, doc);
         this.accepted = accepted;
+        this.send = send;
 
         time = new Date();
     }
@@ -54,6 +59,10 @@ public class HistoryRecord {
      */
     public InetAddress getIpDestination() {
         return ipDestination;
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     /**
@@ -84,19 +93,31 @@ public class HistoryRecord {
         return accepted;
     }
 
+    public boolean isSend() {
+        return send;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
 
         sb.append("From ");
         if (ipSource != null) {
-            sb.append(ipSource.getHostAddress());
+            sb.append(ipSource.getHostAddress());            
+            if (!send) {
+                sb.append(", ");
+                sb.append(id);
+            }
         } else {
             sb.append("NULL");
         }
         sb.append(" to ");
         if (ipDestination != null) {
             sb.append(ipDestination.getHostAddress());
+            if (send) {
+                sb.append(", ");
+                sb.append(id);
+            }
         } else {
             sb.append("NULL");
         }

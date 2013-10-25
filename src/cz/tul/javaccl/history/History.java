@@ -11,6 +11,7 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -90,18 +91,18 @@ public class History implements HistoryManager {
     }
 
     @Override
-    public void logMessageSend(final InetAddress ipDestination, final Object data, final boolean accepted, final Object answer) {
+    public void logMessageSend(final InetAddress ipDestination, final UUID targetId, final Object data, final boolean accepted, final Object answer) {
         if (isEnabled) {
-            final HistoryRecord r = new HistoryRecord(localHost, ipDestination, data, accepted, answer, defaultDoc);
+            final HistoryRecord r = new HistoryRecord(localHost, ipDestination, targetId, data, accepted, answer, defaultDoc, true);
             records.add(r);
             log.log(Level.FINE, "Sent message stored to history - " + r);
         }
     }
 
     @Override
-    public void logMessageReceived(final InetAddress ipSource, final Object data, final boolean accepted, final Object answer) {
+    public void logMessageReceived(final InetAddress ipSource, final UUID sourceId, final Object data, final boolean accepted, final Object answer) {
         if (isEnabled) {
-            final HistoryRecord r = new HistoryRecord(ipSource, localHost, data, accepted, answer, defaultDoc);
+            final HistoryRecord r = new HistoryRecord(ipSource, localHost, sourceId, data, accepted, answer, defaultDoc, false);
             records.add(r);
             log.log(Level.FINE, "Received message stored to history - " + r);
         }

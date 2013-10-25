@@ -154,7 +154,7 @@ public class MessagePullDaemon extends Thread implements IService {
                         }
 
                         if (hm != null) {
-                            hm.logMessageReceived(ipComm, dataIn, dataRead, response);
+                            hm.logMessageReceived(ipComm, comm.getTargetId(), dataIn, dataRead, response);
                         }
                     }
                 }

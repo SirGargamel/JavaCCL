@@ -48,7 +48,7 @@ public class HistoryTest {
     private static final String COMPARE_FILE_NAME = "exportCompare.xml";
     private static final String IP_SOURCE_TEMPLATE = "<IPSource></IPSource>";
     private static final String IP_DESTINATION_TEMPLATE = "<IPDestination></IPDestination>";
-    private static final String FIELD_NAME_HEADER = "Header";
+    private static final String FIELD_NAME_HEADER = "Header";    
     private static File exportTarget, compareTarget;
 
     public HistoryTest() {
@@ -76,11 +76,11 @@ public class HistoryTest {
 
         synchronized (this) {
             try {
-                h.logMessageSend(ipLocal, "dataOut", true, GenericResponses.OK);
+                h.logMessageSend(ipLocal, null, "dataOut", true, GenericResponses.OK);
                 this.wait(100);
-                h.logMessageReceived(ipLocal, GenericResponses.ILLEGAL_DATA, true, "0000-0000");
+                h.logMessageReceived(ipLocal, null, GenericResponses.ILLEGAL_DATA, true, "0000-0000");
                 this.wait(250);
-                h.logMessageReceived(ipLocal, "dataIn2", false, "response");
+                h.logMessageReceived(ipLocal, null, "dataIn2", false, "response");
             } catch (InterruptedException ex) {
                 fail("Waiting interrupted");
             }
@@ -171,7 +171,7 @@ public class HistoryTest {
 
     private static void assertFiles(final File expected,
             final File actual) {
-        String actualLine, expectedLine;
+        String actualLine, expectedLine, trimmedLine;
         BufferedReader expectedR = null, actualR = null;
         try {
             expectedR = new BufferedReader(new FileReader(expected));
@@ -180,7 +180,8 @@ public class HistoryTest {
                 actualLine = actualR.readLine();
                 assertNotNull("Expected had more lines then the actual.", actualLine);
 
-                if (!expectedLine.trim().startsWith("<Time>")) {
+                trimmedLine = expectedLine.trim();
+                if (!trimmedLine.startsWith("<Time>") && !trimmedLine.endsWith("ID>")) {
                     assertEquals(expectedLine.trim(), actualLine.trim());
                 }
             }

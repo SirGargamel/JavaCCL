@@ -1,7 +1,6 @@
 package cz.tul.javaccl.history.sorting;
 
 import cz.tul.javaccl.history.HistoryRecord;
-import cz.tul.javaccl.history.export.Exporter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -37,6 +36,12 @@ public abstract class HistorySorter {
 
         appendStringDataToNode(result, doc, "IPSource", r.getIpSource().getHostAddress());
         appendStringDataToNode(result, doc, "IPDestination", r.getIpDestination().getHostAddress());
+        String id =  r.getId() == null ? "null" :  r.getId().toString();
+        if (r.isSend()) {
+            appendStringDataToNode(result, doc, "TargetID",id);
+        } else {
+            appendStringDataToNode(result, doc, "SourceID",id);
+        }
         appendStringDataToNode(result, doc, "Time", DATE_FORMAT.format(r.getTime()));
         appendStringDataToNode(result, doc, "Accepted", String.valueOf(r.wasAccepted()));
 

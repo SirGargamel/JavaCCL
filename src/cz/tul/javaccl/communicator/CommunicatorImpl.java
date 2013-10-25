@@ -138,7 +138,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         }
 
         if (hm != null) {
-            hm.logMessageSend(address, data, readAndReply, response);
+            hm.logMessageSend(address, getTargetId(), data,  readAndReply, response);
         }
 
         return response;
@@ -287,7 +287,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         }
 
         if (hm != null) {
-            hm.logMessageSend(address, data, result, stat);
+            hm.logMessageSend(address, getTargetId(), data, result, stat);
         }
 
         if (stat.equals(Status.OFFLINE) && lastMsgPull != null) {

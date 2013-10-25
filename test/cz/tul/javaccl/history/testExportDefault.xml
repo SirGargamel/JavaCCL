@@ -3,6 +3,7 @@
   <Record>
     <IPSource></IPSource>
     <IPDestination>127.0.0.1</IPDestination>
+	<SourceID></SourceID>
     <Time>2013-07-19 14:14:6:283 CEST</Time>
     <Accepted>true</Accepted>
     <String>dataOut</String>
@@ -11,6 +12,7 @@
   <Record>
     <IPSource>127.0.0.1</IPSource>
     <IPDestination></IPDestination>
+	<TargetID></TargetID>
     <Time>2013-07-19 14:14:6:383 CEST</Time>
     <Accepted>true</Accepted>
     <GenericResponses>ILLEGAL_DATA</GenericResponses>
@@ -19,6 +21,7 @@
   <Record>
     <IPSource>127.0.0.1</IPSource>
     <IPDestination></IPDestination>
+	<TargetID></TargetID>
     <Time>2013-07-19 14:14:6:633 CEST</Time>
     <Accepted>false</Accepted>
     <String>dataIn2</String>
