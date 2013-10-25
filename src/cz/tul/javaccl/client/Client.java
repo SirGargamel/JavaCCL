@@ -183,4 +183,11 @@ public abstract class Client extends CCLObservable implements IService {
      * @return true for successfull save
      */
     public abstract boolean saveSettings(final File settingsFile);
+
+    /**
+     * Enables / disables new assignment receiving.
+     *
+     * @param enable true if you want the client to receive assignments
+     */
+    public abstract void enableClient(final boolean enable);
 }

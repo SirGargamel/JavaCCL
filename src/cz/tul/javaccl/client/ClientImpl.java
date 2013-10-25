@@ -50,11 +50,12 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     private SystemMessageHandler csm;
     private ClientJobManagerImpl jm;
     private ServerDiscoveryDaemon sdd;
-    private int concurentJobCount;
+    private int concurentJobCount, jobCountBackup;
     private int jobComplexity;
 
     ClientImpl() {
         concurentJobCount = 1;
+        jobCountBackup = 1;
         jobComplexity = JobConstants.DEFAULT_COMPLEXITY;
 
         history = new History();
@@ -348,5 +349,15 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     public void update(Observable o, Object arg) {
         setChanged();
         notifyObservers(arg);
+    }
+
+    @Override
+    public void enableClient(boolean enable) {
+        if (enable) {
+            jobCountBackup = jobComplexity;
+            setMaxNumberOfConcurrentAssignments(0);
+        } else {
+            setMaxNumberOfConcurrentAssignments(jobCountBackup);
+        }
     }
 }
