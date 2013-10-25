@@ -72,7 +72,15 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
         StringBuilder sb = new StringBuilder();
         sb.append(Constants.DISCOVERY_INFO);
         sb.append(Constants.DELIMITER);
-        sb.append(comm.getAddress().getHostAddress());
+        InetAddress address = comm.getAddress();
+        try {
+            if (InetAddress.getByName("127.0.0.1").equals(address)) {
+                address = InetAddress.getLocalHost();
+            }
+        } catch (UnknownHostException ex) {
+            address = comm.getAddress();
+        }
+        sb.append(address);
         sb.append(Constants.DELIMITER);
         sb.append(comm.getPort());
 
