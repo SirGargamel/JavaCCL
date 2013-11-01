@@ -32,7 +32,7 @@ import java.util.logging.Logger;
  */
 public class ServerSocket extends Thread implements IService, ListenerRegistrator, DataPacketHandler {
 
-    private static final Logger log = Logger.getLogger(ServerSocket.class.getName());    
+    private static final Logger log = Logger.getLogger(ServerSocket.class.getName());
 
     /**
      * Prepare new ServerSocket.
@@ -54,6 +54,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     private final ExecutorService exec;
     private final Map<UUID, Listener<DataPacket>> listenersClient;
     private final Map<Object, Listener<Identifiable>> listenersId;
+    private Listener<DataPacket> messageListener;
     private final ObjectQueue<DataPacket> dataStorageClient;
     private final ObjectQueue<Identifiable> dataStorageId;
     private final Set<Observer> dataListeners;
@@ -131,6 +132,24 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         dataListeners.add(msgObserver);
         log.log(Level.FINE, "Added new message observer - " + msgObserver.toString());
     }
+    
+    @Override
+    public void removeMessageObserver(Observer msgObserver) {
+        dataListeners.remove(msgObserver);
+        log.log(Level.FINE, "Removed message observer - " + msgObserver.toString());
+    }
+    
+    @Override
+    public void setMessageListener(Listener<DataPacket> listener) {
+        this.messageListener = listener;
+        log.log(Level.FINE, "Set new message listener - " + listener.toString());
+    }
+
+    @Override
+    public void removeMessageListener() {
+        log.log(Level.FINE, "Removed message listener - " + messageListener.toString());
+        messageListener = null;        
+    }
 
     @Override
     public Queue<DataPacket> getMessageQueue() {
@@ -140,13 +159,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         } else {
             return dataStorageClient.prepareQueue(localId);
         }
-    }
-
-    @Override
-    public void removeMessageObserver(Observer msgObserver) {
-        dataListeners.remove(msgObserver);
-        log.log(Level.FINE, "Removed message observer - " + msgObserver.toString());
-    }
+    }    
 
     @Override
     public void run() {
@@ -276,6 +289,11 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                     result = listenersClient.get(clientId).receiveData(dp);
                     handled = true;
                 }
+                if (!handled && messageListener != null) {
+                    result = messageListener.receiveData(dp);
+                    handled = true;
+                }
+                
                 if (dataStorageClient.isListenerRegistered(clientId)) {
                     dataStorageClient.storeData(clientId, dp);
                     if (!handled) {
@@ -288,7 +306,6 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                         result = GenericResponses.NOT_HANDLED_DIRECTLY;
                     }
                 }
-
                 if (!dataListeners.isEmpty()) {
                     if (!handled) {
                         result = GenericResponses.NOT_HANDLED_DIRECTLY;
