@@ -67,6 +67,8 @@ public interface ListenerRegistrator {
      * @param msgObserver message observer
      */
     void addMessageObserver(final Observer msgObserver);
+    
+    Queue<DataPacket> getMessageQueue();
 
     /**
      * Deregister given observer.

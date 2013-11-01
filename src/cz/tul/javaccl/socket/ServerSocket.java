@@ -32,7 +32,7 @@ import java.util.logging.Logger;
  */
 public class ServerSocket extends Thread implements IService, ListenerRegistrator, DataPacketHandler {
 
-    private static final Logger log = Logger.getLogger(ServerSocket.class.getName());
+    private static final Logger log = Logger.getLogger(ServerSocket.class.getName());    
 
     /**
      * Prepare new ServerSocket.
@@ -133,6 +133,16 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     }
 
     @Override
+    public Queue<DataPacket> getMessageQueue() {
+        final UUID localId = idFilter.getLocalID();
+        if (dataStorageClient.isListenerRegistered(localId)) {
+            return dataStorageClient.getDataQueue(localId);
+        } else {
+            return dataStorageClient.prepareQueue(localId);
+        }
+    }
+
+    @Override
     public void removeMessageObserver(Observer msgObserver) {
         dataListeners.remove(msgObserver);
         log.log(Level.FINE, "Removed message observer - " + msgObserver.toString());
@@ -203,72 +213,96 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         final Object data = dp.getData();
         Object result = GenericResponses.NOT_HANDLED;
 
+        boolean allowed = false;
         if (idFilter != null) {
             if (clientId == null) {
-                boolean allowed = false;
                 if (data instanceof Message) {
                     final UUID mId = ((Message) data).getId();
                     final String header = ((Message) data).getHeader();
                     if ((mId.equals(Constants.ID_SYS_MSG) && (header.equals(SystemMessageHeaders.LOGIN))
                             || header.equals(SystemMessageHeaders.STATUS_CHECK))) {
                         allowed = true;
+                    } else {
+                        log.log(Level.FINE, "Received message has no id and is not for login [" + data.toString() + "].");
                     }
-                }
-                if (!allowed) {
+                } else {
                     log.log(Level.FINE, "Data with null id received and its not a sys msg [" + data.toString() + "].");
-                    return GenericResponses.UUID_NOT_ALLOWED;
                 }
             } else if (!idFilter.isTargetIdValid(dp.getTargetID())) {
                 log.log(Level.FINE, "Received data not for this client - client id " + clientId + ", data packet [" + dp.toString() + "]");
-                return GenericResponses.ILLEGAL_TARGET_ID;
+                result = GenericResponses.ILLEGAL_TARGET_ID;
             } else if (!idFilter.isIdAllowed(clientId)) {
                 log.log(Level.FINE, "Received data from unregistered client - id " + clientId + ", data [" + data.toString() + "]");
-                return GenericResponses.UUID_NOT_ALLOWED;
             } else {
                 log.log(Level.FINE, "Data [" + data.toString() + "] received, forwarding to listeners.");
+                allowed = true;
             }
         } else {
             log.log(Level.FINE, "Data [" + data.toString() + "] received, forwarding to listeners.");
+            allowed = true;
         }
 
-        boolean sysMsg = false;
-        if (data instanceof Identifiable) {
-            final Identifiable iData = (Identifiable) data;
-            final Object id = iData.getId();
-            if (id.equals(Constants.ID_SYS_MSG)) { // not pretty !!!
-                sysMsg = true;
-                result = listenersId.get(id).receiveData(dp);
-            } else if (listenersId.containsKey(id)) {
-                result = listenersId.get(id).receiveData(iData);
-            } else if (listenersClient.containsKey(clientId)) {
-                result = listenersClient.get(clientId).receiveData(dp);
-            } else if (dataStorageId.isListenerRegistered(id)) {
-                dataStorageId.storeData(id, dp);
-                result = GenericResponses.NOT_HANDLED_DIRECTLY;
-            }
-        }
-
-        if (GenericResponses.NOT_HANDLED.equals(result)) {
-            if (listenersClient.containsKey(clientId)) {
-                result = listenersClient.get(clientId).receiveData(dp);
-            } else if (dataStorageClient.isListenerRegistered(clientId)) {
-                dataStorageClient.storeData(clientId, dp);
-                result = GenericResponses.NOT_HANDLED_DIRECTLY;
-            }
-        }
-
-        if (!sysMsg && !dataListeners.isEmpty()) {
+        if (!allowed) {
             if (GenericResponses.NOT_HANDLED.equals(result)) {
-                result = GenericResponses.NOT_HANDLED_DIRECTLY;
+                result = GenericResponses.UUID_NOT_ALLOWED;
             }
-            exec.submit(new Runnable() {
-                @Override
-                public void run() {
-                    for (Observer o : dataListeners) {
-                        o.update(null, dp);
+        } else {
+            boolean sysMsg = false;
+            boolean handled = false;
+            if (data instanceof Identifiable) {
+                final Identifiable iData = (Identifiable) data;
+                final Object id = iData.getId();
+                if (id.equals(Constants.ID_SYS_MSG)) { // not pretty !!!
+                    sysMsg = true;
+                    result = listenersId.get(id).receiveData(dp);
+                    handled = true;
+                } else if (listenersId.containsKey(id)) {
+                    result = listenersId.get(id).receiveData(iData);
+                    handled = true;
+                } else if (listenersClient.containsKey(clientId)) {
+                    result = listenersClient.get(clientId).receiveData(dp);
+                    handled = true;
+                }
+                if (dataStorageId.isListenerRegistered(id)) {
+                    dataStorageId.storeData(id, dp);
+                    if (!handled) {
+                        result = GenericResponses.NOT_HANDLED_DIRECTLY;
                     }
                 }
-            });
+            }
+
+            if (!sysMsg) {
+                if (!handled && listenersClient.containsKey(clientId)) {
+                    result = listenersClient.get(clientId).receiveData(dp);
+                    handled = true;
+                }
+                if (dataStorageClient.isListenerRegistered(clientId)) {
+                    dataStorageClient.storeData(clientId, dp);
+                    if (!handled) {
+                        result = GenericResponses.NOT_HANDLED_DIRECTLY;
+                    }
+                }
+                if (dataStorageClient.isListenerRegistered(idFilter.getLocalID())) {
+                    dataStorageClient.storeData(idFilter.getLocalID(), dp);
+                    if (!handled) {
+                        result = GenericResponses.NOT_HANDLED_DIRECTLY;
+                    }
+                }
+
+                if (!dataListeners.isEmpty()) {
+                    if (!handled) {
+                        result = GenericResponses.NOT_HANDLED_DIRECTLY;
+                    }
+                    exec.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            for (Observer o : dataListeners) {
+                                o.update(null, dp);
+                            }
+                        }
+                    });
+                }
+            }
         }
 
         return result;
