@@ -67,38 +67,10 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
         }
     }
 
-    private void broadcastServerInfo() {
-        final Communicator comm = sr.getServerComm();
-        StringBuilder sb = new StringBuilder();
-        sb.append(Constants.DISCOVERY_INFO);
-        sb.append(Constants.DELIMITER);
-        InetAddress address = comm.getAddress();
-        try {
-            if (InetAddress.getByName("127.0.0.1").equals(address)) {
-                address = InetAddress.getLocalHost();
-            }
-        } catch (UnknownHostException ex) {
-            address = comm.getAddress();
-        }
-        sb.append(address);
-        sb.append(Constants.DELIMITER);
-        sb.append(comm.getPort());
-
-        try {
-            broadcastMessage(sb.toString().getBytes());
-        } catch (SocketException ex) {
-            log.log(Level.WARNING, "Error while checking status of network interfaces");
-            log.log(Level.FINE, "Error while checking status of network interfaces", ex);
-        } catch (IOException ex) {
-            log.log(Level.WARNING, "Error operating socket.");
-            log.log(Level.FINE, "Error operating socket.", ex);
-        }
-    }
-
     @Override
     protected void receiveBroadcast(String data, InetAddress address) {
         // See if the packet holds the right message                    
-        if (data.startsWith(Constants.DISCOVERY_QUESTION)) {
+        if (sr.getServerComm() != null && data.startsWith(Constants.DISCOVERY_QUESTION)) {
             broadcastServerInfo();
         } else if (sr.getServerComm() == null && data.startsWith(Constants.DISCOVERY_INFO)) {
             final String ipAndPort = data.substring(Constants.DISCOVERY_QUESTION.length() + Constants.DELIMITER.length());
@@ -123,6 +95,36 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
                     log.warning("Error contacting server.");
                     log.log(Level.FINE, "Error contacting server.", ex);
                 }
+            }
+        }
+    }
+
+    private void broadcastServerInfo() {
+        final Communicator comm = sr.getServerComm();
+        if (comm != null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(Constants.DISCOVERY_INFO);
+            sb.append(Constants.DELIMITER);
+            InetAddress address = comm.getAddress();
+            try {
+                if (InetAddress.getByName("127.0.0.1").equals(address)) {
+                    address = InetAddress.getLocalHost();
+                }
+            } catch (UnknownHostException ex) {
+                address = comm.getAddress();
+            }
+            sb.append(address);
+            sb.append(Constants.DELIMITER);
+            sb.append(comm.getPort());
+
+            try {
+                broadcastMessage(sb.toString().getBytes());
+            } catch (SocketException ex) {
+                log.log(Level.WARNING, "Error while checking status of network interfaces");
+                log.log(Level.FINE, "Error while checking status of network interfaces", ex);
+            } catch (IOException ex) {
+                log.log(Level.WARNING, "Error operating socket.");
+                log.log(Level.FINE, "Error operating socket.", ex);
             }
         }
     }
