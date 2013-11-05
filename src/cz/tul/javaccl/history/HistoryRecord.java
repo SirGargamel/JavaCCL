@@ -61,6 +61,10 @@ public class HistoryRecord {
         return ipDestination;
     }
 
+    /**
+     *
+     * @return iD of other side
+     */
     public UUID getId() {
         return id;
     }
@@ -93,6 +97,11 @@ public class HistoryRecord {
         return accepted;
     }
 
+    /**
+     *
+     * @return true if the message was sent to someone, if false, then the
+     * message has been received
+     */
     public boolean isSend() {
         return send;
     }
@@ -103,7 +112,7 @@ public class HistoryRecord {
 
         sb.append("From ");
         if (ipSource != null) {
-            sb.append(ipSource.getHostAddress());            
+            sb.append(ipSource.getHostAddress());
             if (!send) {
                 sb.append(", ");
                 sb.append(id);

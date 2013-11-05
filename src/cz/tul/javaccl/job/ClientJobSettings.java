@@ -34,6 +34,9 @@ public class ClientJobSettings implements Serializable {
         return clientId;
     }
 
+    /**     
+     * @return which settings has changed
+     */
     public String getSettings() {
         return settings;
     }

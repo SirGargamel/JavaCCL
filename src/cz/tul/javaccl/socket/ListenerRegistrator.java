@@ -7,7 +7,9 @@ import java.util.Queue;
 import java.util.UUID;
 
 /**
- * Registrator of data listeners.
+ * Registrator of data listeners. Both push and pull variants available, but
+ * only the push variant offers a possibility to directly reply to received
+ * message.
  *
  * @author Petr Ječmen
  */
@@ -67,17 +69,29 @@ public interface ListenerRegistrator {
      * @param msgObserver message observer
      */
     void addMessageObserver(final Observer msgObserver);
-    
+
     /**
      * Deregister given observer.
      *
      * @param msgObserver message observer
      */
     void removeMessageObserver(final Observer msgObserver);
-    
+
+    /**
+     * Assigns new message listener which will receive all incoming messages as
+     * DataPackets with possibility to reply to them.
+     *
+     * @param listener new message listener
+     */
     void setMessageListener(final Listener<DataPacket> listener);
-    
+
+    /**
+     * deregisters current message listener
+     */
     void removeMessageListener();
-    
-    Queue<DataPacket> getMessageQueue();    
+
+    /**
+     * @return queue that contains all incoming messages
+     */
+    Queue<DataPacket> getMessageQueue();
 }
