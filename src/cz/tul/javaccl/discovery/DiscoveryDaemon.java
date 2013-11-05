@@ -7,10 +7,14 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
+import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,13 +25,38 @@ import java.util.logging.Logger;
 abstract class DiscoveryDaemon extends Thread implements IService {
 
     private static final Logger log = Logger.getLogger(DiscoveryDaemon.class.getName());
-    private final DatagramSocket s;
+    private static final String multicastGroupS = "230.50.11.2";
+    private static final InetAddress multicastGroup;
+    private final ExecutorService exec;
+    private final DatagramSocket ds;
+    private final MulticastSocket ms;
     protected boolean run;
 
+    static {
+        InetAddress group = null;
+        try {
+            group = InetAddress.getByName(multicastGroupS);
+        } catch (UnknownHostException ex) {
+            log.warning("Error retreiving multicast address.");
+        }
+        multicastGroup = group;
+    }
+
     public DiscoveryDaemon() throws SocketException {
-        s = new DatagramSocket(Constants.DEFAULT_PORT);
-        s.setBroadcast(true);
-        s.setSoTimeout(Constants.DEFAULT_TIMEOUT);
+        ds = new DatagramSocket(Constants.DEFAULT_PORT);
+        ds.setBroadcast(true);
+        ds.setSoTimeout(Constants.DEFAULT_TIMEOUT);
+
+        MulticastSocket msS = null;
+        try {
+            msS = new MulticastSocket(Constants.DEFAULT_PORT + 1);
+            msS.joinGroup(multicastGroup);
+        } catch (IOException ex) {
+            log.warning("Error initializing multicast socket.");
+        }
+        ms = msS;
+
+        exec = Executors.newFixedThreadPool(2);
     }
 
     protected void broadcastMessage(final byte[] msg) throws SocketException, IOException {
@@ -35,7 +64,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
         // Try the 255.255.255.255 first
         final int messageLength = msg.length;
         DatagramPacket sendPacket = new DatagramPacket(msg, messageLength, InetAddress.getByName("255.255.255.255"), Constants.DEFAULT_PORT);
-        s.send(sendPacket);
+        ds.send(sendPacket);
 
         // Broadcast the message over all the network interfaces
         Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -54,37 +83,74 @@ abstract class DiscoveryDaemon extends Thread implements IService {
 
                 // Send the broadcast
                 sendPacket = new DatagramPacket(msg, messageLength, broadcast, Constants.DEFAULT_PORT);
-                s.send(sendPacket);
+                ds.send(sendPacket);
             }
         }
+
+        ms.send(sendPacket);
     }
 
     protected void listenForDiscoveryPacket(final int timeout) {
-        try {
-            // Receive a packet
-            byte[] recvBuf = new byte[15000];
-            DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
-            log.log(Level.FINE, "Starting listening for discovery packets.");
-            s.setSoTimeout(timeout);
-            s.receive(packet);
+        // broadcast listening
+        exec.execute(new Runnable() {
 
-            // Packet received            
-            String message = new String(packet.getData()).trim();
-            log.log(Level.FINE, "Discovery packet received from " + packet.getAddress().getHostAddress() + " - " + message.toString());
-            receiveBroadcast(message, packet.getAddress());
-        } catch (SocketTimeoutException ex) {
-            // everything is OK, we want to check server status again
-        } catch (SocketException ex) {
-            if (run == false) {
-                // everything is fine, we wanted to interrupt socket receive method
-            } else {
-                log.log(Level.WARNING, "Error operating socket.");
-                log.log(Level.FINE, "Error operating socket.", ex);
+            @Override
+            public void run() {
+                try {
+                    // Receive a packet
+                    byte[] recvBuf = new byte[15000];
+                    DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
+                    log.log(Level.FINE, "Starting listening for discovery packets.");
+                    ds.setSoTimeout(timeout);
+                    ds.receive(packet);
+
+                    // Packet received            
+                    String message = new String(packet.getData()).trim();
+                    log.log(Level.FINE, "Broadcast discovery packet received from " + packet.getAddress().getHostAddress() + " - " + message.toString());
+                    receiveBroadcast(message, packet.getAddress());
+                } catch (SocketTimeoutException ex) {
+                    // everything is OK, we want to wait only for limited time
+                } catch (SocketException ex) {
+                    if (run == true) {
+                        log.log(Level.WARNING, "Error operating socket.");
+                        log.log(Level.FINE, "Error operating socket.", ex);
+                    }
+                } catch (IOException ex) {
+                    log.log(Level.WARNING, "Error receiving or answering to client discovery packet");
+                    log.log(Level.FINE, "Error receiving or answering to client discovery packet", ex);
+                }
             }
-        } catch (IOException ex) {
-            log.log(Level.WARNING, "Error receiving or answering to client discovery packet");
-            log.log(Level.FINE, "Error receiving or answering to client discovery packet", ex);
-        }
+        });
+        // multicast listening
+        exec.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    // Receive a packet
+                    byte[] recvBuf = new byte[15000];
+                    DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
+                    log.log(Level.FINE, "Starting listening for discovery packets.");
+                    ms.setSoTimeout(timeout);
+                    ms.receive(packet);
+
+                    // Packet received            
+                    String message = new String(packet.getData()).trim();
+                    log.log(Level.FINE, "Multicast discovery packet received from " + packet.getAddress().getHostAddress() + " - " + message.toString());
+                    receiveBroadcast(message, packet.getAddress());
+                } catch (SocketTimeoutException ex) {
+                    // everything is OK, we want to wait only for limited time
+                } catch (SocketException ex) {
+                    if (run == true) {
+                        log.log(Level.WARNING, "Error operating socket.");
+                        log.log(Level.FINE, "Error operating socket.", ex);
+                    }
+                } catch (IOException ex) {
+                    log.log(Level.WARNING, "Error receiving or answering to client discovery packet");
+                    log.log(Level.FINE, "Error receiving or answering to client discovery packet", ex);
+                }
+            }
+        });
     }
 
     /**
@@ -98,6 +164,6 @@ abstract class DiscoveryDaemon extends Thread implements IService {
     @Override
     public void stopService() {
         run = false;
-        s.close();
+        ds.close();
     }
 }
