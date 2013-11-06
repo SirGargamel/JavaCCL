@@ -29,7 +29,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
     private static final InetAddress multicastGroup;
     private final ExecutorService exec;
     private final DatagramSocket ds;
-    private final MulticastSocket ms;
+    private final MulticastSocket ms;    
     protected boolean run;
 
     static {
