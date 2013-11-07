@@ -35,7 +35,7 @@ public class ClientDiscoveryDaemon extends DiscoveryDaemon implements IService {
             if (pause) {
                 pause();
             }
-            listenForDiscoveryPacket(1000);
+            listenForDiscoveryPacket();
         }
     }
 

@@ -19,8 +19,7 @@ import java.util.logging.Logger;
  */
 public class ServerDiscoveryDaemon extends DiscoveryDaemon {
 
-    private static final Logger log = Logger.getLogger(ServerDiscoveryDaemon.class.getName());
-    private static final int DELAY = 5000;
+    private static final Logger log = Logger.getLogger(ServerDiscoveryDaemon.class.getName());    
     private final ServerInterface sr;
 
     /**
@@ -43,7 +42,7 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
             if (sr.getServerComm() == null) {
                 broadcastServerDiscovery();
             }
-            listenForDiscoveryPacket(DELAY);
+            listenForDiscoveryPacket();
         }
     }
 

@@ -24,15 +24,16 @@ import java.util.logging.Logger;
  * @author Petr Jecmen
  */
 abstract class DiscoveryDaemon extends Thread implements IService {
-    
+
     private static final Logger log = Logger.getLogger(DiscoveryDaemon.class.getName());
     private static final String multicastGroupS = "230.50.11.2";
     private static final InetAddress multicastGroup;
     private final ExecutorService exec;
     private final DatagramSocket ds;
     private final MulticastSocket ms;
+    private final Runnable dsr, msr;
     protected boolean run, pause;
-    
+
     static {
         InetAddress group = null;
         try {
@@ -42,12 +43,12 @@ abstract class DiscoveryDaemon extends Thread implements IService {
         }
         multicastGroup = group;
     }
-    
+
     public DiscoveryDaemon() throws SocketException {
         ds = new DatagramSocket(GlobalConstants.DEFAULT_PORT);
         ds.setBroadcast(true);
         ds.setSoTimeout(GlobalConstants.getDEFAULT_TIMEOUT());
-        
+
         MulticastSocket msS = null;
         try {
             msS = new MulticastSocket(GlobalConstants.DEFAULT_PORT + 1);
@@ -56,45 +57,10 @@ abstract class DiscoveryDaemon extends Thread implements IService {
             log.warning("Error initializing multicast socket.");
         }
         ms = msS;
-        
+
         exec = Executors.newFixedThreadPool(2);
-    }
-    
-    protected void broadcastMessage(final byte[] msg) throws SocketException, IOException {
-        // Find the clients using UDP broadcast                
-        // Try the 255.255.255.255 first
-        final int messageLength = msg.length;
-        DatagramPacket sendPacket = new DatagramPacket(msg, messageLength, InetAddress.getByName("255.255.255.255"), GlobalConstants.DEFAULT_PORT);
-        ds.send(sendPacket);
+        dsr = new Runnable() {
 
-        // Broadcast the message over all the network interfaces
-        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-        while (interfaces.hasMoreElements()) {
-            NetworkInterface networkInterface = interfaces.nextElement();
-            
-            if (!networkInterface.isUp()) {
-                continue;
-            }
-            
-            for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
-                InetAddress broadcast = interfaceAddress.getBroadcast();
-                if (broadcast == null) {
-                    continue;
-                }
-
-                // Send the broadcast
-                sendPacket = new DatagramPacket(msg, messageLength, broadcast, GlobalConstants.DEFAULT_PORT);
-                ds.send(sendPacket);
-            }
-        }
-        
-        ms.send(sendPacket);
-    }
-    
-    protected void listenForDiscoveryPacket(final int timeout) {
-        // broadcast listening
-        exec.execute(new Runnable() {
-            
             @Override
             public void run() {
                 try {
@@ -102,7 +68,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
                     byte[] recvBuf = new byte[15000];
                     DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                     log.log(Level.FINE, "Starting listening for discovery packets.");
-                    ds.setSoTimeout(timeout);
+                    ds.setSoTimeout(GlobalConstants.getDEFAULT_TIMEOUT());
                     ds.receive(packet);
 
                     // Packet received            
@@ -121,10 +87,9 @@ abstract class DiscoveryDaemon extends Thread implements IService {
                     log.log(Level.FINE, "Error receiving or answering to client discovery packet", ex);
                 }
             }
-        });
-        // multicast listening
-        exec.execute(new Runnable() {
-            
+        };
+        msr = new Runnable() {
+
             @Override
             public void run() {
                 try {
@@ -132,7 +97,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
                     byte[] recvBuf = new byte[15000];
                     DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                     log.log(Level.FINE, "Starting listening for discovery packets.");
-                    ms.setSoTimeout(timeout);
+                    ms.setSoTimeout(GlobalConstants.getDEFAULT_TIMEOUT());
                     ms.receive(packet);
 
                     // Packet received            
@@ -151,9 +116,47 @@ abstract class DiscoveryDaemon extends Thread implements IService {
                     log.log(Level.FINE, "Error receiving or answering to client discovery packet", ex);
                 }
             }
-        });
+        };
+    }
+
+    protected void broadcastMessage(final byte[] msg) throws SocketException, IOException {
+        // Find the clients using UDP broadcast                
+        // Try the 255.255.255.255 first
+        final int messageLength = msg.length;
+        DatagramPacket sendPacket = new DatagramPacket(msg, messageLength, InetAddress.getByName("255.255.255.255"), GlobalConstants.DEFAULT_PORT);
+        ds.send(sendPacket);
+
+        // Broadcast the message over all the network interfaces
+        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+        while (interfaces.hasMoreElements()) {
+            NetworkInterface networkInterface = interfaces.nextElement();
+
+            if (!networkInterface.isUp()) {
+                continue;
+            }
+
+            for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+                InetAddress broadcast = interfaceAddress.getBroadcast();
+                if (broadcast == null) {
+                    continue;
+                }
+
+                // Send the broadcast
+                sendPacket = new DatagramPacket(msg, messageLength, broadcast, GlobalConstants.DEFAULT_PORT);
+                ds.send(sendPacket);
+            }
+        }
+
+        ms.send(sendPacket);
+    }
+
+    protected void listenForDiscoveryPacket() {
+        // broadcast listening
+        exec.execute(dsr);
+        // multicast listening
+        exec.execute(msr);
         try {
-            exec.awaitTermination(2 * timeout, TimeUnit.MILLISECONDS);
+            exec.awaitTermination(2 * GlobalConstants.getDEFAULT_TIMEOUT(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException ex) {
             log.warning("Waiting of DiscoveryDaemon for discovery packets has been interrupted.");
         }
@@ -166,13 +169,13 @@ abstract class DiscoveryDaemon extends Thread implements IService {
      * @param address source IP
      */
     protected abstract void receiveBroadcast(final String data, final InetAddress address);
-    
+
     @Override
     public void stopService() {
         run = false;
         ds.close();
     }
-    
+
     public void enable(boolean enable) {
         if (enable) {
             pause = false;
@@ -185,7 +188,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
             log.fine("DiscoveryDaemon has been disabled.");
         }
     }
-    
+
     protected void pause() {
         try {
             synchronized (this) {
