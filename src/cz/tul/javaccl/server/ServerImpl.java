@@ -187,4 +187,9 @@ public final class ServerImpl extends Server implements IService, Observer {
     public void setIdFilter(IDFilter filter) {
         serverSocket.setIdFilter(filter);
     }
+
+    @Override
+    public void enableDiscoveryDaemon(boolean enable) {
+        cdd.enable(enable);
+    }
 }

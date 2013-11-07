@@ -29,8 +29,8 @@ abstract class DiscoveryDaemon extends Thread implements IService {
     private static final InetAddress multicastGroup;
     private final ExecutorService exec;
     private final DatagramSocket ds;
-    private final MulticastSocket ms;    
-    protected boolean run;
+    private final MulticastSocket ms;
+    protected boolean run, pause;
 
     static {
         InetAddress group = null;
@@ -165,5 +165,29 @@ abstract class DiscoveryDaemon extends Thread implements IService {
     public void stopService() {
         run = false;
         ds.close();
+    }
+    
+    public void enable(boolean enable) {
+        if (enable) {
+            pause = false;
+            synchronized (this) {
+                this.notify();
+            }
+            log.fine("DiscoveryDaemon has been enabled.");
+        } else {
+            pause = true;
+            log.fine("DiscoveryDaemon has been disabled.");
+        }
+    }
+
+    protected void pause() {
+        try {
+            synchronized (this) {
+                this.wait();
+            }
+        } catch (InterruptedException ex) {
+            log.warning("Waiting of DiscoveryDaemon has been interrupted.");
+        }
+        pause = false;
     }
 }

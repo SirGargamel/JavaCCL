@@ -371,4 +371,9 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     public void setIdFilter(IDFilter filter) {
         serverSocket.setIdFilter(filter);
     }
+    
+    @Override
+    public void enableDiscoveryDaemon(boolean enable) {
+        sdd.enable(enable);
+    }
 }

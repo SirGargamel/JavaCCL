@@ -32,7 +32,10 @@ public class ClientDiscoveryDaemon extends DiscoveryDaemon implements IService {
     @Override
     public void run() {
         while (run) {
-            listenForDiscoveryPacket(0);
+            if (pause) {
+                pause();
+            }
+            listenForDiscoveryPacket(1000);
         }
     }
 

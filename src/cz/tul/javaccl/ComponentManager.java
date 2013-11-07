@@ -10,4 +10,6 @@ public interface ComponentManager {
 
     void setIdFilter(final IDFilter filter);
     
+    void enableDiscoveryDaemon(final boolean enable);
+    
 }

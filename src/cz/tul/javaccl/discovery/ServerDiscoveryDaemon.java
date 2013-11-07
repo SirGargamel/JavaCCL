@@ -37,6 +37,9 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
     @Override
     public void run() {
         while (run) {
+            if (pause) {
+                pause();
+            }
             if (sr.getServerComm() == null) {
                 broadcastServerDiscovery();
             }
@@ -127,5 +130,5 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
                 log.log(Level.FINE, "Error operating socket.", ex);
             }
         }
-    }
+    }    
 }
