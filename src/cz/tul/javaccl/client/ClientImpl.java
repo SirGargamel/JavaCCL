@@ -1,5 +1,6 @@
 package cz.tul.javaccl.client;
 
+import cz.tul.javaccl.ComponentManager;
 import cz.tul.javaccl.discovery.ServerDiscoveryDaemon;
 import cz.tul.javaccl.socket.ClientLister;
 import cz.tul.javaccl.GlobalConstants;
@@ -359,5 +360,15 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         } else {
             setMaxNumberOfConcurrentAssignments(jobCountBackup);
         }
+    }
+    
+    @Override
+    public ComponentManager getComponentManager() {
+        return this;
+    }
+
+    @Override
+    public void setIdFilter(IDFilter filter) {
+        serverSocket.setIdFilter(filter);
     }
 }

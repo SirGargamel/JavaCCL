@@ -50,7 +50,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         return result;
     }
     private final java.net.ServerSocket socket;
-    private final IDFilter idFilter;
+    private IDFilter idFilter;
     private final ExecutorService exec;
     private final Map<UUID, Listener<DataPacket>> listenersClient;
     private final Map<Object, Listener<Identifiable>> listenersId;
@@ -323,5 +323,9 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         }
 
         return result;
+    }
+
+    public void setIdFilter(IDFilter idFilter) {
+        this.idFilter = idFilter;
     }
 }

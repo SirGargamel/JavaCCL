@@ -1,6 +1,7 @@
 package cz.tul.javaccl.client;
 
 import cz.tul.javaccl.CCLObservable;
+import cz.tul.javaccl.ComponentManager;
 import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.IService;
 import cz.tul.javaccl.Utils;
@@ -21,7 +22,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public abstract class Client extends CCLObservable implements IService {
+public abstract class Client extends CCLObservable implements IService, ComponentManager {
 
     private static final Logger log = Logger.getLogger(Client.class.getName());
 
@@ -190,4 +191,6 @@ public abstract class Client extends CCLObservable implements IService {
      * @param enable true if you want the client to receive assignments
      */
     public abstract void enableClient(final boolean enable);
+    
+    public abstract ComponentManager getComponentManager();
 }

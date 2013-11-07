@@ -1,5 +1,6 @@
 package cz.tul.javaccl.server;
 
+import cz.tul.javaccl.ComponentManager;
 import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.IService;
 import cz.tul.javaccl.communicator.Communicator;
@@ -13,6 +14,7 @@ import cz.tul.javaccl.messaging.Message;
 import cz.tul.javaccl.messaging.SystemMessageHeaders;
 import cz.tul.javaccl.persistence.ServerSettings;
 import cz.tul.javaccl.discovery.ClientDiscoveryDaemon;
+import cz.tul.javaccl.socket.IDFilter;
 import cz.tul.javaccl.socket.ListenerRegistrator;
 import cz.tul.javaccl.socket.ServerSocket;
 import java.io.File;
@@ -174,5 +176,15 @@ public final class ServerImpl extends Server implements IService, Observer {
     public void update(Observable o, Object arg) {
         setChanged();
         notifyObservers(arg);
+    }
+
+    @Override
+    public ComponentManager getComponentManager() {
+        return this;
+    }
+
+    @Override
+    public void setIdFilter(IDFilter filter) {
+        serverSocket.setIdFilter(filter);
     }
 }
