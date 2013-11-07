@@ -15,6 +15,7 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,7 +24,7 @@ import java.util.logging.Logger;
  * @author Petr Jecmen
  */
 abstract class DiscoveryDaemon extends Thread implements IService {
-
+    
     private static final Logger log = Logger.getLogger(DiscoveryDaemon.class.getName());
     private static final String multicastGroupS = "230.50.11.2";
     private static final InetAddress multicastGroup;
@@ -31,7 +32,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
     private final DatagramSocket ds;
     private final MulticastSocket ms;
     protected boolean run, pause;
-
+    
     static {
         InetAddress group = null;
         try {
@@ -41,12 +42,12 @@ abstract class DiscoveryDaemon extends Thread implements IService {
         }
         multicastGroup = group;
     }
-
+    
     public DiscoveryDaemon() throws SocketException {
         ds = new DatagramSocket(GlobalConstants.DEFAULT_PORT);
         ds.setBroadcast(true);
         ds.setSoTimeout(GlobalConstants.getDEFAULT_TIMEOUT());
-
+        
         MulticastSocket msS = null;
         try {
             msS = new MulticastSocket(GlobalConstants.DEFAULT_PORT + 1);
@@ -55,10 +56,10 @@ abstract class DiscoveryDaemon extends Thread implements IService {
             log.warning("Error initializing multicast socket.");
         }
         ms = msS;
-
+        
         exec = Executors.newFixedThreadPool(2);
     }
-
+    
     protected void broadcastMessage(final byte[] msg) throws SocketException, IOException {
         // Find the clients using UDP broadcast                
         // Try the 255.255.255.255 first
@@ -70,11 +71,11 @@ abstract class DiscoveryDaemon extends Thread implements IService {
         Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
         while (interfaces.hasMoreElements()) {
             NetworkInterface networkInterface = interfaces.nextElement();
-
+            
             if (!networkInterface.isUp()) {
                 continue;
             }
-
+            
             for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
                 InetAddress broadcast = interfaceAddress.getBroadcast();
                 if (broadcast == null) {
@@ -86,14 +87,14 @@ abstract class DiscoveryDaemon extends Thread implements IService {
                 ds.send(sendPacket);
             }
         }
-
+        
         ms.send(sendPacket);
     }
-
+    
     protected void listenForDiscoveryPacket(final int timeout) {
         // broadcast listening
         exec.execute(new Runnable() {
-
+            
             @Override
             public void run() {
                 try {
@@ -123,7 +124,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
         });
         // multicast listening
         exec.execute(new Runnable() {
-
+            
             @Override
             public void run() {
                 try {
@@ -151,6 +152,11 @@ abstract class DiscoveryDaemon extends Thread implements IService {
                 }
             }
         });
+        try {
+            exec.awaitTermination(2 * timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ex) {
+            log.warning("Waiting of DiscoveryDaemon for discovery packets has been interrupted.");
+        }
     }
 
     /**
@@ -160,7 +166,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
      * @param address source IP
      */
     protected abstract void receiveBroadcast(final String data, final InetAddress address);
-
+    
     @Override
     public void stopService() {
         run = false;
@@ -179,7 +185,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
             log.fine("DiscoveryDaemon has been disabled.");
         }
     }
-
+    
     protected void pause() {
         try {
             synchronized (this) {
