@@ -1,6 +1,6 @@
 package cz.tul.javaccl.history.sorting;
 
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.history.HistoryRecord;
 import static cz.tul.javaccl.history.sorting.HistorySorter.convertRecordToXML;
 import java.net.InetAddress;
@@ -37,7 +37,7 @@ public class InOutSorter extends HistorySorter {
         } catch (UnknownHostException ex) {
             log.log(Level.FINE, "Could not obtain local IP address, using loopback.", ex);
             try {
-                localHost = InetAddress.getByName(Constants.IP_LOOPBACK);
+                localHost = InetAddress.getByName(GlobalConstants.IP_LOOPBACK);
             } catch (UnknownHostException ex1) {
                 log.log(Level.FINE, "Could not obtain loopback address.", ex);
             }

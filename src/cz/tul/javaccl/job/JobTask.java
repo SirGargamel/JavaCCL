@@ -1,6 +1,6 @@
 package cz.tul.javaccl.job;
 
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.messaging.Identifiable;
 import java.io.Serializable;
 import java.util.UUID;
@@ -69,6 +69,6 @@ public class JobTask implements Serializable, Identifiable {
 
     @Override
     public Object getId() {
-        return Constants.ID_JOB_MANAGER;
+        return GlobalConstants.ID_JOB_MANAGER;
     }
 }

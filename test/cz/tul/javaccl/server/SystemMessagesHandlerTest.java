@@ -1,6 +1,6 @@
 package cz.tul.javaccl.server;
 
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.communicator.Communicator;
 import cz.tul.javaccl.communicator.DataPacketImpl;
@@ -46,7 +46,7 @@ public class SystemMessagesHandlerTest {
 
         m = new Message(SystemMessageHeaders.LOGIN, "5253");
         dp = new DataPacketImpl(null, null, m);
-        dp.setSourceIP(InetAddress.getByName(Constants.IP_LOOPBACK));
+        dp.setSourceIP(InetAddress.getByName(GlobalConstants.IP_LOOPBACK));
         result = instance.receiveData(dp);
         assertTrue(result instanceof UUID);
 

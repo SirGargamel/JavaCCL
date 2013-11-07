@@ -4,7 +4,7 @@
  */
 package cz.tul.javaccl.history;
 
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.client.ClientImpl;
 import cz.tul.javaccl.exceptions.ConnectionException;
@@ -70,7 +70,7 @@ public class HistoryTest {
     public void testHistoryDirectLogging() throws UnknownHostException {
         System.out.println("logHistoryDirectLoggin");
 
-        InetAddress ipLocal = InetAddress.getByName(Constants.IP_LOOPBACK);
+        InetAddress ipLocal = InetAddress.getByName(GlobalConstants.IP_LOOPBACK);
 
         HistoryManager h = new History();
 
@@ -121,7 +121,7 @@ public class HistoryTest {
     public void testHistoryServerAndClient() throws UnknownHostException {
         System.out.println("logHistoryServerAndClient");
 
-        InetAddress ipLocal = InetAddress.getByName(Constants.IP_LOOPBACK);
+        InetAddress ipLocal = InetAddress.getByName(GlobalConstants.IP_LOOPBACK);
         UUID uuid = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
         UUID uuid2 = UUID.fromString("550e8400-e29b-41d4-a716-446655440111");
 

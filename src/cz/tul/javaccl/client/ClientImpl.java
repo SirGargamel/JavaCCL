@@ -2,7 +2,7 @@ package cz.tul.javaccl.client;
 
 import cz.tul.javaccl.discovery.ServerDiscoveryDaemon;
 import cz.tul.javaccl.socket.ClientLister;
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.IService;
 import cz.tul.javaccl.communicator.Communicator;
@@ -76,7 +76,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
 
     @Override
     public boolean registerToServer(final InetAddress address) throws ConnectionException {
-        return registerToServer(address, Constants.DEFAULT_PORT);
+        return registerToServer(address, GlobalConstants.getDEFAULT_PORT());
     }
 
     @Override
@@ -86,9 +86,9 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         log.log(Level.INFO, "Registering new server IP and port - " + address.getHostAddress() + ":" + port);
         boolean result = false;
         comm = CommunicatorImpl.initNewCommunicator(address, port);
-        comm.setTargetId(Constants.ID_SERVER);
+        comm.setTargetId(GlobalConstants.ID_SERVER);
         comm.registerHistory(history);
-        final Message login = new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.LOGIN, serverSocket.getPort());
+        final Message login = new Message(GlobalConstants.ID_SYS_MSG, SystemMessageHeaders.LOGIN, serverSocket.getPort());
         try {
             final Object id = comm.sendData(login);
             if (id instanceof UUID) {
@@ -115,7 +115,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     @Override
     public void setServerInfo(final InetAddress address, final int port, final UUID clientId) {
         comm = CommunicatorImpl.initNewCommunicator(address, port);
-        comm.setTargetId(Constants.ID_SERVER);
+        comm.setTargetId(GlobalConstants.ID_SERVER);
         comm.setSourceId(clientId);
         comm.registerHistory(history);
         setMaxNumberOfConcurrentAssignments(concurentJobCount);
@@ -138,7 +138,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
 
     @Override
     public Object sendDataToServer(final Object data) throws ConnectionException {
-        return sendDataToServer(data, Constants.DEFAULT_TIMEOUT);
+        return sendDataToServer(data, GlobalConstants.getDEFAULT_TIMEOUT());
     }
 
     @Override
@@ -187,17 +187,17 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
 
         csm = new SystemMessageHandler(this, this);
         csm.addObserver(this);
-        getListenerRegistrator().setIdListener(Constants.ID_SYS_MSG, csm);
+        getListenerRegistrator().setIdListener(GlobalConstants.ID_SYS_MSG, csm);
 
         jm = new ClientJobManagerImpl(this);
-        getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jm);
+        getListenerRegistrator().setIdListener(GlobalConstants.ID_JOB_MANAGER, jm);
 
         if (sdd != null) {
             sdd.start();
         } else if (!isServerUp()) {
             log.fine("Could not init server discovery, trying to connect to local host.");
             try {
-                registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK), Constants.DEFAULT_PORT);
+                registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK), GlobalConstants.getDEFAULT_PORT());
             } catch (ConnectionException ex) {
                 log.fine("Could not reach server at localhost on default port.");
             }
@@ -224,7 +224,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
 
     @Override
     public boolean isIdAllowed(UUID id) {
-        if (comm == null && id.equals(Constants.ID_SERVER)) {
+        if (comm == null && id.equals(GlobalConstants.ID_SERVER)) {
             return true;
         }
 
@@ -284,7 +284,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         boolean result = false;
         if (isServerUp()) {
             final Message m = new Message(
-                    Constants.ID_JOB_MANAGER,
+                    GlobalConstants.ID_JOB_MANAGER,
                     JobConstants.JOB_CLIENT_SETTINGS,
                     new ClientJobSettings(getLocalID(), JobConstants.JOB_COUNT, assignmentCount));
 
@@ -310,7 +310,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         boolean result = false;
         if (isServerUp()) {
             final Message m = new Message(
-                    Constants.ID_JOB_MANAGER,
+                    GlobalConstants.ID_JOB_MANAGER,
                     JobConstants.JOB_CLIENT_SETTINGS,
                     new ClientJobSettings(getLocalID(), JobConstants.JOB_COMPLEXITY, maxJobComplexity));
 

@@ -1,6 +1,6 @@
 package cz.tul.javaccl.communicator;
 
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import cz.tul.javaccl.exceptions.ConnectionExceptionCause;
@@ -101,7 +101,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     @Override
     public Object sendData(final Object data) throws IllegalArgumentException, ConnectionException {
-        return sendData(data, Constants.DEFAULT_TIMEOUT);
+        return sendData(data, GlobalConstants.getDEFAULT_TIMEOUT());
     }
 
     @Override
@@ -237,7 +237,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     @Override
     public Status checkStatus() {
         boolean result = false;
-        final Object data = new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.STATUS_CHECK, null);
+        final Object data = new Message(GlobalConstants.ID_SYS_MSG, SystemMessageHeaders.STATUS_CHECK, null);
         final DataPacket dp = new DataPacketImpl(sourceId, targetId, data);
         Status stat = Status.OFFLINE;
 

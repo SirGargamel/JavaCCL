@@ -1,6 +1,6 @@
 package cz.tul.javaccl.server;
 
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.communicator.DataPacketImpl;
 import cz.tul.javaccl.messaging.Message;
@@ -64,7 +64,7 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                             return GenericResponses.ILLEGAL_DATA;
                         }
                     } else if (header.equals(SystemMessageHeaders.STATUS_CHECK)) {
-                        return Constants.ID_SERVER;
+                        return GlobalConstants.ID_SERVER;
                     } else {
                         return GenericResponses.ILLEGAL_HEADER;
                     }

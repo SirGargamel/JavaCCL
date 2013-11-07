@@ -1,6 +1,6 @@
 package cz.tul.javaccl.discovery;
 
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.IService;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -43,13 +43,13 @@ abstract class DiscoveryDaemon extends Thread implements IService {
     }
 
     public DiscoveryDaemon() throws SocketException {
-        ds = new DatagramSocket(Constants.DEFAULT_PORT);
+        ds = new DatagramSocket(GlobalConstants.getDEFAULT_PORT());
         ds.setBroadcast(true);
-        ds.setSoTimeout(Constants.DEFAULT_TIMEOUT);
+        ds.setSoTimeout(GlobalConstants.getDEFAULT_TIMEOUT());
 
         MulticastSocket msS = null;
         try {
-            msS = new MulticastSocket(Constants.DEFAULT_PORT + 1);
+            msS = new MulticastSocket(GlobalConstants.getDEFAULT_PORT() + 1);
             msS.joinGroup(multicastGroup);
         } catch (IOException ex) {
             log.warning("Error initializing multicast socket.");
@@ -63,7 +63,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
         // Find the clients using UDP broadcast                
         // Try the 255.255.255.255 first
         final int messageLength = msg.length;
-        DatagramPacket sendPacket = new DatagramPacket(msg, messageLength, InetAddress.getByName("255.255.255.255"), Constants.DEFAULT_PORT);
+        DatagramPacket sendPacket = new DatagramPacket(msg, messageLength, InetAddress.getByName("255.255.255.255"), GlobalConstants.getDEFAULT_PORT());
         ds.send(sendPacket);
 
         // Broadcast the message over all the network interfaces
@@ -82,7 +82,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
                 }
 
                 // Send the broadcast
-                sendPacket = new DatagramPacket(msg, messageLength, broadcast, Constants.DEFAULT_PORT);
+                sendPacket = new DatagramPacket(msg, messageLength, broadcast, GlobalConstants.getDEFAULT_PORT());
                 ds.send(sendPacket);
             }
         }

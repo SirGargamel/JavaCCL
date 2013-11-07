@@ -1,6 +1,6 @@
 package cz.tul.javaccl.persistence;
 
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.client.Client;
 import cz.tul.javaccl.client.ClientImpl;
 import cz.tul.javaccl.client.ServerInterface;
@@ -91,7 +91,7 @@ public class SettingsTest {
         s.stopService();
         s = ServerImpl.initNewServer();
         try {
-            s.getClientManager().registerClient(InetAddress.getByName(Constants.IP_LOOPBACK), CLIENT_PORT);
+            s.getClientManager().registerClient(InetAddress.getByName(GlobalConstants.IP_LOOPBACK), CLIENT_PORT);
         } catch (IllegalArgumentException ex) {
             fail("Illegal arguments used");
         } catch (ConnectionException ex) {
@@ -128,7 +128,7 @@ public class SettingsTest {
         c.stopService();
         try {
             c = ClientImpl.initNewClient(CLIENT_PORT);
-            c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK));
+            c.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK));
         } catch (IllegalArgumentException ex) {
             fail("Illegal arguments used");
         } catch (ConnectionException ex) {

@@ -1,7 +1,7 @@
 package cz.tul.javaccl.server;
 
 import cz.tul.javaccl.CCLObservable;
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.IService;
 import cz.tul.javaccl.Utils;
 import cz.tul.javaccl.communicator.Communicator;
@@ -52,7 +52,7 @@ public abstract class Server extends CCLObservable implements IService {
      */
     public static Server initNewServer() {
         Server s = null;
-        int port = Constants.DEFAULT_PORT;
+        int port = GlobalConstants.getDEFAULT_PORT();
 
         while (s == null && port < 65535) {
             try {

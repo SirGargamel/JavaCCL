@@ -1,6 +1,6 @@
 package cz.tul.javaccl.persistence;
 
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.communicator.Communicator;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import cz.tul.javaccl.server.ClientManager;
@@ -41,7 +41,7 @@ public class ServerSettings implements Serializable {
                 Map<String, String> fields = SimpleXMLSettingsFile.loadSimpleXMLFile(settingsFile);
                 for (String f : fields.keySet()) {
                     if (f != null && f.equals(FIELD_NAME_CLIENT)) {
-                        String[] split = fields.get(f).split(Constants.DELIMITER);
+                        String[] split = fields.get(f).split(GlobalConstants.DELIMITER);
                         try {
                             if (clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1])) != null) {
                                 result = true;
@@ -89,7 +89,7 @@ public class ServerSettings implements Serializable {
         StringBuilder sb = new StringBuilder();
         for (Communicator c : comms) {
             sb.append(c.getAddress().getHostAddress());
-            sb.append(Constants.DELIMITER);
+            sb.append(GlobalConstants.DELIMITER);
             sb.append(c.getPort());
             xml.addField(FIELD_NAME_CLIENT, sb.toString());
             sb.setLength(0);

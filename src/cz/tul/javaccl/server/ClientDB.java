@@ -1,7 +1,7 @@
 package cz.tul.javaccl.server;
 
 import static cz.tul.javaccl.CCLObservable.REGISTER;
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.communicator.Communicator;
 import cz.tul.javaccl.communicator.CommunicatorImpl;
 import cz.tul.javaccl.communicator.CommunicatorInner;
@@ -47,11 +47,11 @@ class ClientDB extends ClientManager implements Observer, IDFilter {
         if (cc != null) {
             cc.registerHistory(hm);
             cc.addObserver(this);
-            cc.setSourceId(Constants.ID_SERVER);
+            cc.setSourceId(GlobalConstants.ID_SERVER);
             clients.add(cc);
 
             final UUID id = UUID.randomUUID();
-            final Message m = new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.LOGIN, id);
+            final Message m = new Message(GlobalConstants.ID_SYS_MSG, SystemMessageHeaders.LOGIN, id);
             cc.sendData(m);
             cc.setTargetId(id);
 
@@ -72,7 +72,7 @@ class ClientDB extends ClientManager implements Observer, IDFilter {
         if (ccI != null) {
             ccI.registerHistory(hm);
             ccI.addObserver(this);
-            ccI.setSourceId(Constants.ID_SERVER);
+            ccI.setSourceId(GlobalConstants.ID_SERVER);
             ccI.setTargetId(clientId);
 
             clients.add(ccI);
@@ -171,11 +171,11 @@ class ClientDB extends ClientManager implements Observer, IDFilter {
 
     @Override
     public boolean isTargetIdValid(UUID id) {
-        return Constants.ID_SERVER.equals(id);
+        return GlobalConstants.ID_SERVER.equals(id);
     }
 
     @Override
     public UUID getLocalID() {
-        return Constants.ID_SERVER;
+        return GlobalConstants.ID_SERVER;
     }
 }

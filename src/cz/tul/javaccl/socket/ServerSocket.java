@@ -1,6 +1,6 @@
 package cz.tul.javaccl.socket;
 
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.IService;
 import cz.tul.javaccl.communicator.DataPacket;
@@ -167,7 +167,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         while (run) {
             try {
                 s = socket.accept();
-                s.setSoTimeout(Constants.DEFAULT_TIMEOUT);
+                s.setSoTimeout(GlobalConstants.getDEFAULT_TIMEOUT());
                 log.log(Level.FINE, "Connection accepted from IP " + s.getInetAddress().getHostAddress() + ":" + s.getPort());
                 final SocketReader sr = new SocketReader(s, this, mpd);
                 sr.registerHistory(hm);
@@ -232,7 +232,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                 if (data instanceof Message) {
                     final UUID mId = ((Message) data).getId();
                     final String header = ((Message) data).getHeader();
-                    if ((mId.equals(Constants.ID_SYS_MSG) && (header.equals(SystemMessageHeaders.LOGIN))
+                    if ((mId.equals(GlobalConstants.ID_SYS_MSG) && (header.equals(SystemMessageHeaders.LOGIN))
                             || header.equals(SystemMessageHeaders.STATUS_CHECK))) {
                         allowed = true;
                     } else {
@@ -265,7 +265,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
             if (data instanceof Identifiable) {
                 final Identifiable iData = (Identifiable) data;
                 final Object id = iData.getId();
-                if (id.equals(Constants.ID_SYS_MSG)) { // not pretty !!!
+                if (id.equals(GlobalConstants.ID_SYS_MSG)) { // not pretty !!!
                     sysMsg = true;
                     result = listenersId.get(id).receiveData(dp);
                     handled = true;

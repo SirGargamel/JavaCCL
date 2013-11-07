@@ -4,7 +4,7 @@
  */
 package cz.tul.javaccl.communicator;
 
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import java.awt.image.BufferedImage;
 import java.net.InetAddress;
@@ -24,7 +24,7 @@ public class CommunicatorImplTest {
         Object result;        
         
         try {
-            result = CommunicatorImpl.initNewCommunicator(InetAddress.getByName(Constants.IP_LOOPBACK), -1);
+            result = CommunicatorImpl.initNewCommunicator(InetAddress.getByName(GlobalConstants.IP_LOOPBACK), -1);
             fail("Should have failed because of illegal port");
         } catch (IllegalArgumentException ex) {
             // expected
@@ -41,7 +41,7 @@ public class CommunicatorImplTest {
     @Test
     public void testUnserializableDataSend() throws UnknownHostException {
         System.out.println("testUnserializableDataSend");
-        final Communicator comm = CommunicatorImpl.initNewCommunicator(InetAddress.getByName(Constants.IP_LOOPBACK), 0);
+        final Communicator comm = CommunicatorImpl.initNewCommunicator(InetAddress.getByName(GlobalConstants.IP_LOOPBACK), 0);
         
         try {
             comm.sendData(new BufferedImage(1, 1, 1));

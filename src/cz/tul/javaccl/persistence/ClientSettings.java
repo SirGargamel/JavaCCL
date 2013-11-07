@@ -1,6 +1,6 @@
 package cz.tul.javaccl.persistence;
 
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.client.ServerInterface;
 import cz.tul.javaccl.communicator.Communicator;
 import cz.tul.javaccl.exceptions.ConnectionException;
@@ -38,13 +38,13 @@ public class ClientSettings {
 
         if (settingsFile.canRead()) {
             InetAddress ip = null;
-            int port = Constants.DEFAULT_PORT;
+            int port = GlobalConstants.getDEFAULT_PORT();
             try {
                 Map<String, String> fields = SimpleXMLSettingsFile.loadSimpleXMLFile(settingsFile);
                 for (String f : fields.keySet()) {
                     if (f != null && f.equals(FIELD_NAME_SERVER)) {
                         try {
-                            String[] split = fields.get(f).split(Constants.DELIMITER);
+                            String[] split = fields.get(f).split(GlobalConstants.DELIMITER);
                             ip = InetAddress.getByName(split[0]);
                             if (split.length > 1) {
                                 port = Integer.valueOf(split[1]);
@@ -118,7 +118,7 @@ public class ClientSettings {
     private static String composeServerAddress(final InetAddress address, final int port) {
         StringBuilder sb = new StringBuilder();
         sb.append(address.getHostAddress());
-        sb.append(Constants.DELIMITER);
+        sb.append(GlobalConstants.DELIMITER);
         sb.append(port);
         return sb.toString();
     }

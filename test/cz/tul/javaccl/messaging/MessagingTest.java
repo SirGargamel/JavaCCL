@@ -1,6 +1,6 @@
 package cz.tul.javaccl.messaging;
 
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.client.Client;
 import cz.tul.javaccl.client.ClientImpl;
@@ -56,7 +56,7 @@ public class MessagingTest {
         System.out.println("testRegistration");
 
         try {
-            assertTrue(c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK)));
+            assertTrue(c.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK)));
         } catch (Exception ex) {
             fail("Registration from client to server failed - " + ex);
         }
@@ -68,14 +68,14 @@ public class MessagingTest {
         }
 
         try {
-            assertNotNull(s.getClientManager().registerClient(InetAddress.getByName(Constants.IP_LOOPBACK), PORT_CLIENT));
+            assertNotNull(s.getClientManager().registerClient(InetAddress.getByName(GlobalConstants.IP_LOOPBACK), PORT_CLIENT));
         } catch (Exception ex) {
             fail("Registration from server to client failed - " + ex);
         }
 
         try {
-            CommunicatorInner comm = (CommunicatorInner) CommunicatorImpl.initNewCommunicator(InetAddress.getByName(Constants.IP_LOOPBACK), 5252);
-            comm.setTargetId(Constants.ID_SERVER);
+            CommunicatorInner comm = (CommunicatorInner) CommunicatorImpl.initNewCommunicator(InetAddress.getByName(GlobalConstants.IP_LOOPBACK), 5252);
+            comm.setTargetId(GlobalConstants.ID_SERVER);
             comm.sendData("data");
             fail("Should have failed, because this communicator is not registered.");
         } catch (ConnectionException ex) {
@@ -90,7 +90,7 @@ public class MessagingTest {
         System.out.println("testIdMessaging");
 
         try {
-            assertTrue(c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK)));
+            assertTrue(c.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK)));
         } catch (Exception ex) {
             fail("Registration from client to server failed - " + ex);
         }
@@ -154,7 +154,7 @@ public class MessagingTest {
         System.out.println("testIdMessagingNoPush");
 
         try {
-            assertTrue(c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK)));
+            assertTrue(c.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK)));
         } catch (Exception ex) {
             fail("Registration from client to server failed - " + ex);
         }
@@ -206,7 +206,7 @@ public class MessagingTest {
         System.out.println("testClientMessaging");
 
         try {
-            assertTrue(c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK)));
+            assertTrue(c.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK)));
         } catch (Exception ex) {
             fail("Registration from client to server failed - " + ex);
         }
@@ -223,7 +223,7 @@ public class MessagingTest {
                 }
             }
         });
-        c.getListenerRegistrator().setClientListener(Constants.ID_SERVER, new Listener<DataPacket>() {
+        c.getListenerRegistrator().setClientListener(GlobalConstants.ID_SERVER, new Listener<DataPacket>() {
             @Override
             public Object receiveData(DataPacket data) {
                 if (data.getData() instanceof Message) {
@@ -252,7 +252,7 @@ public class MessagingTest {
             fail("Communication failed - " + ex);
         }
 
-        c.getListenerRegistrator().removeClientListener(Constants.ID_SERVER);
+        c.getListenerRegistrator().removeClientListener(GlobalConstants.ID_SERVER);
         try {
             assertEquals(GenericResponses.NOT_HANDLED, s.getClient(c.getLocalID()).sendData(m));
         } catch (ConnectionException ex) {
@@ -265,13 +265,13 @@ public class MessagingTest {
         System.out.println("testClientMessagingNoPush");
 
         try {
-            assertTrue(c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK)));
+            assertTrue(c.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK)));
         } catch (Exception ex) {
             fail("Registration from client to server failed - " + ex);
         }
 
         final Queue<DataPacket> serverQueue = s.getListenerRegistrator().createClientMessageQueue(c.getLocalID());
-        final Queue<DataPacket> clientQueue = c.getListenerRegistrator().createClientMessageQueue(Constants.ID_SERVER);
+        final Queue<DataPacket> clientQueue = c.getListenerRegistrator().createClientMessageQueue(GlobalConstants.ID_SERVER);
 
         final String header = "abcdefg";
         final Message m = new Message(header, "data");
@@ -304,7 +304,7 @@ public class MessagingTest {
             fail("Communication failed - " + ex);
         }
 
-        c.getListenerRegistrator().removeClientListener(Constants.ID_SERVER);
+        c.getListenerRegistrator().removeClientListener(GlobalConstants.ID_SERVER);
         try {
             assertEquals(GenericResponses.NOT_HANDLED, s.getClient(c.getLocalID()).sendData(m));
         } catch (ConnectionException ex) {
@@ -317,7 +317,7 @@ public class MessagingTest {
         System.out.println("testMessageObserver");
 
         try {
-            assertTrue(c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK)));
+            assertTrue(c.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK)));
         } catch (Exception ex) {
             fail("Registration from client to server failed - " + ex);
         }
@@ -402,7 +402,7 @@ public class MessagingTest {
         System.out.println("testMessageInvalidTarget");
 
         try {
-            assertTrue(c.registerToServer(InetAddress.getByName(Constants.IP_LOOPBACK)));
+            assertTrue(c.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK)));
         } catch (Exception ex) {
             fail("Registration from client to server failed - " + ex);
         }

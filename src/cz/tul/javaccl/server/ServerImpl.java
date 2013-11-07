@@ -1,6 +1,6 @@
 package cz.tul.javaccl.server;
 
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.IService;
 import cz.tul.javaccl.communicator.Communicator;
 import cz.tul.javaccl.exceptions.ConnectionException;
@@ -50,9 +50,9 @@ public final class ServerImpl extends Server implements IService, Observer {
         serverSocket.registerHistory(history);
 
         jobManager = new ServerJobManagerImpl(clients, serverSocket);
-        getListenerRegistrator().setIdListener(Constants.ID_JOB_MANAGER, jobManager);
+        getListenerRegistrator().setIdListener(GlobalConstants.ID_JOB_MANAGER, jobManager);
 
-        getListenerRegistrator().setIdListener(Constants.ID_SYS_MSG, new SystemMessagesHandler(clients));
+        getListenerRegistrator().setIdListener(GlobalConstants.ID_SYS_MSG, new SystemMessagesHandler(clients));
 
         try {
             cdd = new ClientDiscoveryDaemon(clients);
@@ -72,12 +72,12 @@ public final class ServerImpl extends Server implements IService, Observer {
     @Override
     public Communicator registerClient(final InetAddress adress) throws ConnectionException {
         log.log(Level.INFO, "Registering new client on IP " + adress.getHostAddress() + " on default port");
-        return clients.registerClient(adress, Constants.DEFAULT_PORT);
+        return clients.registerClient(adress, GlobalConstants.getDEFAULT_PORT());
     }
 
     @Override
     public Communicator getClient(final InetAddress address) {
-        Communicator result = clients.getClient(address, Constants.DEFAULT_PORT);
+        Communicator result = clients.getClient(address, GlobalConstants.getDEFAULT_PORT());
 
         if (result == null) {
             for (Communicator cc : clients.getClients()) {
@@ -139,7 +139,7 @@ public final class ServerImpl extends Server implements IService, Observer {
     public void stopService() {
         for (Communicator comm : clients.getClients()) {
             try {
-                comm.sendData(new Message(Constants.ID_SYS_MSG, SystemMessageHeaders.LOGOUT, null));
+                comm.sendData(new Message(GlobalConstants.ID_SYS_MSG, SystemMessageHeaders.LOGOUT, null));
             } catch (ConnectionException ex) {
                 log.warning("Client connection timed out.");
             }

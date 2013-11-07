@@ -1,6 +1,6 @@
 package cz.tul.javaccl.history;
 
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.history.export.ExportUnit;
 import cz.tul.javaccl.history.export.Exporter;
 import cz.tul.javaccl.history.sorting.DefaultSorter;
@@ -72,7 +72,7 @@ public class History implements HistoryManager {
         } catch (UnknownHostException ex) {
             log.log(Level.FINE, "Local address not found, using loopback", ex);
             try {
-                local = InetAddress.getByName(Constants.IP_LOOPBACK);
+                local = InetAddress.getByName(GlobalConstants.IP_LOOPBACK);
             } catch (UnknownHostException ex1) {
                 // should not happen
                 Logger.getLogger(History.class.getName()).log(Level.SEVERE, null, ex1);

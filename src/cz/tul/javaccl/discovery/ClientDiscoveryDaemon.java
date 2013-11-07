@@ -1,6 +1,6 @@
 package cz.tul.javaccl.discovery;
 
-import cz.tul.javaccl.Constants;
+import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.IService;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import cz.tul.javaccl.server.ClientManager;
@@ -45,8 +45,8 @@ public class ClientDiscoveryDaemon extends DiscoveryDaemon implements IService {
     @Override
     protected void receiveBroadcast(final String data, final InetAddress address) {
         // See if the packet holds the right message                    
-        if (data.startsWith(Constants.DISCOVERY_QUESTION)) {
-            final String portS = data.substring(Constants.DISCOVERY_QUESTION.length() + Constants.DELIMITER.length());
+        if (data.startsWith(GlobalConstants.DISCOVERY_QUESTION)) {
+            final String portS = data.substring(GlobalConstants.DISCOVERY_QUESTION.length() + GlobalConstants.DELIMITER.length());
             try {
                 final int port = Integer.valueOf(portS);
                 try {
@@ -56,9 +56,9 @@ public class ClientDiscoveryDaemon extends DiscoveryDaemon implements IService {
                 }
             } catch (NumberFormatException ex) {
                 try {
-                    clientManager.registerClient(address, Constants.DEFAULT_PORT);
+                    clientManager.registerClient(address, GlobalConstants.getDEFAULT_PORT());
                 } catch (ConnectionException ex2) {
-                    log.log(Level.WARNING, "Could not contact server at IP " + address + " on default port " + Constants.DEFAULT_PORT + " - " + ex2.getExceptionCause());
+                    log.log(Level.WARNING, "Could not contact server at IP " + address + " on default port " + GlobalConstants.getDEFAULT_PORT() + " - " + ex2.getExceptionCause());
                 }
             }
         }
