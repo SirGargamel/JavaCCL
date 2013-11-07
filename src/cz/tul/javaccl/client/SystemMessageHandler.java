@@ -47,10 +47,10 @@ class SystemMessageHandler extends CCLObservable implements Listener<Identifiabl
                     } else if (header.equals(SystemMessageHeaders.LOGIN)) {
                         final Object mData = m.getData();
                         if (mData instanceof UUID) {
-                            serverInterface.setServerInfo(dp.getSourceIP(), GlobalConstants.getDEFAULT_PORT(), (UUID) mData);
+                            serverInterface.setServerInfo(dp.getSourceIP(), GlobalConstants.DEFAULT_PORT, (UUID) mData);
                             log.log(
                                     Level.INFO,
-                                    "Registered to new server at " + dp.getSourceIP().getHostAddress() + " on port " + GlobalConstants.getDEFAULT_PORT() + " with client ID " + mData.toString());
+                                    "Registered to new server at " + dp.getSourceIP().getHostAddress() + " on port " + GlobalConstants.DEFAULT_PORT + " with client ID " + mData.toString());
                             result = GenericResponses.OK;
 
                         } else {

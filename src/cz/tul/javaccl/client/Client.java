@@ -50,7 +50,7 @@ public abstract class Client extends CCLObservable implements IService {
      */
     public static Client initNewClient() {
         Client c = null;
-        int port = GlobalConstants.getDEFAULT_PORT();
+        int port = GlobalConstants.DEFAULT_PORT;
 
         while (c == null && port < 65535) {
             try {

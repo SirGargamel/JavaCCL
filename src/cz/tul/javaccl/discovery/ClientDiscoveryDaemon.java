@@ -56,9 +56,9 @@ public class ClientDiscoveryDaemon extends DiscoveryDaemon implements IService {
                 }
             } catch (NumberFormatException ex) {
                 try {
-                    clientManager.registerClient(address, GlobalConstants.getDEFAULT_PORT());
+                    clientManager.registerClient(address, GlobalConstants.DEFAULT_PORT);
                 } catch (ConnectionException ex2) {
-                    log.log(Level.WARNING, "Could not contact server at IP " + address + " on default port " + GlobalConstants.getDEFAULT_PORT() + " - " + ex2.getExceptionCause());
+                    log.log(Level.WARNING, "Could not contact server at IP " + address + " on default port " + GlobalConstants.DEFAULT_PORT + " - " + ex2.getExceptionCause());
                 }
             }
         }

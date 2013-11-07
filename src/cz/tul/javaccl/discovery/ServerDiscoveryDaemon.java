@@ -77,7 +77,7 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
             final String ipS = ipAndPort.substring(0, ipAndPort.indexOf(GlobalConstants.DELIMITER));
             final String portS = ipAndPort.substring(ipAndPort.indexOf(GlobalConstants.DELIMITER));
             InetAddress ip = null;
-            int port = GlobalConstants.getDEFAULT_PORT();
+            int port = GlobalConstants.DEFAULT_PORT;
             try {
                 ip = InetAddress.getByName(ipS);
                 port = Integer.valueOf(portS);

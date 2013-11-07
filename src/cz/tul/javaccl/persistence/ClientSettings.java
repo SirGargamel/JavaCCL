@@ -38,7 +38,7 @@ public class ClientSettings {
 
         if (settingsFile.canRead()) {
             InetAddress ip = null;
-            int port = GlobalConstants.getDEFAULT_PORT();
+            int port = GlobalConstants.DEFAULT_PORT;
             try {
                 Map<String, String> fields = SimpleXMLSettingsFile.loadSimpleXMLFile(settingsFile);
                 for (String f : fields.keySet()) {

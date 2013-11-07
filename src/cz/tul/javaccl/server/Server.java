@@ -52,7 +52,7 @@ public abstract class Server extends CCLObservable implements IService {
      */
     public static Server initNewServer() {
         Server s = null;
-        int port = GlobalConstants.getDEFAULT_PORT();
+        int port = GlobalConstants.DEFAULT_PORT;
 
         while (s == null && port < 65535) {
             try {

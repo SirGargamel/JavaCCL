@@ -72,12 +72,12 @@ public final class ServerImpl extends Server implements IService, Observer {
     @Override
     public Communicator registerClient(final InetAddress adress) throws ConnectionException {
         log.log(Level.INFO, "Registering new client on IP " + adress.getHostAddress() + " on default port");
-        return clients.registerClient(adress, GlobalConstants.getDEFAULT_PORT());
+        return clients.registerClient(adress, GlobalConstants.DEFAULT_PORT);
     }
 
     @Override
     public Communicator getClient(final InetAddress address) {
-        Communicator result = clients.getClient(address, GlobalConstants.getDEFAULT_PORT());
+        Communicator result = clients.getClient(address, GlobalConstants.DEFAULT_PORT);
 
         if (result == null) {
             for (Communicator cc : clients.getClients()) {
