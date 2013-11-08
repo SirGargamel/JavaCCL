@@ -1,18 +1,8 @@
 /dist/
 /build/
+/nbproject/
 /.jacocoverage/
-/test.xml
-/testIP.xml
-/testTime.xml
-/testUUID.xml
-/testInOut.xml
-/systemLog.xml.lck
-/systemLog.xml
-/src/cz/tul/comm/tester/
-/src/cz/tul/comm/tester/virtual
-# system logs
-systemLog.xml*
-jacoco.exec*
-/nbproject/private/
-/systemLogServer.xml*
-/systemLogClient.xml*
+/systemLog*.xml*
+/jacoco.exec*
+/build.xml
+/manifest.mf
