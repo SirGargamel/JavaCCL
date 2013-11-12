@@ -138,7 +138,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         }
 
         if (hm != null) {
-            hm.logMessageSend(address, getTargetId(), data,  readAndReply, response);
+            hm.logMessageSend(address, getTargetId(), data, readAndReply, response);
         }
 
         return response;
@@ -373,17 +373,24 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     @Override
     public boolean equals(Object o) {
+        boolean result = false;
         if (o instanceof CommunicatorImpl) {
             CommunicatorImpl cc = (CommunicatorImpl) o;
             UUID id = getSourceId();
             if (id != null) {
-                return (cc.getTargetId().equals(getTargetId()));
+                UUID idT = cc.getTargetId();
+                UUID idT2 = getTargetId();
+                if (idT != null && idT2 != null) {
+                    result = (cc.getTargetId().equals(getTargetId()));
+                } else {
+                    result = idT == idT2;
+                }
             } else {
-                return this == cc;
+                result = this == cc;
             }
 
         }
-        return false;
+        return result;
     }
 
     @Override
