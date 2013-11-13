@@ -50,7 +50,7 @@ public class DataPacketImpl implements DataPacket {
 
     @Override
     public Object getId() {
-        return getTargetID();
+        return targetID;
     }
 
     /**

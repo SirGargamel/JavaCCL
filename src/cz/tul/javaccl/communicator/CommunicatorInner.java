@@ -31,11 +31,6 @@ public interface CommunicatorInner extends Communicator {
     void setTargetId(final UUID id);
 
     /**
-     * @param id UUID of this communiator
-     */
-    void setSourceId(final UUID id);
-
-    /**
      * @return local UUID
      */
     UUID getSourceId();

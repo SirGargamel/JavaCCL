@@ -43,12 +43,13 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     /**
      * Create new communicator with given IP and on given port
      *
-     * @param address target IP
-     * @param port target port
+     * @param targetAddress target IP
+     * @param targetPort target port
+     * @param sourceId local UUID
      * @return created and initializaed instance of CommunicatorImpl
      */
-    public static CommunicatorInner initNewCommunicator(final InetAddress address, final int port) {
-        return new CommunicatorImpl(address, port);
+    public static CommunicatorInner initNewCommunicator(final InetAddress targetAddress, final int targetPort, final UUID sourceId) {
+        return new CommunicatorImpl(targetAddress, targetPort, sourceId);
     }
     private final int MSG_PULL_TIME_LIMIT = 2000;
     private final int STATUS_CHECK_TIMEOUT = 250;
@@ -58,14 +59,14 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     private final int port;
     private final Queue<DataPacket> unsentData;
     private final Map<DataPacket, Object> responses;
-    private UUID sourceId;
+    private final UUID sourceId;
     private UUID targetId;
     private Calendar lastStatusUpdateTime;
     private Calendar lastMsgPull;
     private Status status;
     private HistoryManager hm;
 
-    private CommunicatorImpl(final InetAddress address, final int port) throws IllegalArgumentException {
+    private CommunicatorImpl(final InetAddress address, final int port, final UUID sourceId) throws IllegalArgumentException {
         if (address == null) {
             throw new IllegalArgumentException("Invalid address \"" + address + "\"");
         } else if (port < 0 || port > 65535) {
@@ -74,6 +75,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
         this.address = address;
         this.port = port;
+        this.sourceId = sourceId;
 
         unsentData = new LinkedList<DataPacket>();
         responses = new ConcurrentHashMap<DataPacket, Object>();
@@ -255,12 +257,13 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             try {
                 in = new ObjectInputStream(s.getInputStream());
                 Object response = in.readObject();
-                if ((targetId != null && targetId.equals(response))
-                        || targetId == null && response == null) {
-                    stat = Status.ONLINE;
+                if ((targetId == null
+                        || (targetId != null && targetId.equals(response)))) {
+                    stat = Status.ONLINE;                    
                 } else {
-                    log.log(Level.WARNING, "STATUS_CHECK response received for another ID - " + response + " , " + targetId);
+                    log.log(Level.WARNING, "STATUS_CHECK response received for another ID - " + response + " , should be " + targetId);
                 }
+                result = true;
             } catch (IOException ex) {
                 log.log(Level.FINE, "Client on IP " + address.getHostAddress() + " did not open stream for answer.");
             } catch (ClassNotFoundException ex) {
@@ -349,13 +352,6 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         this.targetId = id;
         setChanged();
         notifyObservers(this.targetId);
-    }
-
-    @Override
-    public void setSourceId(UUID id) {
-        this.sourceId = id;
-        setChanged();
-        notifyObservers(this.sourceId);
     }
 
     @Override

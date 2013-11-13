@@ -1,5 +1,6 @@
 package cz.tul.javaccl.server;
 
+import cz.tul.javaccl.CCLEntity;
 import cz.tul.javaccl.CCLObservable;
 import cz.tul.javaccl.ComponentManager;
 import cz.tul.javaccl.GlobalConstants;
@@ -23,7 +24,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public abstract class Server extends CCLObservable implements IService, ComponentManager {
+public abstract class Server extends CCLEntity implements IService, ComponentManager {
 
     private static final Logger log = Logger.getLogger(Server.class.getName());
 

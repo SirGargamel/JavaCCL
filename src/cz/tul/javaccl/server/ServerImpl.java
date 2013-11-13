@@ -43,9 +43,10 @@ public final class ServerImpl extends Server implements IService, Observer {
     private ClientDiscoveryDaemon cdd;
 
     ServerImpl(final int port) throws IOException {
+        super();
         history = new History();
 
-        clients = new ClientDB();
+        clients = new ClientDB(getId());
         clients.registerHistory(history);
 
         serverSocket = ServerSocket.createServerSocket(port, clients, clients);
@@ -54,7 +55,7 @@ public final class ServerImpl extends Server implements IService, Observer {
         jobManager = new ServerJobManagerImpl(clients, serverSocket);
         getListenerRegistrator().setIdListener(GlobalConstants.ID_JOB_MANAGER, jobManager);
 
-        getListenerRegistrator().setIdListener(GlobalConstants.ID_SYS_MSG, new SystemMessagesHandler(clients));
+        getListenerRegistrator().setIdListener(GlobalConstants.ID_SYS_MSG, new SystemMessagesHandler(clients, getId()));
 
         try {
             cdd = new ClientDiscoveryDaemon(clients);

@@ -26,13 +26,13 @@ public class SystemMessagesHandlerTest {
         System.out.println("receiveData");
 
         try {
-            final SystemMessagesHandler instance = new SystemMessagesHandler(null);
+            final SystemMessagesHandler instance = new SystemMessagesHandler(null, null);
             fail("Should have failed because of NULL client manager.");
         } catch (NullPointerException ex) {
         }
 
         ClientMan cm = new ClientMan();
-        SystemMessagesHandler instance = new SystemMessagesHandler(cm);
+        SystemMessagesHandler instance = new SystemMessagesHandler(cm, null);
 
         Message m = new Message(SystemMessageHeaders.LOGIN, null);
         DataPacketImpl dp = new DataPacketImpl(null, null, m);

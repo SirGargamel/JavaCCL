@@ -85,10 +85,6 @@ public class MessagePullDaemon extends Thread implements IService {
                 if (comm instanceof CommunicatorInner) {
                     commI = (CommunicatorInner) comm;
                     final UUID id = commI.getSourceId();
-                    if (id == null) {
-                        continue;
-                    }
-
                     final Status status = comm.getStatus();
                     if (status.equals(Status.ONLINE)) {
                         ipComm = comm.getAddress();

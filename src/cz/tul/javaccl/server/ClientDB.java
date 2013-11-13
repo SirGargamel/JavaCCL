@@ -34,31 +34,35 @@ class ClientDB extends ClientManager implements Observer, IDFilter {
     private final Set<Communicator> clients;
     private Collection<UUID> allowedIDs;
     private HistoryManager hm;
+    private final UUID localId;
 
-    ClientDB() {
+    ClientDB(final UUID localId) {
         clients = Collections.synchronizedSet(new HashSet<Communicator>());
         allowedIDs = Collections.emptySet();
         allowedIDs = Collections.unmodifiableCollection(allowedIDs);
+        this.localId = localId;
     }
 
     @Override
     public Communicator registerClient(final InetAddress address, final int port) throws IllegalArgumentException, ConnectionException {
-        CommunicatorInner cc = CommunicatorImpl.initNewCommunicator(address, port);
+        CommunicatorInner cc = CommunicatorImpl.initNewCommunicator(address, port, localId);
         if (cc != null) {
             cc.registerHistory(hm);
-            cc.addObserver(this);
-            cc.setSourceId(GlobalConstants.ID_SERVER);
+            cc.addObserver(this);            
             clients.add(cc);
 
-            final UUID id = UUID.randomUUID();
-            final Message m = new Message(GlobalConstants.ID_SYS_MSG, SystemMessageHeaders.LOGIN, id);
-            cc.sendData(m);
-            cc.setTargetId(id);
+            final Message m = new Message(GlobalConstants.ID_SYS_MSG, SystemMessageHeaders.LOGIN, localId);
+            Object id = cc.sendData(m);
+            if (id instanceof UUID) {
+                cc.setTargetId((UUID) id);
 
-            prepareAllowedIDs();
+                prepareAllowedIDs();
 
-            notifyChange(REGISTER, new Object[]{address, port, id});
-            log.log(Level.INFO, "New client with IP " + address.getHostAddress() + " on port " + port + " registered");
+                notifyChange(REGISTER, new Object[]{address, port, id});
+                log.log(Level.INFO, "New client with IP " + address.getHostAddress() + " on port " + port + " registered with ID " + id);
+            } else {
+                log.warning("Illegal login response received - " + id);
+            }
         } else {
             log.log(Level.INFO, "Failed to register client with IP " + address.getHostAddress() + " and port " + port);
         }
@@ -68,11 +72,10 @@ class ClientDB extends ClientManager implements Observer, IDFilter {
 
     @Override
     public Communicator addClient(final InetAddress address, final int port, final UUID clientId) {
-        CommunicatorInner ccI = CommunicatorImpl.initNewCommunicator(address, port);
+        CommunicatorInner ccI = CommunicatorImpl.initNewCommunicator(address, port, localId);
         if (ccI != null) {
             ccI.registerHistory(hm);
-            ccI.addObserver(this);
-            ccI.setSourceId(GlobalConstants.ID_SERVER);
+            ccI.addObserver(this);            
             ccI.setTargetId(clientId);
 
             clients.add(ccI);
@@ -171,11 +174,11 @@ class ClientDB extends ClientManager implements Observer, IDFilter {
 
     @Override
     public boolean isTargetIdValid(UUID id) {
-        return GlobalConstants.ID_SERVER.equals(id);
+        return localId.equals(id);
     }
 
     @Override
     public UUID getLocalID() {
-        return GlobalConstants.ID_SERVER;
+        return localId;
     }
 }

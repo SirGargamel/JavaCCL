@@ -51,8 +51,7 @@ class SystemMessageHandler extends CCLObservable implements Listener<Identifiabl
                             log.log(
                                     Level.INFO,
                                     "Registered to new server at " + dp.getSourceIP().getHostAddress() + " on port " + GlobalConstants.DEFAULT_PORT + " with client ID " + mData.toString());
-                            result = GenericResponses.OK;
-
+                            result = idFIlter.getLocalID();
                         } else {
                             log.log(Level.WARNING, "Illegal data received with LOGIN message - [" + mData.toString() + "].");
                         }

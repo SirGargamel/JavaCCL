@@ -132,13 +132,13 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         dataListeners.add(msgObserver);
         log.log(Level.FINE, "Added new message observer - " + msgObserver.toString());
     }
-    
+
     @Override
     public void removeMessageObserver(Observer msgObserver) {
         dataListeners.remove(msgObserver);
         log.log(Level.FINE, "Removed message observer - " + msgObserver.toString());
     }
-    
+
     @Override
     public void setMessageListener(Listener<DataPacket> listener) {
         this.messageListener = listener;
@@ -148,7 +148,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     @Override
     public void removeMessageListener() {
         log.log(Level.FINE, "Removed message listener - " + messageListener.toString());
-        messageListener = null;        
+        messageListener = null;
     }
 
     @Override
@@ -159,7 +159,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         } else {
             return dataStorageClient.prepareQueue(localId);
         }
-    }    
+    }
 
     @Override
     public void run() {
@@ -228,38 +228,33 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
 
         boolean allowed = false;
         if (idFilter != null) {
-            if (clientId == null) {
+            if (!idFilter.isTargetIdValid(dp.getTargetID())) {
                 if (data instanceof Message) {
                     final UUID mId = ((Message) data).getId();
                     final String header = ((Message) data).getHeader();
-                    if ((mId.equals(GlobalConstants.ID_SYS_MSG) && (header.equals(SystemMessageHeaders.LOGIN))
+                    if (mId.equals(GlobalConstants.ID_SYS_MSG) && ((header.equals(SystemMessageHeaders.LOGIN))
                             || header.equals(SystemMessageHeaders.STATUS_CHECK))) {
                         allowed = true;
-                    } else {
-                        log.log(Level.FINE, "Received message has no id and is not for login [" + data.toString() + "].");
                     }
-                } else {
-                    log.log(Level.FINE, "Data with null id received and its not a sys msg [" + data.toString() + "].");
                 }
-            } else if (!idFilter.isTargetIdValid(dp.getTargetID())) {
-                log.log(Level.FINE, "Received data not for this client - client id " + clientId + ", data packet [" + dp.toString() + "]");
-                result = GenericResponses.ILLEGAL_TARGET_ID;
+
+                if (!allowed) {
+                    log.log(Level.FINE, "Received data not for this client - client id " + clientId + ", data packet [" + dp.toString() + "]");
+                    result = GenericResponses.ILLEGAL_TARGET_ID;
+                }
             } else if (!idFilter.isIdAllowed(clientId)) {
                 log.log(Level.FINE, "Received data from unregistered client - id " + clientId + ", data [" + data.toString() + "]");
+                result = GenericResponses.UUID_NOT_ALLOWED;
             } else {
                 log.log(Level.FINE, "Data [" + data.toString() + "] received, forwarding to listeners.");
                 allowed = true;
             }
         } else {
-            log.log(Level.FINE, "Data [" + data.toString() + "] received, forwarding to listeners.");
+            log.log(Level.FINE, "Data [" + data.toString() + "] received, no ID filter set, forwarding to listeners.");
             allowed = true;
         }
 
-        if (!allowed) {
-            if (GenericResponses.NOT_HANDLED.equals(result)) {
-                result = GenericResponses.UUID_NOT_ALLOWED;
-            }
-        } else {
+        if (allowed) {
             boolean sysMsg = false;
             boolean handled = false;
             if (data instanceof Identifiable) {
@@ -293,7 +288,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                     result = messageListener.receiveData(dp);
                     handled = true;
                 }
-                
+
                 if (dataStorageClient.isListenerRegistered(clientId)) {
                     dataStorageClient.storeData(clientId, dp);
                     if (!handled) {

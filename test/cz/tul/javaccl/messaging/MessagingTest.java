@@ -74,8 +74,8 @@ public class MessagingTest {
         }
 
         try {
-            CommunicatorInner comm = (CommunicatorInner) CommunicatorImpl.initNewCommunicator(InetAddress.getByName(GlobalConstants.IP_LOOPBACK), 5252);
-            comm.setTargetId(GlobalConstants.ID_SERVER);
+            CommunicatorInner comm = (CommunicatorInner) CommunicatorImpl.initNewCommunicator(InetAddress.getByName(GlobalConstants.IP_LOOPBACK), 5252, null);
+            comm.setTargetId(s.getId());
             comm.sendData("data");
             fail("Should have failed, because this communicator is not registered.");
         } catch (ConnectionException ex) {
@@ -223,7 +223,7 @@ public class MessagingTest {
                 }
             }
         });
-        c.getListenerRegistrator().setClientListener(GlobalConstants.ID_SERVER, new Listener<DataPacket>() {
+        c.getListenerRegistrator().setClientListener(s.getId(), new Listener<DataPacket>() {
             @Override
             public Object receiveData(DataPacket data) {
                 if (data.getData() instanceof Message) {
@@ -252,7 +252,7 @@ public class MessagingTest {
             fail("Communication failed - " + ex);
         }
 
-        c.getListenerRegistrator().removeClientListener(GlobalConstants.ID_SERVER);
+        c.getListenerRegistrator().removeClientListener(s.getId());
         try {
             assertEquals(GenericResponses.NOT_HANDLED, s.getClient(c.getLocalID()).sendData(m));
         } catch (ConnectionException ex) {
@@ -271,7 +271,7 @@ public class MessagingTest {
         }
 
         final Queue<DataPacket> serverQueue = s.getListenerRegistrator().createClientMessageQueue(c.getLocalID());
-        final Queue<DataPacket> clientQueue = c.getListenerRegistrator().createClientMessageQueue(GlobalConstants.ID_SERVER);
+        final Queue<DataPacket> clientQueue = c.getListenerRegistrator().createClientMessageQueue(s.getId());
 
         final String header = "abcdefg";
         final Message m = new Message(header, "data");
@@ -304,7 +304,7 @@ public class MessagingTest {
             fail("Communication failed - " + ex);
         }
 
-        c.getListenerRegistrator().removeClientListener(GlobalConstants.ID_SERVER);
+        c.getListenerRegistrator().removeClientListener(s.getId());
         try {
             assertEquals(GenericResponses.NOT_HANDLED, s.getClient(c.getLocalID()).sendData(m));
         } catch (ConnectionException ex) {

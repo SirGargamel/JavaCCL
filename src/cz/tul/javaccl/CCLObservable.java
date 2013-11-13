@@ -1,6 +1,7 @@
 package cz.tul.javaccl;
 
 import java.util.Observable;
+import java.util.UUID;
 
 /**
  * Extension of Observable class with custon predefined actions for easier

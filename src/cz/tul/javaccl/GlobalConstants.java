@@ -24,11 +24,7 @@ public abstract class GlobalConstants {
     /**
      * data used as an identifier for distributing server info amongs clients
      */
-    public static final String DISCOVERY_INFO = "DISCOVER_SERVER";
-    /**
-     * Server UUID
-     */
-    public static final UUID ID_SERVER = UUID.fromString("a1b248d1-949b-01e4-a84b-000000000001");
+    public static final String DISCOVERY_INFO = "DISCOVER_SERVER";    
     /**
      * UUID of job manager
      */

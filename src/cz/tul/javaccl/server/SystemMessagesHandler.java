@@ -1,6 +1,5 @@
 package cz.tul.javaccl.server;
 
-import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.communicator.DataPacketImpl;
 import cz.tul.javaccl.messaging.Message;
@@ -20,16 +19,20 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
 
     private static final Logger log = Logger.getLogger(SystemMessagesHandler.class.getName());
     private final ClientManager clientManager;
+    private final UUID localId;
 
     /**
      * @param clientManager client manager
+     * @param localId local UUID
      */
-    public SystemMessagesHandler(ClientManager clientManager) {
+    public SystemMessagesHandler(ClientManager clientManager, final UUID localId) {
         if (clientManager != null) {
             this.clientManager = clientManager;
         } else {
             throw new NullPointerException("NULL client manager not allowed.");
         }
+        
+        this.localId = localId;
     }
 
     @Override
@@ -43,15 +46,12 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                 if (header != null) {
                     if (header.equals(SystemMessageHeaders.LOGIN)) {
                         try {
-                            UUID clientId = UUID.randomUUID();
-                            clientManager.addClient(dp.getSourceIP(), Integer.parseInt(m.getData().toString()), clientId);
-                            log.log(Level.FINE, "LOGIN received from " + dp.getSourceIP().getHostAddress() + ", assigning id " + clientId);
-                            return clientId;
-                        } catch (NumberFormatException ex) {
+                            Integer port = Integer.parseInt(m.getData().toString());
+                            clientManager.addClient(dp.getSourceIP(), port, dp.getSourceID());
+                            log.log(Level.FINE, "LOGIN received from " + dp.getSourceIP().getHostAddress() + " with id " + dp.getSourceID());
+                            return localId;                        
+                        } catch (Exception ex) {
                             log.log(Level.WARNING, "Illegal login data received - " + m.getData().toString());
-                            return GenericResponses.ILLEGAL_DATA;
-                        } catch (NullPointerException ex) {
-                            log.log(Level.WARNING, "Null login data received.");
                             return GenericResponses.ILLEGAL_DATA;
                         }
                     } else if (header.equals(SystemMessageHeaders.LOGOUT)) {
@@ -64,7 +64,7 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                             return GenericResponses.ILLEGAL_DATA;
                         }
                     } else if (header.equals(SystemMessageHeaders.STATUS_CHECK)) {
-                        return GlobalConstants.ID_SERVER;
+                        return localId;
                     } else {
                         return GenericResponses.ILLEGAL_HEADER;
                     }

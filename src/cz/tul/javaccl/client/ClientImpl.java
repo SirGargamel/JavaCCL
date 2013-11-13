@@ -55,6 +55,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     private int jobComplexity;
 
     ClientImpl() {
+        super();
         concurentJobCount = 1;
         jobCountBackup = 1;
         jobComplexity = JobConstants.DEFAULT_COMPLEXITY;
@@ -86,17 +87,16 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
 
         log.log(Level.INFO, "Registering new server IP and port - " + address.getHostAddress() + ":" + port);
         boolean result = false;
-        comm = CommunicatorImpl.initNewCommunicator(address, port);
-        comm.setTargetId(GlobalConstants.ID_SERVER);
+        comm = CommunicatorImpl.initNewCommunicator(address, port, getId());        
         comm.registerHistory(history);
         final Message login = new Message(GlobalConstants.ID_SYS_MSG, SystemMessageHeaders.LOGIN, serverSocket.getPort());
         try {
             final Object id = comm.sendData(login);
             if (id instanceof UUID) {
-                comm.setSourceId(((UUID) id));
+                comm.setTargetId(((UUID) id));
                 result = true;
-                log.log(Level.INFO, "Client has been registered to new server, new ID has been received - " + comm.getSourceId());
-                notifyChange(REGISTER, new Object[]{address, port});
+                log.log(Level.INFO, "Client has been registered to new server (ID " + id + ")");
+                notifyChange(REGISTER, new Object[]{address, port, id});
                 setMaxNumberOfConcurrentAssignments(concurentJobCount);
                 setMaxJobComplexity(jobComplexity);
             } else {
@@ -114,12 +114,12 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     }
 
     @Override
-    public void setServerInfo(final InetAddress address, final int port, final UUID clientId) {
-        comm = CommunicatorImpl.initNewCommunicator(address, port);
-        comm.setTargetId(GlobalConstants.ID_SERVER);
-        comm.setSourceId(clientId);
+    public void setServerInfo(final InetAddress address, final int port, final UUID serverId) {
+        comm = CommunicatorImpl.initNewCommunicator(address, port, getId());        
+        comm.setTargetId(serverId);        
         comm.registerHistory(history);
         setMaxNumberOfConcurrentAssignments(concurentJobCount);
+        setMaxJobComplexity(jobComplexity);
     }
 
     @Override
@@ -224,21 +224,14 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     }
 
     @Override
-    public boolean isIdAllowed(UUID id) {
-        if (comm == null && id.equals(GlobalConstants.ID_SERVER)) {
-            return true;
+     public boolean isIdAllowed(UUID id) {
+        boolean result = false;
+
+        if (comm != null && id != null) {
+            result = id.equals(comm.getTargetId());
         }
 
-        if (comm == null) {
-            return false;
-        }
-
-        final UUID commId = comm.getTargetId();
-        if (commId == null) {
-            return true;
-        } else {
-            return comm.getTargetId().equals(id);
-        }
+        return result;
     }
 
     @Override
@@ -255,28 +248,12 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
 
     @Override
     public boolean isTargetIdValid(UUID id) {
-        if (id != null) {
-            if (comm != null) {
-                return id.equals(comm.getSourceId());
-            } else {
-                return true;
-            }
-        } else {
-            if (comm == null) {
-                return true;
-            } else {
-                return false;
-            }
-        }
+        return getLocalID().equals(id);
     }
 
     @Override
     public UUID getLocalID() {
-        if (comm != null) {
-            return comm.getSourceId();
-        } else {
-            return null;
-        }
+        return getId();
     }
 
     @Override
@@ -361,7 +338,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
             setMaxNumberOfConcurrentAssignments(jobCountBackup);
         }
     }
-    
+
     @Override
     public ComponentManager getComponentManager() {
         return this;
@@ -371,7 +348,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     public void setIdFilter(IDFilter filter) {
         serverSocket.setIdFilter(filter);
     }
-    
+
     @Override
     public void enableDiscoveryDaemon(boolean enable) {
         sdd.enable(enable);
