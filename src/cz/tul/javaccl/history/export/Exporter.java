@@ -15,6 +15,7 @@ import org.w3c.dom.Element;
 public abstract class Exporter {
 
     private static final Logger log = Logger.getLogger(Exporter.class.getName());
+    private static final String ARRAY_NAME = "Array";
     private static final Map<Class<?>, ExportUnit> exporters;
 
     static {
@@ -39,8 +40,14 @@ public abstract class Exporter {
             if (exporters.containsKey(c)) {
                 result = exporters.get(c).exportData(doc, data);
             } else {
-                result = doc.createElement(data.getClass().getSimpleName());
-                result.appendChild(doc.createTextNode(data.toString()));
+                if (data.getClass().isArray()) {
+                    result = doc.createElement(ARRAY_NAME);
+                    result.appendChild(doc.createTextNode(data.toString()));
+                    // TODO output array data
+                } else {
+                    result = doc.createElement(data.getClass().getSimpleName());
+                    result.appendChild(doc.createTextNode(data.toString()));
+                }
             }
         } else {
             result = doc.createElement("null");
