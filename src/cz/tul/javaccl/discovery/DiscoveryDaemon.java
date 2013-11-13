@@ -32,7 +32,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
     private final DatagramSocket ds;
     private final MulticastSocket ms;
     private final Runnable dsr, msr;
-    protected boolean run, pause;
+    protected boolean run, pause, broadcast;
 
     static {
         InetAddress group = null;
@@ -117,37 +117,44 @@ abstract class DiscoveryDaemon extends Thread implements IService {
                 }
             }
         };
+
+        broadcast = false;
     }
 
     protected void broadcastMessage(final byte[] msg) throws SocketException, IOException {
-        // Find the clients using UDP broadcast                
-        // Try the 255.255.255.255 first
         final int messageLength = msg.length;
         DatagramPacket sendPacket = new DatagramPacket(msg, messageLength, InetAddress.getByName("255.255.255.255"), GlobalConstants.DEFAULT_PORT);
-        ds.send(sendPacket);
+        
+        if (broadcast) {
+            // Find the clients using UDP broadcast                
+            // Try the 255.255.255.255 first            
+            ds.send(sendPacket);
 
-        // Broadcast the message over all the network interfaces
-        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-        while (interfaces.hasMoreElements()) {
-            NetworkInterface networkInterface = interfaces.nextElement();
+            // Broadcast the message over all the network interfaces
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = interfaces.nextElement();
 
-            if (!networkInterface.isUp()) {
-                continue;
-            }
-
-            for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
-                InetAddress broadcast = interfaceAddress.getBroadcast();
-                if (broadcast == null) {
+                if (!networkInterface.isUp()) {
                     continue;
                 }
 
-                // Send the broadcast
-                sendPacket = new DatagramPacket(msg, messageLength, broadcast, GlobalConstants.DEFAULT_PORT);
-                ds.send(sendPacket);
-            }
-        }
+                for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+                    InetAddress broadcast = interfaceAddress.getBroadcast();
+                    if (broadcast == null) {
+                        continue;
+                    }
 
-        ms.send(sendPacket);
+                    // Send the broadcast
+                    sendPacket = new DatagramPacket(msg, messageLength, broadcast, GlobalConstants.DEFAULT_PORT);
+                    ds.send(sendPacket);
+                }
+            }
+            broadcast = false;
+        } else {
+            ms.send(sendPacket);
+            broadcast = true;
+        }
     }
 
     protected void listenForDiscoveryPacket() {
