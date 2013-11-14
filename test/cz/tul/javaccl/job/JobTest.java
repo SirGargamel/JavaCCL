@@ -37,7 +37,7 @@ public class JobTest {
         try {
             s = ServerImpl.initNewServer();
             c = ClientImpl.initNewClient(5253);
-            c.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK));
+            c.registerToServer(GlobalConstants.IP_LOOPBACK);
         } catch (Exception ex) {
             fail("Initialization failed - " + ex);
         }
@@ -317,7 +317,7 @@ public class JobTest {
         for (int i = 0; i < clientCount; i++) {
             try {
                 cl = ClientImpl.initNewClient();
-                cl.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK));
+                cl.registerToServer(GlobalConstants.IP_LOOPBACK);
                 cl.setAssignmentListener(new AssignmentListener() {
                     @Override
                     public void receiveTask(Assignment task) {
@@ -413,7 +413,7 @@ public class JobTest {
         for (int i = 0; i < clientCount; i++) {
             try {
                 cl = ClientImpl.initNewClient();
-                cl.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK));
+                cl.registerToServer(GlobalConstants.IP_LOOPBACK);
                 cl.setAssignmentListener(new AssignmentListener() {
                     @Override
                     public void receiveTask(Assignment task) {
@@ -539,7 +539,7 @@ public class JobTest {
         for (int i = 0; i < clientCount; i++) {
             try {
                 cl = ClientImpl.initNewClient();
-                cl.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK));
+                cl.registerToServer(GlobalConstants.IP_LOOPBACK);
                 cl.setAssignmentListener(new AssignmentListener() {
                     @Override
                     public void receiveTask(Assignment task) {
@@ -645,7 +645,7 @@ public class JobTest {
             final Client failingClient = ClientImpl.initNewClient(5254);
 
             try {
-                failingClient.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK));
+                failingClient.registerToServer(GlobalConstants.IP_LOOPBACK);
             } catch (ConnectionException ex) {
                 fail("Failed to connect client to server - " + ex);
             }
@@ -726,7 +726,7 @@ public class JobTest {
 
             final Client failingClient = ClientImpl.initNewClient(5254);
             try {
-                failingClient.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK));
+                failingClient.registerToServer(GlobalConstants.IP_LOOPBACK);
             } catch (ConnectionException ex) {
                 fail("Failed to connect client to server - " + ex);
             }
@@ -828,7 +828,7 @@ public class JobTest {
 
             final Client failingClient = ClientImpl.initNewClient(5254);
             try {
-                failingClient.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK));
+                failingClient.registerToServer(GlobalConstants.IP_LOOPBACK);
             } catch (ConnectionException ex) {
                 fail("Failed to connect client to server - " + ex);
             }
@@ -934,7 +934,7 @@ public class JobTest {
 
             final Client failingClient = ClientImpl.initNewClient(5254);
             try {
-                failingClient.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK));
+                failingClient.registerToServer(GlobalConstants.IP_LOOPBACK);
             } catch (ConnectionException ex) {
                 fail("Failed to connect client to server - " + ex);
             }

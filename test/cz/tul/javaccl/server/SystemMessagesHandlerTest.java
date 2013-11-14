@@ -46,7 +46,7 @@ public class SystemMessagesHandlerTest {
 
         m = new Message(SystemMessageHeaders.LOGIN, "5253");
         dp = new DataPacketImpl(null, null, m);
-        dp.setSourceIP(InetAddress.getByName(GlobalConstants.IP_LOOPBACK));
+        dp.setSourceIP(GlobalConstants.IP_LOOPBACK);
         result = instance.receiveData(dp);
         assertTrue(result instanceof UUID);
 

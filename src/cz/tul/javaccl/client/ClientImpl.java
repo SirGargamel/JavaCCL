@@ -198,7 +198,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         } else if (!isServerUp()) {
             log.fine("Could not init server discovery, trying to connect to local host.");
             try {
-                registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK), GlobalConstants.DEFAULT_PORT);
+                registerToServer(GlobalConstants.IP_LOOPBACK, GlobalConstants.DEFAULT_PORT);
             } catch (ConnectionException ex) {
                 log.fine("Could not reach server at localhost on default port.");
             }

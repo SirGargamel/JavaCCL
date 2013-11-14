@@ -24,7 +24,7 @@ public class CommunicatorImplTest {
         Object result;        
         
         try {
-            result = CommunicatorImpl.initNewCommunicator(InetAddress.getByName(GlobalConstants.IP_LOOPBACK), -1, null);
+            result = CommunicatorImpl.initNewCommunicator(GlobalConstants.IP_LOOPBACK, -1, null);
             fail("Should have failed because of illegal port");
         } catch (IllegalArgumentException ex) {
             // expected
@@ -41,7 +41,7 @@ public class CommunicatorImplTest {
     @Test
     public void testUnserializableDataSend() throws UnknownHostException {
         System.out.println("testUnserializableDataSend");
-        final Communicator comm = CommunicatorImpl.initNewCommunicator(InetAddress.getByName(GlobalConstants.IP_LOOPBACK), 0, null);
+        final Communicator comm = CommunicatorImpl.initNewCommunicator(GlobalConstants.IP_LOOPBACK, 0, null);
         
         try {
             comm.sendData(new BufferedImage(1, 1, 1));

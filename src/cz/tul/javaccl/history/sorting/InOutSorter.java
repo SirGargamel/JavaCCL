@@ -31,16 +31,12 @@ public class InOutSorter extends HistorySorter {
         final Element groupIn = doc.createElement("In");
         final Element groupOut = doc.createElement("Out");
 
-        InetAddress localHost = null;
+        InetAddress localHost;
         try {
             localHost = InetAddress.getLocalHost();
         } catch (UnknownHostException ex) {
             log.log(Level.FINE, "Could not obtain local IP address, using loopback.", ex);
-            try {
-                localHost = InetAddress.getByName(GlobalConstants.IP_LOOPBACK);
-            } catch (UnknownHostException ex1) {
-                log.log(Level.FINE, "Could not obtain loopback address.", ex);
-            }
+            localHost = GlobalConstants.IP_LOOPBACK;
         }
 
         Element e;

@@ -34,7 +34,7 @@ public class ClientImplTest {
             }
 
             try {
-                c.registerToServer(Inet4Address.getByName(GlobalConstants.IP_LOOPBACK), 5251);
+                c.registerToServer(GlobalConstants.IP_LOOPBACK, 5251);
             } catch (ConnectionException ex) {
                 fail("Registration failed.");
             }
@@ -56,7 +56,7 @@ public class ClientImplTest {
 
             s = ServerImpl.initNewServer();
             try {
-                c.registerToServer(Inet4Address.getByName(GlobalConstants.IP_LOOPBACK));
+                c.registerToServer(GlobalConstants.IP_LOOPBACK);
             } catch (ConnectionException ex) {
                 fail("Registration failed.");
             }

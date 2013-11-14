@@ -11,16 +11,17 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Before;
 
 /**
  *
@@ -91,13 +92,11 @@ public class SettingsTest {
         s.stopService();
         s = ServerImpl.initNewServer();
         try {
-            s.getClientManager().registerClient(InetAddress.getByName(GlobalConstants.IP_LOOPBACK), CLIENT_PORT);
+            s.getClientManager().registerClient(GlobalConstants.IP_LOOPBACK, CLIENT_PORT);
         } catch (IllegalArgumentException ex) {
             fail("Illegal arguments used");
         } catch (ConnectionException ex) {
             fail("Could not connect to client");
-        } catch (UnknownHostException ex) {
-            fail("Error obtaining IP.");
         }
 
         boolean result = ServerSettings.serialize(serializationTarget, s.getClientManager());
@@ -128,7 +127,7 @@ public class SettingsTest {
         c.stopService();
         try {
             c = ClientImpl.initNewClient(CLIENT_PORT);
-            c.registerToServer(InetAddress.getByName(GlobalConstants.IP_LOOPBACK));
+            c.registerToServer(GlobalConstants.IP_LOOPBACK);
         } catch (IllegalArgumentException ex) {
             fail("Illegal arguments used");
         } catch (ConnectionException ex) {

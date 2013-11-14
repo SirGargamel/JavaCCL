@@ -1,6 +1,10 @@
 package cz.tul.javaccl;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 /**
  * GlobalConstants used thorought app.
@@ -24,7 +28,7 @@ public abstract class GlobalConstants {
     /**
      * data used as an identifier for distributing server info amongs clients
      */
-    public static final String DISCOVERY_INFO = "DISCOVER_SERVER";    
+    public static final String DISCOVERY_INFO = "DISCOVER_SERVER";
     /**
      * UUID of job manager
      */
@@ -37,17 +41,33 @@ public abstract class GlobalConstants {
      * Splitting character
      */
     public static final String DELIMITER = "-";
+    private static final Logger log = Logger.getLogger(GlobalConstants.class.getName());
     /**
      * IP for loopback communication
      */
-    public static final String IP_LOOPBACK = "127.0.0.1";    
+    public static final InetAddress IP_LOOPBACK;
+
+    static {
+        InetAddress tmp = null;
+        try {
+            tmp = InetAddress.getByName("127.0.0.1");
+        } catch (UnknownHostException ex) {
+            log.warning("Error obtaining loopback IP.");
+            try {
+                tmp = InetAddress.getLocalHost();                
+            } catch (UnknownHostException ex1) {
+                log.severe("Error obtaining local IP.");
+            }
+        }
+        IP_LOOPBACK = tmp;
+    }
 
     public static int getDEFAULT_TIMEOUT() {
         return DEFAULT_TIMEOUT;
-    }    
+    }
 
     public static void setDEFAULT_TIMEOUT(int DEFAULT_TIMEOUT) {
         GlobalConstants.DEFAULT_TIMEOUT = DEFAULT_TIMEOUT;
     }
-    
+
 }

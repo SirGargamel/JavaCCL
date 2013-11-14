@@ -66,17 +66,12 @@ public class History implements HistoryManager {
     public History() {
         records = Collections.synchronizedList(new LinkedList<HistoryRecord>());
 
-        InetAddress local = null;
+        InetAddress local;
         try {
             local = InetAddress.getLocalHost();
         } catch (UnknownHostException ex) {
             log.log(Level.FINE, "Local address not found, using loopback", ex);
-            try {
-                local = InetAddress.getByName(GlobalConstants.IP_LOOPBACK);
-            } catch (UnknownHostException ex1) {
-                // should not happen
-                Logger.getLogger(History.class.getName()).log(Level.SEVERE, null, ex1);
-            }
+            local = GlobalConstants.IP_LOOPBACK;
         }
         localHost = local;
         isEnabled = true;
