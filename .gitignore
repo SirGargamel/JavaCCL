@@ -1,8 +1,6 @@
-/dist/
 /build/
 /nbproject/
 /.jacocoverage/
 /systemLog*.xml*
 /jacoco.exec*
 /build.xml
-/manifest.mf
