@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 public class ClientDiscoveryDaemon extends DiscoveryDaemon implements IService {
 
     private static final Logger log = Logger.getLogger(ClientDiscoveryDaemon.class.getName());
+    private static final int PAUSE_TIME = 5000;
     private final ClientManager clientManager;
 
     /**
@@ -34,8 +35,9 @@ public class ClientDiscoveryDaemon extends DiscoveryDaemon implements IService {
         while (run) {
             if (pause) {
                 pause();
+            } else {
+                pause(PAUSE_TIME);
             }
-            listenForDiscoveryPacket();
         }
     }
 
