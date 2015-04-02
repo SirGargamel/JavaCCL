@@ -14,13 +14,18 @@ import cz.tul.javaccl.messaging.Message;
 import cz.tul.javaccl.messaging.SystemMessageHeaders;
 import cz.tul.javaccl.persistence.ServerSettings;
 import cz.tul.javaccl.discovery.ClientDiscoveryDaemon;
+import cz.tul.javaccl.persistence.ClientSettings;
+import cz.tul.javaccl.persistence.SimpleXMLSettingsFile;
 import cz.tul.javaccl.socket.IDFilter;
 import cz.tul.javaccl.socket.ListenerRegistrator;
 import cz.tul.javaccl.socket.ServerSocket;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.UUID;
@@ -192,5 +197,37 @@ public final class ServerImpl extends Server implements IService, Observer {
     @Override
     public void enableDiscoveryDaemon(boolean enable) {
         cdd.enable(enable);
+    }
+
+    @Override
+    public boolean generateClientSettings(File settingsFile) {
+        log.log(Level.FINE, "Generating client settings.");
+
+        final SimpleXMLSettingsFile xml = new SimpleXMLSettingsFile();
+
+        boolean result = false;
+        try {
+            result = xml.storeXML(settingsFile);
+
+            final Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+
+            for (NetworkInterface n : Collections.list(nets)) {
+                if (n.isUp()) {
+                    for (InetAddress address : Collections.list(n.getInetAddresses())) {
+                        xml.addField(
+                                ClientSettings.FIELD_NAME_SERVER,
+                                ClientSettings.composeServerAddress(address, serverSocket.getPort()));
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            log.log(Level.WARNING, "Error listing available network interfaces.", settingsFile.getAbsolutePath());
+            log.log(Level.FINE, "Error listing available network interfaces.", ex);
+        } catch (IOException ex) {
+            log.log(Level.WARNING, "Error accessing client settings at {0}.", settingsFile.getAbsolutePath());
+            log.log(Level.FINE, "Error accessing client settings at " + settingsFile.getAbsolutePath() + ".", ex);
+        }
+
+        return result;
     }
 }

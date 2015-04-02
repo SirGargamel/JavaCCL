@@ -151,5 +151,13 @@ public abstract class Server extends CCLEntity implements IService, ComponentMan
      */
     public abstract boolean saveSettings(final File settingsFile);
     
+    /**
+     * Generate a settings file for a client to connect to this server.
+     *
+     * @param settingsFile target file
+     * @return true for successfull save
+     */
+    public abstract boolean generateClientSettings(final File settingsFile);
+    
     public abstract ComponentManager getComponentManager();
 }

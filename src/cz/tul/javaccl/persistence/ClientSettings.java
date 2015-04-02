@@ -24,7 +24,7 @@ import org.xml.sax.SAXException;
 public class ClientSettings {
 
     private static final Logger log = Logger.getLogger(ClientSettings.class.getName());
-    private static final String FIELD_NAME_SERVER = "server";
+    public static final String FIELD_NAME_SERVER = "server";
 
     /**
      * Save client settings to disk.
@@ -118,7 +118,7 @@ public class ClientSettings {
         return result;
     }
 
-    private static String composeServerAddress(final InetAddress address, final int port) {
+    public static String composeServerAddress(final InetAddress address, final int port) {
         StringBuilder sb = new StringBuilder();
         sb.append(address.getHostAddress());
         sb.append(GlobalConstants.DELIMITER);
