@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,11 +41,13 @@ public class ClientSettings {
             InetAddress ip = null;
             int port = GlobalConstants.DEFAULT_PORT;
             try {
-                Map<String, String> fields = SimpleXMLSettingsFile.loadSimpleXMLFile(settingsFile);
-                for (String f : fields.keySet()) {
-                    if (f != null && f.equals(FIELD_NAME_SERVER)) {
+                List<Map.Entry<String, String>> fields = SimpleXMLSettingsFile.loadSimpleXMLFile(settingsFile);
+                String fieldName;
+                for (Map.Entry<String, String> e : fields) {
+                    fieldName = e.getKey();
+                    if (!result && fieldName != null && fieldName.equals(FIELD_NAME_SERVER)) {
                         try {
-                            String[] split = fields.get(f).split(GlobalConstants.DELIMITER);
+                            String[] split = e.getValue().split(GlobalConstants.DELIMITER);
                             ip = InetAddress.getByName(split[0]);
                             if (split.length > 1) {
                                 port = Integer.valueOf(split[1]);
@@ -63,7 +66,7 @@ public class ClientSettings {
                             log.log(Level.FINE, "Unkonwn server info found in settings.", ex);
                         }
                     } else {
-                        log.log(Level.FINE, "Unknown field - " + f);
+                        log.log(Level.FINE, "Unknown field - {0}", fieldName);
                     }
                 }
 
@@ -73,11 +76,11 @@ public class ClientSettings {
                             result = true;
                         }
                     } catch (ConnectionException ex) {
-                        log.log(Level.WARNING, "Could not connect to server with " + ip.getHostAddress() + ", port " + port);
+                        log.log(Level.WARNING, "Could not connect to server with {0}, port {1}", new Object[]{ip.getHostAddress(), port});
                     }
                 }
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Error accessing client settings at " + settingsFile.getAbsolutePath() + ".");
+                log.log(Level.WARNING, "Error accessing client settings at {0}.", settingsFile.getAbsolutePath());
                 log.log(Level.FINE, "Error accessing client settings at " + settingsFile.getAbsolutePath() + ".", ex);
             } catch (SAXException ex) {
                 log.log(Level.WARNING, "Wrong format of input XML.");

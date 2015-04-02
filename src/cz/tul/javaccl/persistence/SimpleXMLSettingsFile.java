@@ -2,8 +2,9 @@ package cz.tul.javaccl.persistence;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.AbstractMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -42,8 +43,8 @@ public class SimpleXMLSettingsFile {
      * @throws IOException error accessing source file
      * @throws SAXException error parsing XML file
      */
-    public static Map<String, String> loadSimpleXMLFile(final File source) throws IOException, SAXException {
-        Map<String, String> fields = new HashMap<String, String>();
+    public static List<Entry<String, String>> loadSimpleXMLFile(final File source) throws IOException, SAXException {
+        List<Entry<String, String>> fields = new LinkedList<Entry<String, String>>();
 
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -63,7 +64,7 @@ public class SimpleXMLSettingsFile {
 
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
                     Element eElement = (Element) node;
-                    fields.put(eElement.getTagName(), eElement.getTextContent());
+                    fields.add(new AbstractMap.SimpleImmutableEntry<String, String>(eElement.getTagName(), eElement.getTextContent()));
                 }
 
                 addAllChildNodes(nodesForParsing, node.getChildNodes());
@@ -80,13 +81,13 @@ public class SimpleXMLSettingsFile {
             processingQueue.add(nodes.item(i));
         }
     }
-    private final Map<String, String> fields;
+    private final List<Entry<String, String>> fields;
 
     /**
      * Init fresh instance of XML file.
      */
     public SimpleXMLSettingsFile() {
-        this.fields = new HashMap<String, String>();
+        this.fields = new LinkedList<Entry<String, String>>();
     }
 
     /**
@@ -96,7 +97,7 @@ public class SimpleXMLSettingsFile {
      * @param fieldValue value of the field
      */
     public void addField(final String fieldName, final String fieldValue) {
-        fields.put(fieldName, fieldValue);
+        fields.add(new AbstractMap.SimpleImmutableEntry<String, String>(fieldName, fieldValue));
     }
 
     /**
@@ -123,7 +124,7 @@ public class SimpleXMLSettingsFile {
             doc.appendChild(rootElement);
             // data elements
             Element el;
-            for (Entry<String, String> e : fields.entrySet()) {
+            for (Entry<String, String> e : fields) {
                 el = doc.createElement(e.getKey());
                 el.appendChild(doc.createTextNode(e.getValue()));
                 rootElement.appendChild(el);

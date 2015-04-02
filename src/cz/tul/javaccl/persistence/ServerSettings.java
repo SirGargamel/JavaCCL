@@ -10,7 +10,9 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.xml.sax.SAXException;
@@ -38,10 +40,12 @@ public class ServerSettings implements Serializable {
 
         if (settingsFile.canRead()) {
             try {
-                Map<String, String> fields = SimpleXMLSettingsFile.loadSimpleXMLFile(settingsFile);
-                for (String f : fields.keySet()) {
-                    if (f != null && f.equals(FIELD_NAME_CLIENT)) {
-                        String[] split = fields.get(f).split(GlobalConstants.DELIMITER);
+                List<Map.Entry<String, String>> fields = SimpleXMLSettingsFile.loadSimpleXMLFile(settingsFile);
+                String fieldName;
+                for (Entry<String, String> e : fields) {
+                    fieldName = e.getKey();
+                    if (fieldName != null && fieldName.equals(FIELD_NAME_CLIENT)) {
+                        String[] split = e.getValue().split(GlobalConstants.DELIMITER);
                         try {
                             if (clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1])) != null) {
                                 result = true;
@@ -56,14 +60,14 @@ public class ServerSettings implements Serializable {
                             log.log(Level.WARNING, "Unkonwn host found in settings");
                             log.log(Level.FINE, "Unkonwn host found in settings", ex);
                         } catch (ConnectionException ex) {
-                            log.log(Level.WARNING, "Could not connect client with IP " + split[0] + " on port " + split[1] + " - " + ex.getExceptionCause());
+                            log.log(Level.WARNING, "Could not connect client with IP {0} on port {1} - {2}", new Object[]{split[0], split[1], ex.getExceptionCause()});
                         }
                     } else {
-                        log.log(Level.FINE, "Unknown field - " + f);
+                        log.log(Level.FINE, "Unknown field - {0}", fieldName);
                     }
                 }
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Error accessing server settings at " + settingsFile.getAbsolutePath() + ".");
+                log.log(Level.WARNING, "Error accessing server settings at {0}.", settingsFile.getAbsolutePath());
                 log.log(Level.FINE, "Error accessing server settings at " + settingsFile.getAbsolutePath() + ".", ex);
             } catch (SAXException ex) {
                 log.log(Level.WARNING, "Wrong format of input XML.");

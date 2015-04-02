@@ -119,6 +119,9 @@ public class SettingsTest {
 
         result = ClientSettings.deserialize(new File(SettingsTest.class.getResource("testSettingsClientFail.xml").getFile()), (ServerInterface) c);
         assertEquals(false, result);
+        
+        result = ClientSettings.deserialize(new File(SettingsTest.class.getResource("testSettingsClientMultiIP.xml").getFile()), (ServerInterface) c);
+        assertEquals(true, result);
     }
 
     @Test
