@@ -12,8 +12,8 @@ import cz.tul.javaccl.server.DataStorage;
 import cz.tul.javaccl.server.Server;
 import cz.tul.javaccl.server.ServerImpl;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -33,6 +33,7 @@ public class JobTest {
     private static final Logger log = Logger.getLogger(JobTest.class.getName());
     private Server s;
     private Client c;
+    List<Client> clients;
 
     @Before
     public void setUp() {
@@ -40,6 +41,8 @@ public class JobTest {
             s = ServerImpl.initNewServer();
             c = ClientImpl.initNewClient(5253);
             c.registerToServer(GlobalConstants.IP_LOOPBACK);
+            
+            clients = new LinkedList<Client>();
         } catch (IOException ex) {
             fail("Initialization failed due to IO - " + ex);
         } catch (ConnectionException ex) {
@@ -54,6 +57,9 @@ public class JobTest {
         }
         if (s != null) {
             s.stopService();
+        }
+        for (Client client : clients) {
+            client.stopService();
         }
     }
 
@@ -316,8 +322,7 @@ public class JobTest {
         final Set<AssignmentListener> computingClients = new HashSet<AssignmentListener>();
 
         final int clientCount = rnd.nextInt(5) + 2;
-        Client cl;
-        List<Client> clients = new ArrayList<Client>(clientCount);
+        Client cl;        
         for (int i = 0; i < clientCount; i++) {
             try {
                 cl = ClientImpl.initNewClient();
@@ -379,10 +384,6 @@ public class JobTest {
 
         assertEquals(cnt, counter.getCount());
         assertEquals(clientCount, computingClients.size());
-
-        for (Client client : clients) {
-            client.stopService();
-        }
     }
 
     @Test
@@ -412,8 +413,7 @@ public class JobTest {
         });
 
         final int clientCount = rnd.nextInt(5) + 2;
-        Client cl;
-        List<Client> clients = new ArrayList<Client>(clientCount);
+        Client cl;        
         for (int i = 0; i < clientCount; i++) {
             try {
                 cl = ClientImpl.initNewClient();
@@ -485,10 +485,6 @@ public class JobTest {
         assertEquals(clientCount, computingClients.size());
 
         assertEquals(jobCount, requestCounter.getCount());
-
-        for (Client client : clients) {
-            client.stopService();
-        }
     }
 
     @Test
@@ -538,8 +534,7 @@ public class JobTest {
         final Random rnd = new Random();
 
         final int clientCount = rnd.nextInt(2) + 1;
-        Client cl;
-        List<Client> clients = new ArrayList<Client>(clientCount);
+        Client cl;        
         for (int i = 0; i < clientCount; i++) {
             try {
                 cl = ClientImpl.initNewClient();
@@ -601,11 +596,7 @@ public class JobTest {
 
         assertEquals(cnt, counter.getCount());
         assertEquals(clientCount + 1, computingClients.size());
-        assertEquals(concurrentCount, concurrentCounter.getMax());
-
-        for (Client client : clients) {
-            client.stopService();
-        }
+        assertEquals(concurrentCount, concurrentCounter.getMax());        
     }
 
     @Test
