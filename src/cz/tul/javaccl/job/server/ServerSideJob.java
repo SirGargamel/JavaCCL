@@ -80,6 +80,9 @@ public class ServerSideJob implements Job {
      */
     public void setStatus(final JobStatus jobStatus) {
         this.jobStatus = jobStatus;
+        synchronized (this) {
+            this.notify();
+        }
     }
 
     @Override
