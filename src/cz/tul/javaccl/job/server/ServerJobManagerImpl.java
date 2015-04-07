@@ -92,8 +92,8 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
         final ServerSideJob result = new ServerSideJob(task, this, complexity);
         jobQueue.add(result);
 
-        log.log(Level.FINE, "Job with ID " + result.getId() + " and complexity " + complexity + " submitted.");
-        wakeUp();
+        log.log(Level.FINE, "Job with ID {0} and complexity {1} submitted.", new Object[]{result.getId(), complexity});
+        wakeUp(jobQueue);
 
         return result;
     }
@@ -101,9 +101,9 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
     @Override
     public void waitForAllJobs() {
         while (!activeJobs.isEmpty()) {
-            synchronized (this) {
+            synchronized (activeJobs) {
                 try {
-                    this.wait(GlobalConstants.getDEFAULT_TIMEOUT());
+                    activeJobs.wait();
                 } catch (InterruptedException ex) {
                     log.log(Level.WARNING, "Waiting for all jobs to complete failed.");
                     log.log(Level.FINE, "Waiting for all jobs to complete failed.", ex);
@@ -124,12 +124,13 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
             try {
                 jr.getJob().cancelJob();
             } catch (ConnectionException ex) {
-                log.log(Level.WARNING, "Could not contact client " + jr.getOwner().getTargetId() + " for job cancelation.");
+                log.log(Level.WARNING, "Could not contact client {0} for job cancelation.", jr.getOwner().getTargetId());
             }
 
         }
 
         lastTimeOnline.clear();
+        wakeUp(activeJobs);
     }
 
     @Override
@@ -405,10 +406,6 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
         run = false;
         stopAllJobs();
 
-        synchronized (this) {
-            this.notify();
-        }
-
         log.fine("JobManager has been stopped.");
     }
 
@@ -467,6 +464,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
     }
 
     private Object acceptJob(final UUID id) {
+        GenericResponses result = GenericResponses.UUID_UNKNOWN;
         ServerSideJob ssj;
         synchronized (activeJobs) {
             for (JobRecord jr : activeJobs) {
@@ -474,17 +472,22 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 if (ssj.getId().equals(id)) {
                     ssj.setStatus(JobStatus.ACCEPTED);
                     jr.updateTime();
-                    log.log(Level.INFO, "Job with ID " + id + " has been accepted.");
+                    log.log(Level.INFO, "Job with ID {0} has been accepted.", id);
                     storeJobAction(ssj, jr.getOwner().getTargetId(), JobConstants.JOB_ACCEPT);
-                    return GenericResponses.OK;
+                    result = GenericResponses.OK;
+                    break;
                 }
             }
         }
-        log.log(Level.WARNING, "JobAccept received for illegal UUID - " + id);
-        return GenericResponses.UUID_UNKNOWN;
+        if (result == GenericResponses.UUID_UNKNOWN) {
+            log.log(Level.WARNING, "JobCancel received for illegal UUID - {0}", id);
+        }
+        wakeUp(activeJobs);
+        return result;
     }
 
     private Object cancelJobByClient(final UUID id) {
+        GenericResponses result = GenericResponses.UUID_UNKNOWN;
         ServerSideJob j;
         synchronized (activeJobs) {
             final Iterator<JobRecord> it = activeJobs.iterator();
@@ -496,18 +499,22 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                     jobQueue.addFirst(j);
                     j.setStatus(JobStatus.SUBMITTED);
                     it.remove();
-                    log.log(Level.INFO, "Job with ID " + id + " has been cancelled.");
+                    log.log(Level.INFO, "Job with ID {0} has been cancelled.", id);
                     storeJobAction(j, jr.getOwner().getTargetId(), JobConstants.JOB_CANCEL);
-                    wakeUp();
-                    return GenericResponses.OK;
+                    result = GenericResponses.OK;
+                    break;
                 }
             }
         }
-        log.log(Level.WARNING, "JobCancel received for illegal UUID - " + id);
-        return GenericResponses.UUID_UNKNOWN;
+        if (result == GenericResponses.UUID_UNKNOWN) {
+            log.log(Level.WARNING, "JobCancel received for illegal UUID - {0}", id);
+        }
+        wakeUp(activeJobs);
+        return result;
     }
 
     private Object finishJob(final JobTask jt) {
+        GenericResponses result = GenericResponses.UUID_UNKNOWN;
         final UUID id = jt.getJobId();
         ServerSideJob j;
         synchronized (activeJobs) {
@@ -520,20 +527,22 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                     j.setResult(jt.getTask());
                     it.remove();
                     jobHistory.remove(j);
-                    log.log(Level.INFO, "Job with ID " + id + " has been computed succefully.");
+                    log.log(Level.INFO, "Job with ID {0} has been computed succefully.", id);
                     storeJobAction(j, jr.getOwner().getTargetId(), JobConstants.JOB_RESULT);
-                    wakeUp();
-                    return GenericResponses.OK;
+                    result = GenericResponses.OK;
                 }
             }
         }
-        log.log(Level.WARNING, "JobResult received for illegal UUID - " + id);
+        if (result == GenericResponses.UUID_UNKNOWN) {
+            log.log(Level.WARNING, "JobCancel received for illegal UUID - {0}", id);
+        }
+        wakeUp(activeJobs);
         return GenericResponses.UUID_UNKNOWN;
     }
 
-    private void wakeUp() {
-        synchronized (this) {
-            this.notify();
+    private void wakeUp(final Object o) {
+        synchronized (o) {
+            o.notifyAll();
         }
     }
 
@@ -562,9 +571,10 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                     jr.updateTime();
                     it.remove();
                     jobHistory.remove(j);
-                    log.log(Level.INFO, "Job with ID " + j.getId() + " has been cancelled by server.");
+                    log.log(Level.INFO, "Job with ID {0} has been cancelled by server.", j.getId());
                 }
             }
         }
+        wakeUp(activeJobs);
     }
 }
