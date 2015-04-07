@@ -32,7 +32,7 @@ public class SystemMessagesHandlerTest {
         }
 
         ClientMan cm = new ClientMan();
-        SystemMessagesHandler instance = new SystemMessagesHandler(cm, null);
+        SystemMessagesHandler instance = new SystemMessagesHandler(cm, UUID.randomUUID());
 
         Message m = new Message(SystemMessageHeaders.LOGIN, null);
         DataPacketImpl dp = new DataPacketImpl(null, null, m);
