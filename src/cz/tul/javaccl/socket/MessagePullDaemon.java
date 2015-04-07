@@ -77,7 +77,7 @@ public class MessagePullDaemon extends Thread implements IService {
 
             comms.clear();
             comms.addAll(clientLister.getClients());
-            for (Communicator comm : clientLister.getClients()) {
+            for (Communicator comm : comms) {
                 if (!run) {
                     break;
                 }
