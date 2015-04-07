@@ -67,9 +67,8 @@ public class ServerSideJob implements Job {
 
     @Override
     public synchronized void cancelJob() throws ConnectionException {
-        jcm.cancelJobByServer(this);
-        this.notifyAll();
-    }
+        jcm.cancelJobByServer(this);        
+    }   
 
     /**
      * @param jobStatus new job status
