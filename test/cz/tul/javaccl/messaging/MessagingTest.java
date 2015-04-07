@@ -69,18 +69,20 @@ public class MessagingTest {
 
         try {
             assertNotNull(s.getClientManager().registerClient(GlobalConstants.IP_LOOPBACK, PORT_CLIENT));
-        } catch (Exception ex) {
+        } catch (IllegalArgumentException ex) {
+            fail("Registration from server to client failed - " + ex);
+        } catch (ConnectionException ex) {
             fail("Registration from server to client failed - " + ex);
         }
 
         try {
-            CommunicatorInner comm = (CommunicatorInner) CommunicatorImpl.initNewCommunicator(GlobalConstants.IP_LOOPBACK, 5252, null);
-            comm.setTargetId(s.getId());
+            CommunicatorInner comm = (CommunicatorInner) CommunicatorImpl.initNewCommunicator(GlobalConstants.IP_LOOPBACK, 5252, UUID.randomUUID());
+            comm.setTargetId(s.getId());            
             comm.sendData("data");
             fail("Should have failed, because this communicator is not registered.");
         } catch (ConnectionException ex) {
-            assertEquals(ConnectionExceptionCause.UUID_NOT_ALLOWED, ex.getExceptionCause());
-        } catch (Exception ex) {
+            assertEquals(ConnectionExceptionCause.TARGET_OFFLINE, ex.getExceptionCause());
+        } catch (IllegalArgumentException ex) {
             fail(ex.getLocalizedMessage());
         }
     }
