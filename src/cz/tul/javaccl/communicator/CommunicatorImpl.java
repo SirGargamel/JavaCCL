@@ -17,7 +17,6 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Calendar;
 import java.util.LinkedList;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Queue;
@@ -54,7 +53,6 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     private final int MSG_PULL_TIME_LIMIT = 2000;
     private final int STATUS_CHECK_TIMEOUT = 250;
     private final int STATUS_CHECK_INTERVAL = 500;
-    private final int REPONSE_CHECK_INTERVAL = 250;
     private final InetAddress address;
     private final int port;
     private final Queue<DataPacket> unsentData;
@@ -127,13 +125,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         } else if (stat.equals(Status.PASSIVE)) {
             if (!readAndReply && !unsentData.contains(dp)) {
                 unsentData.add(dp);
-                try {
-                    response = waitForResponse(dp, timeout);
-                    readAndReply = true;
-                } catch (InterruptedException ex) {
-                    log.log(Level.WARNING, "Waiting for response has been interrupted.");
-                    log.log(Level.FINE, "Waiting for response has been interrupted.", ex);
-                }
+                response = waitForResponse(dp, timeout);
+                readAndReply = true;
             }
         } else {
             throw new ConnectionException(ConnectionExceptionCause.TARGET_OFFLINE);
@@ -194,35 +187,38 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         return response;
     }
 
-    private Object waitForResponse(final DataPacket question, final int timeout) throws InterruptedException, ConnectionException {
-        Status stat;
-        final int time;
+    private Object waitForResponse(final DataPacket question, final int timeout) throws ConnectionException {
+        final long endTime;
         if (timeout > 0) {
-            time = timeout;
+            endTime = System.currentTimeMillis() + timeout;
         } else {
-            time = Integer.MAX_VALUE;
+            endTime = Long.MAX_VALUE;
         }
 
-        final long startTime = Calendar.getInstance(Locale.getDefault()).getTimeInMillis();
-        long dif = Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - startTime;
-        while (!responses.containsKey(question) && (dif <= time)) {
-            synchronized (this) {
-                this.wait(REPONSE_CHECK_INTERVAL);
-            }
-            stat = checkStatus();
-            if (stat.equals(Status.ONLINE)) {
-                try {
-                    Object response = pushDataToOnlineClient(question, timeout);
-                    if (response != dummy) {
-                        unsentData.remove(question);
-                        responses.put(question, response);
+        while (System.currentTimeMillis() < endTime) {
+            if (!responses.containsKey(question)) {
+                if (checkStatus().equals(Status.ONLINE)) {
+                    try {
+                        Object response = pushDataToOnlineClient(question, timeout);
+                        if (response != dummy) {
+                            unsentData.remove(question);
+                            responses.put(question, response);
+                        }
+                    } catch (ConnectionException ex) {
+                        log.log(Level.WARNING, "Online client connection failed - {0}", ex.getExceptionCause());
                     }
-                } catch (ConnectionException ex) {
-                    log.warning("Online client connection failed - " + ex.getExceptionCause());
-                }
 
+                }
+            } else {
+                break;
             }
-            dif = Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - startTime;
+
+            synchronized (responses) {
+                try {
+                    responses.wait(STATUS_CHECK_INTERVAL);
+                } catch (InterruptedException ex) {
+                }
+            }
         }
 
         if (unsentData.contains(question)) {
@@ -259,7 +255,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                 Object response = in.readObject();
                 if ((targetId == null
                         || (targetId != null && targetId.equals(response)))) {
-                    stat = Status.ONLINE;                    
+                    stat = Status.ONLINE;
                 } else {
                     log.log(Level.WARNING, "STATUS_CHECK response received for another ID - " + response + " , should be " + targetId);
                 }
@@ -364,6 +360,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     public void storeResponse(final DataPacket question, final Object response) {
         synchronized (responses) {
             responses.put(question, response);
+            responses.notifyAll();
         }
     }
 
