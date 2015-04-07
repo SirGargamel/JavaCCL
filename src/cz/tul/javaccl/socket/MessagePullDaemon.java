@@ -142,7 +142,9 @@ public class MessagePullDaemon extends Thread implements IService {
                             log.log(Level.FINE, "Error operating socket.", ex);
                         } finally {
                             try {
-                                s.close();
+                                if (s != null) {
+                                    s.close();
+                                }
                             } catch (IOException ex) {
                                 log.log(Level.WARNING, "Error operating socket.");
                                 log.log(Level.FINE, "Error operating socket.", ex);
