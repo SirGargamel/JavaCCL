@@ -131,6 +131,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                     log.log(Level.WARNING, "Could not contact client {0} for job cancelation.", jr.getOwner().getTargetId());
                 }
             }
+            activeJobs.clear();
         }
 
         lastTimeOnline.clear();
