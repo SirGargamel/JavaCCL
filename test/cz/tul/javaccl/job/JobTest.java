@@ -38,11 +38,10 @@ public class JobTest {
     @Before
     public void setUp() {
         try {
+            clients = new LinkedList<Client>();
             s = ServerImpl.initNewServer();
             c = ClientImpl.initNewClient(5253);
-            c.registerToServer(GlobalConstants.IP_LOOPBACK);
-            
-            clients = new LinkedList<Client>();
+            c.registerToServer(GlobalConstants.IP_LOOPBACK);                        
         } catch (IOException ex) {
             fail("Initialization failed due to IO - " + ex);
         } catch (ConnectionException ex) {
@@ -946,7 +945,7 @@ public class JobTest {
 
         try {
             synchronized (this) {
-                this.wait(10);
+                this.wait(100);
             }
         } catch (InterruptedException ex) {
             fail("Waiting for cancelation failed - " + ex);
