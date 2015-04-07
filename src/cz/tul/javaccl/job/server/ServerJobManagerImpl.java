@@ -374,8 +374,11 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
 
     private Calendar lastCancelTime(final List<JobAction> actionList, final Communicator comm) {
         List<Calendar> cancelTimes = new ArrayList<Calendar>();
-        for (JobAction ja : actionList) {
-            if (ja.getOwnerId().equals(comm.getTargetId()) && ja.getActionDescription().equals(JobConstants.JOB_CANCEL)) {
+        boolean idMatch, descriptionMatch;
+        for (JobAction ja : actionList) {            
+            idMatch = comm != null && ja.getOwnerId() != null && ja.getOwnerId().equals(comm.getTargetId());
+            descriptionMatch = ja.getActionDescription().equals(JobConstants.JOB_CANCEL);
+            if (idMatch && descriptionMatch) {
                 cancelTimes.add(ja.getActionTime());
             }
         }
