@@ -90,7 +90,9 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
     @Override
     public Job submitJob(Object task, int complexity) throws IllegalArgumentException {
         final ServerSideJob result = new ServerSideJob(task, this, complexity);
-        jobQueue.add(result);
+        synchronized (jobQueue) {
+            jobQueue.add(result);
+        }
 
         log.log(Level.FINE, "Job with ID {0} and complexity {1} submitted.", new Object[]{result.getId(), complexity});
         wakeUp();
@@ -114,19 +116,21 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
 
     @Override
     public void stopAllJobs() {
-        for (ServerSideJob ssj : jobQueue) {
-            ssj.setResult(null);
-            ssj.setStatus(JobStatus.CANCELED);
+        synchronized (jobQueue) {
+            for (ServerSideJob ssj : jobQueue) {
+                ssj.setResult(null);
+                ssj.setStatus(JobStatus.CANCELED);
+            }
         }
 
-        Collection<JobRecord> jobs = new ArrayList<JobRecord>(activeJobs);
-        for (JobRecord jr : jobs) {
-            try {
-                jr.getJob().cancelJob();
-            } catch (ConnectionException ex) {
-                log.log(Level.WARNING, "Could not contact client {0} for job cancelation.", jr.getOwner().getTargetId());
+        synchronized (activeJobs) {
+            for (JobRecord jr : activeJobs) {
+                try {
+                    jr.getJob().cancelJob();
+                } catch (ConnectionException ex) {
+                    log.log(Level.WARNING, "Could not contact client {0} for job cancelation.", jr.getOwner().getTargetId());
+                }
             }
-
         }
 
         lastTimeOnline.clear();
@@ -239,7 +243,9 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 if (job != null) {
                     if (assignJob(job, comm)) {
                         log.log(Level.INFO, "Job with ID {0} assigned to client with ID {1}", new Object[]{job.getId(), comm.getTargetId()});
-                        jobQueue.remove(job);
+                        synchronized (jobQueue) {
+                            jobQueue.remove(job);
+                        }
                     } else {
                         log.log(Level.WARNING, "Failed to assign job with id {0} to client with ID {1}", new Object[]{job.getId(), comm.getTargetId()});
                     }
@@ -332,22 +338,27 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
         // traverse job, check complexity and cancel time
         List<JobAction> actionList;
         Calendar cal;
-        for (ServerSideJob job : jobQueue) {
-            final int maxJobComplexity;
-            if (jobComplexity.containsKey(comm)) {
-                maxJobComplexity = jobComplexity.get(comm);
-            } else {
-                maxJobComplexity = JobConstants.DEFAULT_COMPLEXITY;
-            }
-            if (job.getComplexity() > maxJobComplexity) {
-                continue;
-            }
+        synchronized (jobQueue) {
+            for (ServerSideJob job : jobQueue) {
+                final int maxJobComplexity;
+                if (jobComplexity.containsKey(comm)) {
+                    maxJobComplexity = jobComplexity.get(comm);
+                } else {
+                    maxJobComplexity = JobConstants.DEFAULT_COMPLEXITY;
+                }
+                if (job.getComplexity() > maxJobComplexity) {
+                    continue;
+                }
 
-            actionList = jobHistory.get(job);
-            if (actionList != null) {
-                cal = lastCancelTime(actionList, comm);
-                if (cal != null) {
-                    if ((Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - cal.getTimeInMillis()) > GlobalConstants.getDEFAULT_TIMEOUT()) {
+                actionList = jobHistory.get(job);
+                if (actionList != null) {
+                    cal = lastCancelTime(actionList, comm);
+                    if (cal != null) {
+                        if ((Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - cal.getTimeInMillis()) > GlobalConstants.getDEFAULT_TIMEOUT()) {
+                            result = job;
+                            break;
+                        }
+                    } else {
                         result = job;
                         break;
                     }
@@ -355,9 +366,6 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                     result = job;
                     break;
                 }
-            } else {
-                result = job;
-                break;
             }
         }
 
@@ -405,7 +413,8 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
     public void stopService() {
         run = false;
         stopAllJobs();
-
+        wakeUp();
+        
         log.fine("JobManager has been stopped.");
     }
 
