@@ -59,44 +59,38 @@ public class ServerSideJob implements Job {
     /**
      * @param result result of the job
      */
-    public void setResult(Object result) {
+    public synchronized void setResult(Object result) {
         this.result = result;
         setStatus(JobStatus.FINISHED);
-        synchronized (this) {
-            this.notify();
-        }
+        this.notifyAll();
     }
 
     @Override
-    public void cancelJob() throws ConnectionException {
+    public synchronized void cancelJob() throws ConnectionException {
         jcm.cancelJobByServer(this);
-        synchronized (this) {
-            this.notify();
-        }
+        this.notifyAll();
     }
 
     /**
      * @param jobStatus new job status
      */
-    public void setStatus(final JobStatus jobStatus) {
+    public synchronized void setStatus(final JobStatus jobStatus) {
         this.jobStatus = jobStatus;
-        synchronized (this) {
-            this.notify();
-        }
+        this.notifyAll();
     }
 
     @Override
-    public JobStatus getStatus() {
+    public synchronized JobStatus getStatus() {
         return jobStatus;
     }
 
     @Override
-    public boolean isDone() {
+    public synchronized boolean isDone() {
         return jobStatus.equals(JobStatus.FINISHED) || isCanceled();
     }
 
     @Override
-    public boolean isCanceled() {
+    public synchronized boolean isCanceled() {
         return jobStatus.equals(JobStatus.ERROR) || jobStatus.equals(JobStatus.CANCELED);
     }
 

@@ -180,7 +180,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
         if (enable) {
             pause = false;
             synchronized (this) {
-                this.notify();
+                this.notifyAll();
             }
             log.fine("DiscoveryDaemon has been enabled.");
         } else {
