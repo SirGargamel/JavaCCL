@@ -213,11 +213,11 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
             run = false;
             mpd.stopService();
             exec.shutdownNow();
-            socket.close();
-            log.fine("Server socket has been stopped.");
+            socket.close();            
         } catch (IOException ex) {
             // expected exception due to listening interruption
         }
+        log.fine("Server socket has been stopped.");
     }
 
     @Override
