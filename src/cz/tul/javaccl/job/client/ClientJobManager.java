@@ -44,4 +44,12 @@ public interface ClientJobManager {
      * @throws ConnectionException server could not be contacted
      */
     void submitResult(final UUID jobId, final Object result) throws ConnectionException;
+    
+    /**
+     * Alter the maximal count of concurrent assignments (default is 1)
+     *
+     * @param assignmentCount maximal count of conccurent assignments
+     * @return true for successfull change
+     */
+    public void setMaxNumberOfConcurrentAssignments(final int assignmentCount);
 }

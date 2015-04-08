@@ -8,7 +8,9 @@ import cz.tul.javaccl.job.JobTask;
 import cz.tul.javaccl.messaging.Identifiable;
 import cz.tul.javaccl.socket.Listener;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,8 +28,10 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
     private static final int WAIT_TIME = 500;
     private AssignmentListener assignmentListener;
     private final ServerInterface server;
-    private final Map<UUID, ClientSideJob> jobs;
-    private final ExecutorService exec;
+    private final Map<UUID, ClientSideJob> jobs;    
+    private final Set<ClientSideJob> runningJobs;
+    private ExecutorService exec;
+    private int maxJobCount;
 
     /**
      * New instance.
@@ -36,9 +40,12 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
      */
     public ClientJobManagerImpl(ServerInterface server) {
         this.server = server;
-        jobs = new HashMap<UUID, ClientSideJob>();
-        exec = Executors.newCachedThreadPool();
+        jobs = new HashMap<UUID, ClientSideJob>();        
         assignmentListener = null;
+        runningJobs = new HashSet<ClientSideJob>();
+
+        maxJobCount = 1;
+        exec = Executors.newFixedThreadPool(maxJobCount);
     }
 
     /**
@@ -53,16 +60,19 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
     @Override
     public void submitResult(final UUID jobId, final Object result) throws ConnectionException {
         sendDataToServer(jobId, JobConstants.JOB_RESULT, result);
+        runningJobs.remove(jobs.get(jobId));
     }
 
     @Override
     public void cancelJob(final UUID jobId) throws ConnectionException {
         sendDataToServer(jobId, JobConstants.JOB_CANCEL, null);
+        runningJobs.remove(jobs.get(jobId));
     }
 
     @Override
     public void acceptJob(final UUID jobId) throws ConnectionException {
         sendDataToServer(jobId, JobConstants.JOB_ACCEPT, null);
+        runningJobs.add(jobs.get(jobId));
     }
 
     @Override
@@ -103,15 +113,19 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
             if (descr != null) {
                 if (descr.equals(JobConstants.JOB_TASK)) {
                     if (assignmentListener != null) {
-                        final ClientSideJob job = new ClientSideJob(jt.getTask(), id, this);
-                        jobs.put(job.getId(), job);
-                        exec.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                assignmentListener.receiveTask(job);
-                            }
-                        });
-                        result = GenericResponses.OK;
+                        if (runningJobs.size() < maxJobCount) {
+                            final ClientSideJob job = new ClientSideJob(jt.getTask(), id, this);
+                            jobs.put(job.getId(), job);
+                            exec.execute(new Runnable() {
+                                @Override
+                                public void run() {
+                                    assignmentListener.receiveTask(job);
+                                }
+                            });
+                            result = GenericResponses.OK;                            
+                        } else {
+                            result = GenericResponses.CANCEL;                            
+                        }
                     } else {
                         result = GenericResponses.GENERAL_ERROR;
                     }
@@ -128,5 +142,11 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
             }
         }
         return result;
+    }
+
+    @Override
+    public void setMaxNumberOfConcurrentAssignments(int assignmentCount) {
+        maxJobCount = assignmentCount;
+        exec = Executors.newFixedThreadPool(maxJobCount);
     }
 }
