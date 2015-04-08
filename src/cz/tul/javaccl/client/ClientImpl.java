@@ -87,7 +87,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
 
         log.log(Level.INFO, "Registering new server IP and port - " + address.getHostAddress() + ":" + port);
         boolean result = false;
-        comm = CommunicatorImpl.initNewCommunicator(address, port, getId());        
+        comm = CommunicatorImpl.initNewCommunicator(address, port, getId());
         comm.registerHistory(history);
         final Message login = new Message(GlobalConstants.ID_SYS_MSG, SystemMessageHeaders.LOGIN, serverSocket.getPort());
         try {
@@ -115,8 +115,8 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
 
     @Override
     public void setServerInfo(final InetAddress address, final int port, final UUID serverId) {
-        comm = CommunicatorImpl.initNewCommunicator(address, port, getId());        
-        comm.setTargetId(serverId);        
+        comm = CommunicatorImpl.initNewCommunicator(address, port, getId());
+        comm.setTargetId(serverId);
         comm.registerHistory(history);
         setMaxNumberOfConcurrentAssignments(concurentJobCount);
         setMaxJobComplexity(jobComplexity);
@@ -214,17 +214,25 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
         }
         disconnectFromServer();
 
-        if (serverSocket != null) {
-            serverSocket.stopService();
+        try {
+            if (serverSocket != null) {
+                serverSocket.stopService();
+            }
+        } catch (Exception ex) {
+            // error closing some resource, ignore
         }
-        if (sdd != null) {
-            sdd.stopService();
+        try {
+            if (sdd != null) {
+                sdd.stopService();
+            }
+        } catch (Exception ex) {
+            // error closing some resource, ignore
         }
         log.info("Client has been stopped.");
     }
 
     @Override
-     public boolean isIdAllowed(UUID id) {
+    public boolean isIdAllowed(UUID id) {
         boolean result = false;
 
         if (comm != null && id != null) {
@@ -259,6 +267,7 @@ public class ClientImpl extends Client implements IService, ServerInterface, IDF
     @Override
     public boolean setMaxNumberOfConcurrentAssignments(final int assignmentCount) {
         concurentJobCount = assignmentCount;
+        this.jm.setMaxNumberOfConcurrentAssignments(assignmentCount);
         boolean result = false;
         if (isServerUp()) {
             final Message m = new Message(

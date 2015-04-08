@@ -154,11 +154,23 @@ public final class ServerImpl extends Server implements IService, Observer {
         }
 
         if (cdd != null) {
-            cdd.stopService();
+            try {
+                cdd.stopService();
+            } catch (Exception ex) {
+                // error closing some resource, ignore
+            }
         }
 
-        jobManager.stopService();
-        serverSocket.stopService();
+        try {
+            jobManager.stopService();
+        } catch (Exception ex) {
+            // error closing some resource, ignore
+        }
+        try {
+            serverSocket.stopService();
+        } catch (Exception ex) {
+            // error closing some resource, ignore
+        }
 
         log.fine("Server has been stopped.");
     }
