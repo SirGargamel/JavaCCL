@@ -257,7 +257,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                         || (targetId != null && targetId.equals(response)))) {
                     stat = Status.ONLINE;
                 } else {
-                    log.log(Level.WARNING, "STATUS_CHECK response received for another ID - " + response + " , should be " + targetId);
+                    log.log(Level.WARNING, "STATUS_CHECK response received for another ID - {0} , should be {1}. Local ID {2}", new Object[]{response, targetId, sourceId});
                 }
                 result = true;
             } catch (IOException ex) {
