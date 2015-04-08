@@ -6,7 +6,6 @@ import cz.tul.javaccl.exceptions.ConnectionExceptionCause;
 import cz.tul.javaccl.server.Server;
 import cz.tul.javaccl.server.ServerImpl;
 import java.io.IOException;
-import java.net.Inet4Address;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -36,7 +35,7 @@ public class ClientImplTest {
             try {
                 c.registerToServer(GlobalConstants.IP_LOOPBACK, 5251);
             } catch (ConnectionException ex) {
-                fail("Registration failed.");
+                fail("Registration failed - " + ex);
             }
 
             s.stopService();
@@ -50,27 +49,26 @@ public class ClientImplTest {
             } catch (ConnectionException ex) {
                 assertEquals(ConnectionExceptionCause.CONNECTION_ERROR, ex.getExceptionCause());
             } catch (InterruptedException ex) {
-                fail("Waiting has been interrupted.");
+                fail("Waiting has been interrupted - " + ex);
             }
-
 
             s = ServerImpl.initNewServer();
             try {
                 c.registerToServer(GlobalConstants.IP_LOOPBACK);
             } catch (ConnectionException ex) {
-                fail("Registration failed.");
+                fail("Registration failed - " + ex);
             }
 
             try {
                 assertNotNull(c.sendDataToServer("a"));
             } catch (ConnectionException ex) {
-                fail("Could not reach server.");
+                fail("Could not reach server - " + ex);
             }
 
             c.stopService();
             s.stopService();
         } catch (IOException ex) {
-            fail("Failed to initialize client.");
+            fail("Failed to initialize client - " + ex);
         }
     }
 }
