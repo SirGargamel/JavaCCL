@@ -37,28 +37,45 @@ public class JobTest {
 
     @Before
     public void setUp() {
-        try {
-            clients = new LinkedList<Client>();
-            s = ServerImpl.initNewServer();
-            c = ClientImpl.initNewClient(5253);
-            c.registerToServer(GlobalConstants.IP_LOOPBACK);                        
-        } catch (IOException ex) {
-            fail("Initialization failed due to IO - " + ex);
-        } catch (ConnectionException ex) {
-            fail("Initialization failed due to illegal connection - " + ex);
+        synchronized (log) {
+            try {
+                clients = new LinkedList<Client>();
+                s = ServerImpl.initNewServer();
+                c = ClientImpl.initNewClient(5253);
+                c.registerToServer(GlobalConstants.IP_LOOPBACK);
+                log.log(Level.INFO, "Server and client are up.");
+            } catch (IOException ex) {
+                fail("Initialization failed due to IO - " + ex);
+            } catch (ConnectionException ex) {
+                fail("Initialization failed due to illegal connection - " + ex);
+            }
         }
     }
 
     @After
     public void tearDown() {
-        if (c != null) {
-            c.stopService();
-        }
-        if (s != null) {
-            s.stopService();
-        }
-        for (Client client : clients) {
-            client.stopService();
+        synchronized (log) {
+            try {
+                for (Client client : clients) {
+                    client.deregisterFromServer();
+                    client.stopService();
+                }
+                clients.clear();
+                if (c != null) {
+                    c.deregisterFromServer();
+                    c.stopService();
+                }
+                log.wait(1000);
+                if (s != null) {
+                    s.stopService();
+                }
+                log.wait(1000);
+                log.log(Level.INFO, "Server and clients are down.");
+            } catch (ConnectionException ex) {
+                fail("Initialization failed due to ConnectionException - " + ex);
+            } catch (InterruptedException ex) {
+                fail("Initialization failed due to Wait Exception - " + ex);
+            }
         }
     }
 
@@ -79,8 +96,8 @@ public class JobTest {
 
                     Integer count = (Integer) tsk;
 
-                    synchronized (JobTest.this) {
-                        JobTest.this.wait(count);
+                    synchronized (task) {
+                        task.wait(count);
                     }
 
                     counter.add(count);
@@ -128,8 +145,8 @@ public class JobTest {
 
                     Integer count = (Integer) tsk;
 
-                    synchronized (JobTest.this) {
-                        JobTest.this.wait(count);
+                    synchronized (task) {
+                        task.wait(count);
                     }
 
                     counter.add(count);
@@ -190,8 +207,8 @@ public class JobTest {
 
                     Integer count = (Integer) tsk;
 
-                    synchronized (JobTest.this) {
-                        JobTest.this.wait(count);
+                    synchronized (task) {
+                        task.wait(count);
                     }
 
                     counter.add(count);
@@ -254,8 +271,8 @@ public class JobTest {
 
                         int count = (int) (((Integer) tsk) * multiplier);
 
-                        synchronized (JobTest.this) {
-                            JobTest.this.wait(count);
+                        synchronized (task) {
+                            task.wait(count);
                         }
 
                         totalCounter.add(count);
@@ -313,52 +330,51 @@ public class JobTest {
     @Test
     public void testMultipleJobsWithMultipleClients() {
         System.out.println("multipleJobsWithMultipleClients");
-        c.stopService();
 
         final Random rnd = new Random();
-
         final Counter counter = new Counter();
         final Set<AssignmentListener> computingClients = new HashSet<AssignmentListener>();
 
+        final AssignmentListener l = new AssignmentListener() {
+            @Override
+            public void receiveTask(Assignment task) {
+                try {
+                    Object tsk = task.getTask();
+
+                    if (!(tsk instanceof Integer)) {
+                        fail("Illegal task received");
+                    }
+
+                    Integer count = (Integer) tsk;
+
+                    synchronized (task) {
+                        task.wait(count);
+                    }
+
+                    counter.add(count);
+
+                    task.submitResult(GenericResponses.OK);
+                } catch (ConnectionException ex) {
+                    fail("Connection to servr failed - " + ex);
+                } catch (InterruptedException ex) {
+                    fail("Waiting has been interrupted - " + ex);
+                }
+            }
+
+            @Override
+            public void cancelTask(Assignment task) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        };
+        c.setAssignmentListener(new AssignmentListenerWrapper(computingClients, l));
+
         final int clientCount = rnd.nextInt(5) + 2;
-        Client cl;        
-        for (int i = 0; i < clientCount; i++) {
+        Client cl;
+        for (int i = 0; i < clientCount - 1; i++) {
             try {
                 cl = ClientImpl.initNewClient();
                 cl.registerToServer(GlobalConstants.IP_LOOPBACK);
-                cl.setAssignmentListener(new AssignmentListener() {
-                    @Override
-                    public void receiveTask(Assignment task) {
-                        try {
-                            Object tsk = task.getTask();
-
-                            if (!(tsk instanceof Integer)) {
-                                fail("Illegal task received");
-                            }
-
-                            Integer count = (Integer) tsk;
-
-                            synchronized (JobTest.this) {
-                                JobTest.this.wait(count);
-                            }
-
-                            counter.add(count);
-
-                            computingClients.add(this);
-
-                            task.submitResult(GenericResponses.OK);
-                        } catch (ConnectionException ex) {
-                            fail("Connection to servr failed - " + ex);
-                        } catch (InterruptedException ex) {
-                            fail("Waiting has been interrupted - " + ex);
-                        }
-                    }
-
-                    @Override
-                    public void cancelTask(Assignment task) {
-                        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                    }
-                });
+                cl.setAssignmentListener(new AssignmentListenerWrapper(computingClients, l));
                 clients.add(cl);
             } catch (Exception ex) {
                 fail("Initialization of one of the clients failed - " + ex);
@@ -388,7 +404,6 @@ public class JobTest {
     @Test
     public void testMultipleJobsWithMultipleClientsWithDataRequests() {
         System.out.println("multipleJobsWithMultipleClientsWithDataRequests");
-        c.stopService();
 
         final Random rnd = new Random();
 
@@ -411,52 +426,56 @@ public class JobTest {
             }
         });
 
+        final AssignmentListener l = new AssignmentListener() {
+
+            @Override
+            public void receiveTask(Assignment task) {
+                try {
+                    Object tsk = task.getTask();
+
+                    if (!(tsk instanceof Integer)) {
+                        fail("Illegal task received");
+                    }
+
+                    Object req = task.requestData(dataTitle);
+                    if (req instanceof Double) {
+                        double multiplier = (Double) req;
+
+                        int count = (int) (((Integer) tsk) * multiplier);
+
+                        synchronized (task) {
+                            task.wait(count);
+                        }
+
+                        totalCounter.add(count);
+                    } else {
+                        fail("Illegal data from server data request - " + req);
+                    }
+
+                    System.out.println("Job done - " + tsk);
+
+                    task.submitResult(GenericResponses.OK);
+                } catch (ConnectionException ex) {
+                    fail("Connection to servr failed - " + ex);
+                } catch (InterruptedException ex) {
+                    fail("Waiting has been interrupted - " + ex);
+                }
+            }
+
+            @Override
+            public void cancelTask(Assignment task) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        };
+        c.setAssignmentListener(new AssignmentListenerWrapper(computingClients, l));
+
         final int clientCount = rnd.nextInt(5) + 2;
-        Client cl;        
-        for (int i = 0; i < clientCount; i++) {
+        Client cl;
+        for (int i = 0; i < clientCount - 1; i++) {
             try {
                 cl = ClientImpl.initNewClient();
                 cl.registerToServer(GlobalConstants.IP_LOOPBACK);
-                cl.setAssignmentListener(new AssignmentListener() {
-                    @Override
-                    public void receiveTask(Assignment task) {
-                        try {
-                            Object tsk = task.getTask();
-
-                            if (!(tsk instanceof Integer)) {
-                                fail("Illegal task received");
-                            }
-
-                            Object req = task.requestData(dataTitle);
-                            if (req instanceof Double) {
-                                double multiplier = (Double) req;
-
-                                int count = (int) (((Integer) tsk) * multiplier);
-
-                                synchronized (JobTest.this) {
-                                    JobTest.this.wait(count);
-                                }
-
-                                totalCounter.add(count);
-                            } else {
-                                fail("Illegal data from server data request - " + req);
-                            }
-
-                            computingClients.add(this);
-
-                            task.submitResult(GenericResponses.OK);
-                        } catch (ConnectionException ex) {
-                            fail("Connection to servr failed - " + ex);
-                        } catch (InterruptedException ex) {
-                            fail("Waiting has been interrupted - " + ex);
-                        }
-                    }
-
-                    @Override
-                    public void cancelTask(Assignment task) {
-                        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                    }
-                });
+                cl.setAssignmentListener(new AssignmentListenerWrapper(computingClients, l));
                 clients.add(cl);
             } catch (Exception ex) {
                 fail("Initialization of one of the clients failed - " + ex);
@@ -465,6 +484,7 @@ public class JobTest {
 
         int cnt = 0, val;
         final int jobCount = clientCount * (rnd.nextInt(3) + 2);
+        System.out.println(jobCount);
         Set<Job> allJobs = new HashSet<Job>(jobCount);
         for (int i = 0; i < jobCount; i++) {
             val = (rnd.nextInt(4) + 1) * 10;
@@ -476,7 +496,9 @@ public class JobTest {
 
         // check all result if OK
         for (Job j : allJobs) {
+            System.out.println("Checking job - " + j + " : " + j.getId());
             assertEquals(GenericResponses.OK, j.getResult(true));
+            System.out.println("Job checked - " + j + " : " + j.getId());
         }
 
         assertEquals(cnt * requestMultiplier, totalCounter.getCount(), 0);
@@ -498,25 +520,26 @@ public class JobTest {
         c.setAssignmentListener(new AssignmentListener() {
             @Override
             public void receiveTask(Assignment task) {
-                try {
-                    concurrentCounter.add(1);
+                try {                    
                     Object tsk = task.getTask();
+                    concurrentCounter.add(1);
+                    System.out.println("+");
 
                     if (!(tsk instanceof Integer)) {
                         fail("Illegal task received");
                     }
+                                        
+                    computingClients.add(this);
 
                     Integer count = (Integer) tsk;
-
-                    synchronized (JobTest.this) {
-                        JobTest.this.wait(count);
-                    }
-
                     counter.add(count);
-                    computingClients.add(this);
+                    synchronized (task) {
+                        task.wait(count);
+                    }                    
 
                     task.submitResult(GenericResponses.OK);
                     concurrentCounter.sub(1);
+                    System.out.println("-");
                 } catch (ConnectionException ex) {
                     fail("Connection to servr failed - " + ex);
                 } catch (InterruptedException ex) {
@@ -533,7 +556,7 @@ public class JobTest {
         final Random rnd = new Random();
 
         final int clientCount = rnd.nextInt(2) + 1;
-        Client cl;        
+        Client cl;
         for (int i = 0; i < clientCount; i++) {
             try {
                 cl = ClientImpl.initNewClient();
@@ -550,8 +573,8 @@ public class JobTest {
 
                             Integer count = (Integer) tsk;
 
-                            synchronized (JobTest.this) {
-                                JobTest.this.wait(count);
+                            synchronized (task) {
+                                task.wait(count);
                             }
 
                             counter.add(count);
@@ -595,7 +618,7 @@ public class JobTest {
 
         assertEquals(cnt, counter.getCount());
         assertEquals(clientCount + 1, computingClients.size());
-        assertEquals(concurrentCount, concurrentCounter.getMax());        
+        assertEquals(concurrentCount, concurrentCounter.getMax());
     }
 
     @Test
@@ -616,8 +639,8 @@ public class JobTest {
 
                         Integer count = (Integer) tsk;
 
-                        synchronized (JobTest.this) {
-                            JobTest.this.wait(count);
+                        synchronized (task) {
+                            task.wait(count);
                         }
 
                         counter.add(count);
@@ -650,8 +673,8 @@ public class JobTest {
                         Object w = task.getTask();
 
                         if (w instanceof Integer) {
-                            synchronized (JobTest.this) {
-                                JobTest.this.wait(((Integer) w) / 2);
+                            synchronized (task) {
+                                task.wait(((Integer) w) / 2);
                             }
 
                             task.cancel("Moody client.");
@@ -712,14 +735,14 @@ public class JobTest {
                         }
 
                         if (Math.random() < 0.25) {
-                            synchronized (JobTest.this) {
-                                JobTest.this.wait(((Integer) tsk) / 4);
+                            synchronized (task) {
+                                task.wait(((Integer) tsk) / 4);
                             }
                             task.cancel("Client cancel.");
                         } else {
                             Integer count = (Integer) tsk;
-                            synchronized (JobTest.this) {
-                                JobTest.this.wait(count);
+                            synchronized (task) {
+                                task.wait(count);
                             }
                             counter.add(count);
                             task.submitResult(GenericResponses.OK);
@@ -755,14 +778,14 @@ public class JobTest {
                         }
 
                         if (Math.random() < 0.25) {
-                            synchronized (JobTest.this) {
-                                JobTest.this.wait(((Integer) tsk) / 4);
+                            synchronized (task) {
+                                task.wait(((Integer) tsk) / 4);
                             }
                             task.cancel("Client cancel.");
                         } else {
                             Integer count = (Integer) tsk;
-                            synchronized (JobTest.this) {
-                                JobTest.this.wait(count);
+                            synchronized (task) {
+                                task.wait(count);
                             }
                             counter.add(count);
                             task.submitResult(GenericResponses.OK);
@@ -828,8 +851,8 @@ public class JobTest {
                         return;
                     }
 
-                    synchronized (JobTest.this) {
-                        JobTest.this.wait(count);
+                    synchronized (task) {
+                        task.wait(count);
                     }
 
                     if (!run) {
@@ -853,7 +876,7 @@ public class JobTest {
 
         int cnt = 0, val;
         Random rnd = new Random();
-        final int jobCount = rnd.nextInt(5) + 5;        
+        final int jobCount = rnd.nextInt(5) + 5;
         Set<Job> jobs = new HashSet<Job>(jobCount);
         for (int i = 0; i < jobCount; i++) {
             val = (rnd.nextInt(4) + 2) * 10;
@@ -867,7 +890,7 @@ public class JobTest {
             try {
                 synchronized (jobForCancelation) {
                     jobForCancelation.wait();
-                    log.log(Level.INFO, "{0}, {1}", new Object[] {jobForCancelation.getStatus().toString(), jobForCancelation.toString()});
+                    log.log(Level.INFO, "{0}, {1}", new Object[]{jobForCancelation.getStatus().toString(), jobForCancelation.toString()});
                 }
             } catch (InterruptedException ex) {
                 fail("Waiting for cancelation failed - " + ex);
@@ -911,8 +934,8 @@ public class JobTest {
                         return;
                     }
 
-                    synchronized (JobTest.this) {
-                        JobTest.this.wait(count);
+                    synchronized (task) {
+                        task.wait(count);
                     }
 
                     if (!run) {
@@ -977,8 +1000,8 @@ public class JobTest {
 
                         Integer count = (Integer) tsk;
 
-                        synchronized (JobTest.this) {
-                            JobTest.this.wait(count);
+                        synchronized (task) {
+                            task.wait(count);
                         }
 
                         task.submitResult(multiplier * count);
@@ -1056,8 +1079,8 @@ public class JobTest {
 
                         Integer count = (Integer) tsk;
 
-                        synchronized (JobTest.this) {
-                            JobTest.this.wait(count);
+                        synchronized (task) {
+                            task.wait(count);
                         }
 
                         counter.add(count);
@@ -1152,5 +1175,28 @@ public class JobTest {
         public int getMax() {
             return max;
         }
+    }
+
+    private final class AssignmentListenerWrapper implements AssignmentListener {
+
+        private final Set<AssignmentListener> couter;
+        private final AssignmentListener assignment;
+
+        public AssignmentListenerWrapper(Set<AssignmentListener> couter, final AssignmentListener assignment) {
+            this.couter = couter;
+            this.assignment = assignment;
+        }
+
+        @Override
+        public void receiveTask(Assignment task) {
+            couter.add(this);
+            assignment.receiveTask(task);
+        }
+
+        @Override
+        public void cancelTask(Assignment task) {
+            assignment.cancelTask(task);
+        }
+
     }
 }
