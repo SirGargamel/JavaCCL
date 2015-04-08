@@ -44,6 +44,11 @@ public enum GenericResponses implements Serializable {
      */
     OK,
     /**
+     * Message could not be handled (the request is correct, but target could
+     * not carry out the command)
+     */
+    CANCEL,
+    /**
      * Error occured during communication
      */
     CONNECTION_ERROR,
