@@ -8,7 +8,6 @@ import cz.tul.javaccl.communicator.CommunicatorInner;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.UUID;
@@ -24,12 +23,12 @@ import org.junit.Before;
 public class ClientDBTest {
 
     private static final int PORT_CLIENT_1 = 5253;
-    private static final int PORT_CLIENT_2 = 5254;    
+    private static final int PORT_CLIENT_2 = 5254;
     private static Client c1, c2;
     private static Server s;
 
     @Before
-    public void setUp() {        
+    public void setUp() {
         try {
             s = ServerImpl.initNewServer(5251);
             c1 = ClientImpl.initNewClient(PORT_CLIENT_1);
@@ -50,7 +49,7 @@ public class ClientDBTest {
      * Test of registerClient method, of class ClientDB.
      */
     @Test
-    public void testRegisterClient() throws UnknownHostException {
+    public void testRegisterClient() {
         System.out.println("registerClient");
         ClientManager instance = s.getClientManager();
 
@@ -99,7 +98,7 @@ public class ClientDBTest {
      * Test of getClient method, of class ClientDB.
      */
     @Test
-    public void testGetClient_InetAddress_int() throws UnknownHostException {
+    public void testGetClient_InetAddress_int() {
         System.out.println("getClient");
         InetAddress adress = GlobalConstants.IP_LOOPBACK;
         ClientManager instance = s.getClientManager();
