@@ -37,7 +37,7 @@ class ClientDB extends ClientManager implements Observer, IDFilter {
     private final UUID localId;
 
     ClientDB(final UUID localId) {
-        clients = Collections.synchronizedSet(new HashSet<Communicator>());
+        clients = new HashSet<Communicator>();
         allowedIDs = Collections.emptySet();
         allowedIDs = Collections.unmodifiableCollection(allowedIDs);
         this.localId = localId;
