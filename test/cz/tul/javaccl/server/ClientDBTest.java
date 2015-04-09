@@ -177,9 +177,11 @@ public class ClientDBTest {
 
         try {
             CommunicatorInner comm = (CommunicatorInner) instance.registerClient(GlobalConstants.IP_LOOPBACK, PORT_CLIENT_1);
+            final UUID oldId = comm.getTargetId();
             comm.setTargetId(id);
             assertTrue(instance.isIdAllowed(id));
             assertFalse(instance.isIdAllowed(UUID.randomUUID()));
+            comm.setTargetId(oldId);
         } catch (Exception ex) {
             fail("Failed to register client on server - " + ex);
         }
