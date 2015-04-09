@@ -87,7 +87,7 @@ public class HistoryRecord {
      * @return time of logging
      */
     public Date getTime() {
-        return time;
+        return (Date) time.clone();
     }
 
     /**
@@ -144,7 +144,7 @@ public class HistoryRecord {
         return sb.toString();
     }
 
-    private static String nodeToString(Node node) {
+    private static String nodeToString(final Node node) {
         String result;
         if (node != null) {
             StringWriter sw = new StringWriter();

@@ -14,9 +14,6 @@ import static org.junit.Assert.*;
  */
 public class MessageTest {
 
-    public MessageTest() {
-    }
-
     /**
      * Test of getId method, of class Message.
      */
@@ -80,7 +77,7 @@ public class MessageTest {
         Object data = "data";
         Message instance = new Message(id, header, data);
         
-        Object o = new Message(id, header.toString(), data.toString());
+        Object o = new Message(id, header, data.toString());
         
         assertTrue(instance.equals(o));
     }

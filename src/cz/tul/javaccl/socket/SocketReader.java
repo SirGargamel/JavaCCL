@@ -80,7 +80,7 @@ class SocketReader extends Observable implements Runnable {
 
             if (dataIn instanceof DataPacketImpl) {
                 final DataPacketImpl dp = (DataPacketImpl) dataIn;
-                id = dp.getSourceID();
+                id = dp.getSourceId();
                 dp.setSourceIP(ip);
                 final Object response = dpHandler.handleDataPacket(dp);
                 sendReply(ip, id, dp.getData(), dataRead, response);
@@ -92,20 +92,20 @@ class SocketReader extends Observable implements Runnable {
                     mpd.handleMessagePullRequest(socket, m.getData(), in);
                 } else {
                     log.log(Level.WARNING, "Received Message with unidentifined header - " + m.toString());
-                    sendReply(ip, id, dataIn, dataRead, GenericResponses.ILLEGAL_HEADER);
+                    sendReply(ip, null, dataIn, dataRead, GenericResponses.ILLEGAL_HEADER);
                 }
             } else {
                 log.log(Level.WARNING, "Received data is not an instance of DataPacket or Message - " + dataIn);
-                sendReply(ip, id, dataIn, dataRead, GenericResponses.ILLEGAL_DATA);
+                sendReply(ip, null, dataIn, dataRead, GenericResponses.ILLEGAL_DATA);
             }
         } catch (IOException ex) {
             log.log(Level.WARNING, "Error reading data from socket.");
             log.log(Level.FINE, "Error reading data from socket.", ex);
-            sendReply(ip, id, dataIn, dataRead, GenericResponses.CONNECTION_ERROR);
+            sendReply(ip, null, null, false, GenericResponses.CONNECTION_ERROR);
         } catch (ClassNotFoundException ex) {
             log.log(Level.WARNING, "Invalid data received from sender.");
             log.log(Level.FINE, "Invalid data received from sender.", ex);
-            sendReply(ip, id, dataIn, dataRead, GenericResponses.ILLEGAL_DATA);
+            sendReply(ip, null, null, false, GenericResponses.ILLEGAL_DATA);
         } finally {
             if (in != null) {
                 try {

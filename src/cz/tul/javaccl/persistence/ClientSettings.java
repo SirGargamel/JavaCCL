@@ -50,7 +50,7 @@ public class ClientSettings {
                             String[] split = e.getValue().split(GlobalConstants.DELIMITER);
                             ip = InetAddress.getByName(split[0]);
                             if (split.length > 1) {
-                                port = Integer.valueOf(split[1]);
+                                port = Integer.parseInt(split[1]);
                             }
                         } catch (UnknownHostException ex) {
                             result = false;

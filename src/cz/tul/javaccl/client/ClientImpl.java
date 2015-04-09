@@ -42,7 +42,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class ClientImpl extends Client implements IService, ServerInterface, IDFilter, ClientLister, Observer {
+public class ClientImpl extends Client implements ServerInterface, IDFilter, ClientLister, Observer {
 
     private static final Logger log = Logger.getLogger(ClientImpl.class.getName());
     private ServerSocket serverSocket;

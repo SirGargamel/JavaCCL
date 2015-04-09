@@ -31,19 +31,19 @@ public class SettingsTest {
 
     private static final String TEST_FILE_NAME = "test.xml";
     private static final int CLIENT_PORT = 5253;
-    private static Server s;
-    private static Client c;
-    private static File serializationTarget;    
+    private Server s;
+    private Client c;
+    private static File target;
 
     @BeforeClass
     public static void setUpClass() {
-        serializationTarget = new File(System.getProperty("user.home") + File.separator + TEST_FILE_NAME);
+        target = new File(System.getProperty("user.home") + File.separator + TEST_FILE_NAME);
 
         try {
-            if (!serializationTarget.exists()) {
-                serializationTarget.createNewFile();
+            if (!target.exists()) {
+                target.createNewFile();
             }
-            if (!serializationTarget.canWrite() || !serializationTarget.canRead()) {
+            if (!target.canWrite() || !target.canRead()) {
                 fail("Test file is not accessible.");
             }
         } catch (IOException ex) {
@@ -54,12 +54,14 @@ public class SettingsTest {
 
     @AfterClass
     public static void tearDownClass() {
-        serializationTarget.delete();
+        if (target != null) {
+            target.delete();
+        }
     }
 
     @Before
-    public void setUp() {        
-        try {            
+    public void setUp() {
+        try {
             c = ClientImpl.initNewClient(CLIENT_PORT);
             s = ServerImpl.initNewServer();
         } catch (IOException ex) {
@@ -99,10 +101,10 @@ public class SettingsTest {
             fail("Could not connect to client");
         }
 
-        boolean result = ServerSettings.serialize(serializationTarget, s.getClientManager());
+        boolean result = ServerSettings.serialize(target, s.getClientManager());
         assertEquals(true, result);
 
-        assertFiles(new File(SettingsTest.class.getResource("testSettingsServer.xml").getFile()), serializationTarget);
+        assertFiles(new File(SettingsTest.class.getResource("testSettingsServer.xml").getFile()), target);
     }
 
     @Test
@@ -119,7 +121,7 @@ public class SettingsTest {
 
         result = ClientSettings.deserialize(new File(SettingsTest.class.getResource("testSettingsClientFail.xml").getFile()), (ServerInterface) c);
         assertEquals(false, result);
-        
+
         result = ClientSettings.deserialize(new File(SettingsTest.class.getResource("testSettingsClientMultiIP.xml").getFile()), (ServerInterface) c);
         assertEquals(true, result);
     }
@@ -139,10 +141,10 @@ public class SettingsTest {
             fail("Failed to initialize client.");
         }
 
-        boolean result = ClientSettings.serialize(serializationTarget, c.getServerComm());
+        boolean result = ClientSettings.serialize(target, c.getServerComm());
         assertEquals(true, result);
 
-        assertFiles(new File(SettingsTest.class.getResource("testSettingsClient.xml").getFile()), serializationTarget);
+        assertFiles(new File(SettingsTest.class.getResource("testSettingsClient.xml").getFile()), target);
     }
 
     private static void assertFiles(final File expected,

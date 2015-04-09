@@ -1,7 +1,6 @@
 package cz.tul.javaccl.history.sorting;
 
 import cz.tul.javaccl.history.HistoryRecord;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.List;
@@ -20,8 +19,7 @@ import org.w3c.dom.NodeList;
  */
 public abstract class HistorySorter {
 
-    private static final String TIME_PATTERN = "yyyy-MM-dd H:m:s:S z";
-    private static final DateFormat DATE_FORMAT = new SimpleDateFormat(TIME_PATTERN);
+    private static final String TIME_PATTERN = "yyyy-MM-dd H:m:s:S z";    
 
     /**
      * Convert history record to a XML representation, data are exported using
@@ -42,7 +40,7 @@ public abstract class HistorySorter {
         } else {
             appendStringDataToNode(result, doc, "SourceID",id);
         }
-        appendStringDataToNode(result, doc, "Time", DATE_FORMAT.format(r.getTime()));
+        appendStringDataToNode(result, doc, "Time", new SimpleDateFormat(TIME_PATTERN).format(r.getTime()));
         appendStringDataToNode(result, doc, "Accepted", String.valueOf(r.wasAccepted()));
 
         result.appendChild(doc.importNode(r.getData(), true));

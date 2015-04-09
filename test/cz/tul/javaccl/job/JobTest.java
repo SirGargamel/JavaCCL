@@ -1143,7 +1143,7 @@ public class JobTest {
         }
     }
 
-    private final class Counter {
+    private static final class Counter {
 
         int count;
         int max;
@@ -1177,7 +1177,7 @@ public class JobTest {
         }
     }
 
-    private final class AssignmentListenerWrapper implements AssignmentListener {
+    private static final class AssignmentListenerWrapper implements AssignmentListener {
 
         private final Set<AssignmentListener> couter;
         private final AssignmentListener assignment;

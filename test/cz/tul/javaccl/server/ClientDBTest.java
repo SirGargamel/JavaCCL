@@ -24,8 +24,8 @@ public class ClientDBTest {
 
     private static final int PORT_CLIENT_1 = 5253;
     private static final int PORT_CLIENT_2 = 5254;
-    private static Client c1, c2;
-    private static Server s;
+    private Client c1, c2;
+    private Server s;
 
     @Before
     public void setUp() {

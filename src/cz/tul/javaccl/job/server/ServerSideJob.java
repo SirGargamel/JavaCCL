@@ -53,7 +53,9 @@ public class ServerSideJob implements Job {
             }
         }
 
-        return result;
+        synchronized (this) {
+            return result;
+        }
     }
 
     /**
@@ -67,8 +69,8 @@ public class ServerSideJob implements Job {
 
     @Override
     public synchronized void cancelJob() throws ConnectionException {
-        jcm.cancelJobByServer(this);        
-    }   
+        jcm.cancelJobByServer(this);
+    }
 
     /**
      * @param jobStatus new job status

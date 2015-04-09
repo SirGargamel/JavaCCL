@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class ClientDiscoveryDaemon extends DiscoveryDaemon implements IService {
+public class ClientDiscoveryDaemon extends DiscoveryDaemon {
 
     private static final Logger log = Logger.getLogger(ClientDiscoveryDaemon.class.getName());
     private static final int PAUSE_TIME = 5000;
@@ -27,13 +27,13 @@ public class ClientDiscoveryDaemon extends DiscoveryDaemon implements IService {
     public ClientDiscoveryDaemon(final ClientManager clientManager) throws SocketException {
         super();
         this.clientManager = clientManager;
-        run = true;
+        runThread = true;
     }
 
     @Override
     public void run() {
-        while (run) {
-            if (pause) {
+        while (runThread) {
+            if (pauseThread) {
                 pause();
             } else {
                 pause(PAUSE_TIME);
@@ -53,17 +53,17 @@ public class ClientDiscoveryDaemon extends DiscoveryDaemon implements IService {
         if (data.startsWith(GlobalConstants.DISCOVERY_QUESTION)) {
             final String portS = data.substring(GlobalConstants.DISCOVERY_QUESTION.length() + GlobalConstants.DELIMITER.length());
             try {
-                final int port = Integer.valueOf(portS);
+                final int port = Integer.parseInt(portS);
                 try {
                     clientManager.registerClient(address, port);
                 } catch (ConnectionException ex) {
-                    log.log(Level.WARNING, "Could not contact server at IP " + address + " and port " + port + " - " + ex.getExceptionCause());
+                    log.log(Level.WARNING, "Could not contact server at IP {0} and port {1} - {2}", new Object[]{address, port, ex.getExceptionCause()});
                 }
             } catch (NumberFormatException ex) {
                 try {
                     clientManager.registerClient(address, GlobalConstants.DEFAULT_PORT);
                 } catch (ConnectionException ex2) {
-                    log.log(Level.WARNING, "Could not contact server at IP " + address + " on default port " + GlobalConstants.DEFAULT_PORT + " - " + ex2.getExceptionCause());
+                    log.log(Level.WARNING, "Could not contact server at IP {0} on default port {1} - {2}", new Object[]{address, GlobalConstants.DEFAULT_PORT, ex2.getExceptionCause()});
                 }
             }
         }

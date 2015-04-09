@@ -1,13 +1,11 @@
 package cz.tul.javaccl;
 
-import java.io.Serializable;
-
 /**
  * Generic responses for error / success signalization.
  *
  * @author Petr Ječmen
  */
-public enum GenericResponses implements Serializable {
+public enum GenericResponses {
 
     /**
      * Receiving class could not parse received data.

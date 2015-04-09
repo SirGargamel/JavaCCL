@@ -131,7 +131,7 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
                     }
                 } else if (descr.equals(JobConstants.JOB_CANCEL)) {
                     jobs.remove(id);
-                    exec.submit(new Runnable() {
+                    exec.execute(new Runnable() {
                         @Override
                         public void run() {
                             assignmentListener.cancelTask(jobs.get(id));

@@ -222,13 +222,13 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
 
     @Override
     public Object handleDataPacket(final DataPacket dp) {
-        final UUID clientId = dp.getSourceID();
+        final UUID clientId = dp.getSourceId();
         final Object data = dp.getData();
         Object result = GenericResponses.NOT_HANDLED;
 
         boolean allowed = false;
         if (idFilter != null) {
-            if (!idFilter.isTargetIdValid(dp.getTargetID())) {
+            if (!idFilter.isTargetIdValid(dp.getTargetId())) {
                 if (data instanceof Message) {
                     final UUID mId = ((Message) data).getId();
                     final String header = ((Message) data).getHeader();
@@ -305,7 +305,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                     if (!handled) {
                         result = GenericResponses.NOT_HANDLED_DIRECTLY;
                     }
-                    exec.submit(new Runnable() {
+                    exec.execute(new Runnable() {
                         @Override
                         public void run() {
                             for (Observer o : dataListeners) {

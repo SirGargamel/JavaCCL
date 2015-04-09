@@ -22,10 +22,10 @@ public interface DataPacket extends Identifiable, Serializable {
     /**
      * @return UUID of the server
      */
-    UUID getSourceID();
+    UUID getSourceId();
 
     /**
      * @return UUID of the receiver
      */
-    UUID getTargetID();
+    UUID getTargetId();
 }

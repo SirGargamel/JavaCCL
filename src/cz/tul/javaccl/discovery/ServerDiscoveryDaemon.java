@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  */
 public class ServerDiscoveryDaemon extends DiscoveryDaemon {
 
-    private static final Logger log = Logger.getLogger(ServerDiscoveryDaemon.class.getName());    
+    private static final Logger log = Logger.getLogger(ServerDiscoveryDaemon.class.getName());
     private static final int PAUSE_TIME = 5000;
     private final ServerInterface sr;
 
@@ -31,13 +31,13 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
     public ServerDiscoveryDaemon(final ServerInterface sr) throws SocketException {
         super();
         this.sr = sr;
-        run = true;
+        runThread = true;
     }
 
     @Override
     public void run() {
-        while (run) {
-            if (pause) {
+        while (runThread) {
+            if (pauseThread) {
                 pause();
             }
             if (sr.getServerComm() == null) {
@@ -60,7 +60,7 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
         sb.append(sr.getLocalSocketPort());
 
         try {
-            broadcastMessage(sb.toString().getBytes());
+            broadcastMessage(sb.toString().getBytes(CHARSET));
         } catch (SocketException ex) {
             log.log(Level.WARNING, "Error while checking status of network interfaces");
             log.log(Level.FINE, "Error while checking status of network interfaces", ex);
@@ -78,26 +78,26 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
         } else if (sr.getServerComm() == null && data.startsWith(GlobalConstants.DISCOVERY_INFO)) {
             final String ipAndPort = data.substring(GlobalConstants.DISCOVERY_QUESTION.length() + GlobalConstants.DELIMITER.length());
             final String ipS = ipAndPort.substring(0, ipAndPort.indexOf(GlobalConstants.DELIMITER));
-            final String portS = ipAndPort.substring(ipAndPort.indexOf(GlobalConstants.DELIMITER));
-            InetAddress ip = null;
-            int port = GlobalConstants.DEFAULT_PORT;
+            final String portS = ipAndPort.substring(ipAndPort.indexOf(GlobalConstants.DELIMITER));                         
             try {
-                ip = InetAddress.getByName(ipS);
-                port = Integer.valueOf(portS);
+                final InetAddress ipAddr = InetAddress.getByName(ipS);
 
-            } catch (UnknownHostException ex) {
-                log.warning("Illegal server IP received - " + ipS);
-            } catch (NumberFormatException ex) {
-                log.warning("Illegal port number received - " + portS);
-            }
-
-            if (ip != null) {
+                int port;
                 try {
-                    sr.registerToServer(ip, Integer.valueOf(port));
+                    port = Integer.parseInt(portS);
+                } catch (NumberFormatException ex) {
+                    log.log(Level.WARNING, "Illegal port number received - {0}", portS);
+                    port = GlobalConstants.DEFAULT_PORT;
+                }
+                
+                try {
+                    sr.registerToServer(ipAddr, port);
                 } catch (ConnectionException ex) {
                     log.warning("Error contacting server.");
                     log.log(Level.FINE, "Error contacting server.", ex);
                 }
+            } catch (UnknownHostException ex) {
+                log.log(Level.WARNING, "Illegal server IP received - {0}", ipS);
             }
         }
     }
@@ -121,7 +121,7 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
             sb.append(comm.getPort());
 
             try {
-                broadcastMessage(sb.toString().getBytes());
+                broadcastMessage(sb.toString().getBytes(CHARSET));
             } catch (SocketException ex) {
                 log.log(Level.WARNING, "Error while checking status of network interfaces");
                 log.log(Level.FINE, "Error while checking status of network interfaces", ex);
@@ -130,5 +130,5 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
                 log.log(Level.FINE, "Error operating socket.", ex);
             }
         }
-    }    
+    }
 }

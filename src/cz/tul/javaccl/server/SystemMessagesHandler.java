@@ -46,11 +46,11 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                 if (header != null) {
                     if (header.equals(SystemMessageHeaders.LOGIN)) {
                         try {
-                            Integer port = Integer.parseInt(m.getData().toString());
-                            clientManager.addClient(dp.getSourceIP(), port, dp.getSourceID());
-                            log.log(Level.FINE, "LOGIN received from {0} with id {1}", new Object[]{dp.getSourceIP().getHostAddress(), dp.getSourceID()});
+                            final Integer port = Integer.parseInt(m.getData().toString());
+                            clientManager.addClient(dp.getSourceIP(), port, dp.getSourceId());
+                            log.log(Level.FINE, "LOGIN received from {0} with id {1}", new Object[]{dp.getSourceIP().getHostAddress(), dp.getSourceId()});
                             return localId;                        
-                        } catch (Exception ex) {
+                        } catch (NumberFormatException ex) {
                             log.log(Level.WARNING, "Illegal login data received - {0}", m.getData());
                             return GenericResponses.ILLEGAL_DATA;
                         }

@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public final class ServerImpl extends Server implements IService, Observer {
+public final class ServerImpl extends Server implements Observer {
 
     private static final Logger log = Logger.getLogger(ServerImpl.class.getName());
     private final ClientDB clients;

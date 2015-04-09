@@ -2,6 +2,7 @@ package cz.tul.javaccl.history.sorting;
 
 import cz.tul.javaccl.history.HistoryRecord;
 import static cz.tul.javaccl.history.sorting.HistorySorter.convertRecordToXML;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,22 +67,7 @@ public class IPSorter extends HistorySorter {
         log.fine("Sorting nodes by time.");
 
         final List<HistoryRecord> sortedList = new ArrayList<HistoryRecord>(records);
-        final Comparator<HistoryRecord> comp;
-        if (byDestination) {
-            comp = new Comparator<HistoryRecord>() {
-                @Override
-                public int compare(HistoryRecord o1, HistoryRecord o2) {
-                    return compareIp(o1.getIpDestination(), o2.getIpDestination());
-                }
-            };
-        } else {
-            comp = new Comparator<HistoryRecord>() {
-                @Override
-                public int compare(HistoryRecord o1, HistoryRecord o2) {
-                    return compareIp(o1.getIpSource(), o2.getIpSource());
-                }
-            };
-        }
+        final Comparator<HistoryRecord> comp = byDestination ? new IpSorterDestination() : new IpSorterSource();
 
         Collections.sort(sortedList, comp);
 
@@ -91,5 +77,21 @@ public class IPSorter extends HistorySorter {
         }
 
         return result;
+    }
+
+    private static final class IpSorterDestination implements Comparator<HistoryRecord>, Serializable {
+
+        @Override
+        public int compare(final HistoryRecord record1, final HistoryRecord record2) {
+            return compareIp(record1.getIpDestination(), record2.getIpDestination());
+        }
+    }
+
+    private static final class IpSorterSource implements Comparator<HistoryRecord>, Serializable {
+
+        @Override
+        public int compare(final HistoryRecord record1, final HistoryRecord record2) {
+            return compareIp(record1.getIpSource(), record2.getIpSource());
+        }
     }
 }

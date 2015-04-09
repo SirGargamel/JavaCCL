@@ -111,16 +111,16 @@ public class SimpleXMLSettingsFile {
         boolean result = false;
 
         try {
-            if (!target.exists()) {
-                target.createNewFile();
+            if (!target.exists() && !target.createNewFile()) {
+                throw new IOException("Could not create target file " + target.getAbsolutePath());
             }
 
-            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+            final DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+            final DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
             // root element
-            Document doc = docBuilder.newDocument();
-            Element rootElement = doc.createElement(SETTINGS_NODE_NAME);
+            final Document doc = docBuilder.newDocument();
+            final Element rootElement = doc.createElement(SETTINGS_NODE_NAME);
             doc.appendChild(rootElement);
             // data elements
             Element el;
@@ -130,12 +130,12 @@ public class SimpleXMLSettingsFile {
                 rootElement.appendChild(el);
             }
             // write the content into xml file
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
+            final TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            final Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-            DOMSource source = new DOMSource(doc);
-            StreamResult out = new StreamResult(target);
+            final DOMSource source = new DOMSource(doc);
+            final StreamResult out = new StreamResult(target);
             transformer.transform(source, out);
 
             result = true;

@@ -31,12 +31,12 @@ public class DataPacketImpl implements DataPacket {
     }
 
     @Override
-    public UUID getSourceID() {
+    public UUID getSourceId() {
         return sourceID;
     }
 
     @Override
-    public UUID getTargetID() {
+    public UUID getTargetId() {
         return targetID;
     }
 

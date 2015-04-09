@@ -40,14 +40,14 @@ public class ServerSettings implements Serializable {
 
         if (settingsFile.canRead()) {
             try {
-                List<Map.Entry<String, String>> fields = SimpleXMLSettingsFile.loadSimpleXMLFile(settingsFile);
+                final List<Map.Entry<String, String>> fields = SimpleXMLSettingsFile.loadSimpleXMLFile(settingsFile);
                 String fieldName;
                 for (Entry<String, String> e : fields) {
                     fieldName = e.getKey();
                     if (fieldName != null && fieldName.equals(FIELD_NAME_CLIENT)) {
-                        String[] split = e.getValue().split(GlobalConstants.DELIMITER);
+                        final String[] split = e.getValue().split(GlobalConstants.DELIMITER);
                         try {
-                            if (clientManager.registerClient(InetAddress.getByName(split[0]), Integer.valueOf(split[1])) != null) {
+                            if (clientManager.registerClient(InetAddress.getByName(split[0]), Integer.parseInt(split[1])) != null) {
                                 result = true;
                             }
                         } catch (UnknownHostException ex) {

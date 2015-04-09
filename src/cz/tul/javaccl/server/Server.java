@@ -1,7 +1,6 @@
 package cz.tul.javaccl.server;
 
 import cz.tul.javaccl.CCLEntity;
-import cz.tul.javaccl.CCLObservable;
 import cz.tul.javaccl.ComponentManager;
 import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.IService;

@@ -12,6 +12,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,23 +25,24 @@ import java.util.logging.Logger;
  */
 abstract class DiscoveryDaemon extends Thread implements IService {
 
-    private static final Logger log = Logger.getLogger(DiscoveryDaemon.class.getName());
-    private static final String MULTICAST_GROUP_IP = "230.50.11.2";
+    protected static final Charset CHARSET = Charset.forName("UTF-8");
+    private static final Logger log = Logger.getLogger(DiscoveryDaemon.class.getName());    
+    private static final String MULTICAST_IP_S= "230.50.11.2";
     private static final int MULTICAST_PORT = GlobalConstants.DEFAULT_PORT + 1;
-    private static final InetAddress multicastGroup;
+    private static final InetAddress MULTICAST_IP;
     private final ExecutorService exec;
     private final DatagramSocket ds;
     private final MulticastSocket ms;    
-    protected boolean run, pause, broadcast;
+    protected boolean runThread, pauseThread, broadcast;
 
     static {
         InetAddress group = null;
         try {
-            group = InetAddress.getByName(MULTICAST_GROUP_IP);
+            group = InetAddress.getByName(MULTICAST_IP_S);
         } catch (UnknownHostException ex) {
             log.warning("Error retreiving multicast address.");
         }
-        multicastGroup = group;
+        MULTICAST_IP = group;
     }
 
     public DiscoveryDaemon() throws SocketException {
@@ -51,7 +53,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
         MulticastSocket msS = null;
         try {
             msS = new MulticastSocket(MULTICAST_PORT);
-            msS.joinGroup(multicastGroup);
+            msS.joinGroup(MULTICAST_IP);
         } catch (IOException ex) {
             log.warning("Error initializing multicast socket.");
         }
@@ -65,20 +67,20 @@ abstract class DiscoveryDaemon extends Thread implements IService {
                 while (true) {
                     try {
                         // Receive a packet
-                        byte[] recvBuf = new byte[15000];
-                        DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
+                        final byte[] recvBuf = new byte[15000];
+                        final DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                         log.log(Level.FINE, "Starting listening for discovery packets.");
                         ds.setSoTimeout(GlobalConstants.getDEFAULT_TIMEOUT());
                         ds.receive(packet);
 
                         // Packet received            
-                        String message = new String(packet.getData()).trim();
-                        log.log(Level.FINE, "Broadcast discovery packet received from " + packet.getAddress().getHostAddress() + " - " + message.toString());
+                        final String message = new String(packet.getData(), CHARSET).trim();
+                        log.log(Level.FINE, "Broadcast discovery packet received from " + packet.getAddress().getHostAddress() + " - " + message);
                         receiveBroadcast(message, packet.getAddress());
                     } catch (SocketTimeoutException ex) {
                         // everything is OK, we want to wait only for limited time
                     } catch (SocketException ex) {
-                        if (run == true) {
+                        if (runThread) {
                             log.log(Level.WARNING, "Error operating socket.");
                             log.log(Level.FINE, "Error operating socket.", ex);
                         }
@@ -96,20 +98,20 @@ abstract class DiscoveryDaemon extends Thread implements IService {
                 while (true) {
                     try {
                         // Receive a packet
-                        byte[] recvBuf = new byte[15000];
-                        DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
+                        final byte[] recvBuf = new byte[15000];
+                        final DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                         log.log(Level.FINE, "Starting listening for discovery packets.");
                         ms.setSoTimeout(GlobalConstants.getDEFAULT_TIMEOUT());
                         ms.receive(packet);
 
                         // Packet received            
-                        String message = new String(packet.getData()).trim();
-                        log.log(Level.FINE, "Multicast discovery packet received from " + packet.getAddress().getHostAddress() + " - " + message.toString());
+                        final String message = new String(packet.getData(), CHARSET).trim();
+                        log.log(Level.FINE, "Multicast discovery packet received from {0} - {1}", new Object[]{packet.getAddress().getHostAddress(), message});
                         receiveBroadcast(message, packet.getAddress());
                     } catch (SocketTimeoutException ex) {
                         // everything is OK, we want to wait only for limited time
                     } catch (SocketException ex) {
-                        if (run == true) {
+                        if (runThread) {
                             log.log(Level.WARNING, "Error operating socket.");
                             log.log(Level.FINE, "Error operating socket.", ex);
                         }
@@ -126,7 +128,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
 
     protected void broadcastMessage(final byte[] msg) throws SocketException, IOException {
         final int messageLength = msg.length;
-        DatagramPacket sendPacket = new DatagramPacket(msg, messageLength, InetAddress.getByName("255.255.255.255"), GlobalConstants.DEFAULT_PORT);
+        final DatagramPacket sendPacket = new DatagramPacket(msg, messageLength, InetAddress.getByName("255.255.255.255"), GlobalConstants.DEFAULT_PORT);
 
         if (broadcast) {
             // Find the clients using UDP broadcast                
@@ -134,23 +136,24 @@ abstract class DiscoveryDaemon extends Thread implements IService {
             ds.send(sendPacket);
 
             // Broadcast the message over all the network interfaces
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            final Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            NetworkInterface networkInterface;
+            InetAddress broadcastIp;
             while (interfaces.hasMoreElements()) {
-                NetworkInterface networkInterface = interfaces.nextElement();
+                networkInterface = interfaces.nextElement();
 
                 if (!networkInterface.isUp()) {
                     continue;
                 }
 
                 for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
-                    InetAddress broadcast = interfaceAddress.getBroadcast();
-                    if (broadcast == null) {
+                    broadcastIp = interfaceAddress.getBroadcast();
+                    if (broadcastIp == null) {
                         continue;
                     }
 
-                    // Send the broadcast
-                    sendPacket = new DatagramPacket(msg, messageLength, broadcast, GlobalConstants.DEFAULT_PORT);
-                    ds.send(sendPacket);
+                    // Send the broadcast                    
+                    ds.send(new DatagramPacket(msg, messageLength, broadcastIp, GlobalConstants.DEFAULT_PORT));
                 }
             }
             broadcast = false;
@@ -170,7 +173,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
 
     @Override
     public void stopService() {
-        run = false;
+        runThread = false;
         ds.close();
         ms.close();
         exec.shutdownNow();
@@ -178,13 +181,13 @@ abstract class DiscoveryDaemon extends Thread implements IService {
 
     public void enable(boolean enable) {
         if (enable) {
-            pause = false;
+            pauseThread = false;
             synchronized (this) {
                 this.notifyAll();
             }
             log.fine("DiscoveryDaemon has been enabled.");
         } else {
-            pause = true;
+            pauseThread = true;
             log.fine("DiscoveryDaemon has been disabled.");
         }
     }
@@ -197,7 +200,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
         } catch (InterruptedException ex) {
             log.warning("Waiting of DiscoveryDaemon has been interrupted.");
         }
-        pause = false;
+        pauseThread = false;
     }
     
     protected void pause() {

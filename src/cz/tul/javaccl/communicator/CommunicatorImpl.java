@@ -66,7 +66,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     private CommunicatorImpl(final InetAddress address, final int port, final UUID sourceId) throws IllegalArgumentException {
         if (address == null) {
-            throw new IllegalArgumentException("Invalid address \"" + address + "\"");
+            throw new IllegalArgumentException("NULL address not supported.");
         } else if (port < 0 || port > 65535) {
             throw new IllegalArgumentException("Invalid port \"" + port + "\"");
         }
@@ -254,7 +254,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                 in = new ObjectInputStream(s.getInputStream());
                 Object response = in.readObject();
                 if ((targetId == null
-                        || (targetId != null && targetId.equals(response)))) {
+                        || targetId.equals(response))) {
                     stat = Status.ONLINE;
                 } else {
                     log.log(Level.WARNING, "STATUS_CHECK response received for another ID - {0} , should be {1}. Local ID {2}", new Object[]{response, targetId, sourceId});
