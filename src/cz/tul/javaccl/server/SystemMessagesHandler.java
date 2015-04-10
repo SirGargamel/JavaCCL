@@ -53,6 +53,9 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                         } catch (NumberFormatException ex) {
                             log.log(Level.WARNING, "Illegal login data received - {0}", m.getData());
                             return GenericResponses.ILLEGAL_DATA;
+                        } catch (NullPointerException ex) {
+                            log.log(Level.WARNING, "Null login data received.");
+                            return GenericResponses.ILLEGAL_DATA;
                         }
                     } else if (header.equals(SystemMessageHeaders.LOGOUT)) {
                         final Object id = m.getData();
