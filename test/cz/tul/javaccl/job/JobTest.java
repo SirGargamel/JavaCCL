@@ -17,8 +17,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,52 +28,41 @@ import static org.junit.Assert.*;
  */
 public class JobTest {
 
-    private static final Logger LOG = Logger.getLogger(JobTest.class.getName());
     private Server s;
     private Client c;
-    List<Client> clients;
+    private List<Client> clients;
 
     @Before
     public void setUp() {
-        synchronized (log) {
-            try {
-                clients = new LinkedList<Client>();
-                s = ServerImpl.initNewServer();
-                c = ClientImpl.initNewClient(5253);
-                c.registerToServer(GlobalConstants.IP_LOOPBACK);
-                LOG.log(Level.INFO, "Server and client are up.");
-            } catch (IOException ex) {
-                fail("Initialization failed due to IO - " + ex);
-            } catch (ConnectionException ex) {
-                fail("Initialization failed due to illegal connection - " + ex);
-            }
+        try {
+            clients = new LinkedList<Client>();
+            s = ServerImpl.initNewServer();
+            c = ClientImpl.initNewClient(5253);
+            c.registerToServer(GlobalConstants.IP_LOOPBACK);
+        } catch (IOException ex) {
+            fail("Initialization failed due to IO - " + ex);
+        } catch (ConnectionException ex) {
+            fail("Initialization failed due to illegal connection - " + ex);
         }
     }
 
     @After
     public void tearDown() {
-        synchronized (log) {
-            try {
-                for (Client client : clients) {
-                    client.deregisterFromServer();
-                    client.stopService();
-                }
-                clients.clear();
-                if (c != null) {
-                    c.deregisterFromServer();
-                    c.stopService();
-                }
-                LOG.wait(1000);
-                if (s != null) {
-                    s.stopService();
-                }
-                LOG.wait(1000);
-                LOG.log(Level.INFO, "Server and clients are down.");
-            } catch (ConnectionException ex) {
-                fail("Initialization failed due to ConnectionException - " + ex);
-            } catch (InterruptedException ex) {
-                fail("Initialization failed due to Wait Exception - " + ex);
+        try {
+            for (Client client : clients) {
+                client.deregisterFromServer();
+                client.stopService();
             }
+            clients.clear();
+            if (c != null) {
+                c.deregisterFromServer();
+                c.stopService();
+            }
+            if (s != null) {
+                s.stopService();
+            }
+        } catch (ConnectionException ex) {
+            fail("Initialization failed due to ConnectionException - " + ex);
         }
     }
 
@@ -520,7 +507,7 @@ public class JobTest {
         c.setAssignmentListener(new AssignmentListener() {
             @Override
             public void receiveTask(Assignment task) {
-                try {                    
+                try {
                     Object tsk = task.getTask();
                     concurrentCounter.add(1);
                     System.out.println("+");
@@ -528,14 +515,14 @@ public class JobTest {
                     if (!(tsk instanceof Integer)) {
                         fail("Illegal task received");
                     }
-                                        
+
                     computingClients.add(this);
 
                     Integer count = (Integer) tsk;
                     counter.add(count);
                     synchronized (task) {
                         task.wait(count);
-                    }                    
+                    }
 
                     task.submitResult(GenericResponses.OK);
                     concurrentCounter.sub(1);
@@ -884,13 +871,11 @@ public class JobTest {
             jobs.add(s.submitJob(val));
         }
         final Job jobForCancelation = s.submitJob(2000);
-        LOG.log(Level.INFO, "Cancel JobID, Job - {0}, {1}", new Object[]{jobForCancelation.getId(), jobForCancelation.toString()});
 
         while (!jobForCancelation.getStatus().equals(JobStatus.ACCEPTED) && !jobForCancelation.isDone()) {
             try {
                 synchronized (jobForCancelation) {
                     jobForCancelation.wait();
-                    LOG.log(Level.INFO, "{0}, {1}", new Object[]{jobForCancelation.getStatus().toString(), jobForCancelation.toString()});
                 }
             } catch (InterruptedException ex) {
                 fail("Waiting for cancelation failed - " + ex);
@@ -1114,7 +1099,7 @@ public class JobTest {
                 }
 
                 @Override
-                public void cancelTask(Assignment task) {                    
+                public void cancelTask(Assignment task) {
                 }
             });
 
