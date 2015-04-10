@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  */
 public final class ServerImpl extends Server implements Observer {
 
-    private static final Logger log = Logger.getLogger(ServerImpl.class.getName());
+    private static final Logger LOG = Logger.getLogger(ServerImpl.class.getName());
     private final ClientDB clients;
     private final ServerSocket serverSocket;
     private final HistoryManager history;
@@ -56,7 +56,7 @@ public final class ServerImpl extends Server implements Observer {
     public static Server initNewServer(final int port) throws IOException {
         final ServerImpl result = new ServerImpl(port);
         result.start();
-        log.log(Level.INFO, "New server created on port {0}", port);
+        LOG.log(Level.INFO, "New server created on port {0}", port);
 
         return result;
     }
@@ -74,13 +74,13 @@ public final class ServerImpl extends Server implements Observer {
             try {
                 server = initNewServer(port++);
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Error initializing server on port " + (port - 1));
-                log.log(Level.FINE, "Error initializing server on port " + (port - 1), ex);
+                LOG.log(Level.WARNING, "Error initializing server on port " + (port - 1));
+                LOG.log(Level.FINE, "Error initializing server on port " + (port - 1), ex);
             }
         }
 
         if (server == null) {
-            log.log(Level.WARNING, "Error initializing server, no free port found");
+            LOG.log(Level.WARNING, "Error initializing server, no free port found");
         }
 
         return server;
@@ -104,8 +104,8 @@ public final class ServerImpl extends Server implements Observer {
         try {
             cdd = new ClientDiscoveryDaemon(clients);
         } catch (SocketException ex) {
-            log.log(Level.WARNING, "Failed to create ClientDiscoveryDaemon");
-            log.log(Level.FINE, "Failed to create ClientDiscoveryDaemon", ex);
+            LOG.log(Level.WARNING, "Failed to create ClientDiscoveryDaemon");
+            LOG.log(Level.FINE, "Failed to create ClientDiscoveryDaemon", ex);
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -118,7 +118,7 @@ public final class ServerImpl extends Server implements Observer {
 
     @Override
     public Communicator registerClient(final InetAddress adress) throws ConnectionException {
-        log.log(Level.INFO, "Registering new client on IP " + adress.getHostAddress() + " on default port");
+        LOG.log(Level.INFO, "Registering new client on IP " + adress.getHostAddress() + " on default port");
         return clients.registerClient(adress, GlobalConstants.DEFAULT_PORT);
     }
 
@@ -140,7 +140,7 @@ public final class ServerImpl extends Server implements Observer {
 
     @Override
     public boolean exportHistory() {
-        log.info("Exporting history.");
+        LOG.info("Exporting history.");
         return history.export(new File(""), null);
     }
 
@@ -188,7 +188,7 @@ public final class ServerImpl extends Server implements Observer {
             try {
                 comm.sendData(new Message(GlobalConstants.ID_SYS_MSG, SystemMessageHeaders.LOGOUT, null));
             } catch (ConnectionException ex) {
-                log.warning("Client connection timed out.");
+                LOG.warning("Client connection timed out.");
             }
         }
 
@@ -211,7 +211,7 @@ public final class ServerImpl extends Server implements Observer {
             // error closing some resource, ignore
         }
 
-        log.fine("Server has been stopped.");
+        LOG.fine("Server has been stopped.");
     }
 
     @Override
@@ -252,7 +252,7 @@ public final class ServerImpl extends Server implements Observer {
 
     @Override
     public boolean generateClientSettings(File settingsFile) {
-        log.log(Level.FINE, "Generating client settings.");
+        LOG.log(Level.FINE, "Generating client settings.");
 
         final SimpleXMLSettingsFile xml = new SimpleXMLSettingsFile();
 
@@ -272,11 +272,11 @@ public final class ServerImpl extends Server implements Observer {
                 }
             }
         } catch (SocketException ex) {
-            log.log(Level.WARNING, "Error listing available network interfaces.", settingsFile.getAbsolutePath());
-            log.log(Level.FINE, "Error listing available network interfaces.", ex);
+            LOG.log(Level.WARNING, "Error listing available network interfaces.", settingsFile.getAbsolutePath());
+            LOG.log(Level.FINE, "Error listing available network interfaces.", ex);
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error accessing client settings at {0}.", settingsFile.getAbsolutePath());
-            log.log(Level.FINE, "Error accessing client settings at " + settingsFile.getAbsolutePath() + ".", ex);
+            LOG.log(Level.WARNING, "Error accessing client settings at {0}.", settingsFile.getAbsolutePath());
+            LOG.log(Level.FINE, "Error accessing client settings at " + settingsFile.getAbsolutePath() + ".", ex);
         }
 
         return result;

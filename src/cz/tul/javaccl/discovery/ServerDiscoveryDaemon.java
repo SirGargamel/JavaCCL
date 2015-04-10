@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  */
 public class ServerDiscoveryDaemon extends DiscoveryDaemon {
 
-    private static final Logger log = Logger.getLogger(ServerDiscoveryDaemon.class.getName());
+    private static final Logger LOG = Logger.getLogger(ServerDiscoveryDaemon.class.getName());
     private static final int PAUSE_TIME = 5000;
     private final ServerInterface sr;
 
@@ -50,7 +50,7 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
     @Override
     public void stopService() {
         super.stopService();
-        log.fine("ServerDiscoveryDaemon has been stopped.");
+        LOG.fine("ServerDiscoveryDaemon has been stopped.");
     }
 
     private void broadcastServerDiscovery() {
@@ -62,11 +62,11 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
         try {
             broadcastMessage(sb.toString().getBytes(CHARSET));
         } catch (SocketException ex) {
-            log.log(Level.WARNING, "Error while checking status of network interfaces");
-            log.log(Level.FINE, "Error while checking status of network interfaces", ex);
+            LOG.log(Level.WARNING, "Error while checking status of network interfaces");
+            LOG.log(Level.FINE, "Error while checking status of network interfaces", ex);
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error operating socket.");
-            log.log(Level.FINE, "Error operating socket.", ex);
+            LOG.log(Level.WARNING, "Error operating socket.");
+            LOG.log(Level.FINE, "Error operating socket.", ex);
         }
     }
 
@@ -86,18 +86,18 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
                 try {
                     port = Integer.parseInt(portS);
                 } catch (NumberFormatException ex) {
-                    log.log(Level.WARNING, "Illegal port number received - {0}", portS);
+                    LOG.log(Level.WARNING, "Illegal port number received - {0}", portS);
                     port = GlobalConstants.DEFAULT_PORT;
                 }
                 
                 try {
                     sr.registerToServer(ipAddr, port);
                 } catch (ConnectionException ex) {
-                    log.warning("Error contacting server.");
-                    log.log(Level.FINE, "Error contacting server.", ex);
+                    LOG.warning("Error contacting server.");
+                    LOG.log(Level.FINE, "Error contacting server.", ex);
                 }
             } catch (UnknownHostException ex) {
-                log.log(Level.WARNING, "Illegal server IP received - {0}", ipS);
+                LOG.log(Level.WARNING, "Illegal server IP received - {0}", ipS);
             }
         }
     }
@@ -123,11 +123,11 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
             try {
                 broadcastMessage(sb.toString().getBytes(CHARSET));
             } catch (SocketException ex) {
-                log.log(Level.WARNING, "Error while checking status of network interfaces");
-                log.log(Level.FINE, "Error while checking status of network interfaces", ex);
+                LOG.log(Level.WARNING, "Error while checking status of network interfaces");
+                LOG.log(Level.FINE, "Error while checking status of network interfaces", ex);
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Error operating socket.");
-                log.log(Level.FINE, "Error operating socket.", ex);
+                LOG.log(Level.WARNING, "Error operating socket.");
+                LOG.log(Level.FINE, "Error operating socket.", ex);
             }
         }
     }

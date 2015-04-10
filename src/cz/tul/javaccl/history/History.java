@@ -34,7 +34,7 @@ import org.w3c.dom.Element;
  */
 public class History implements HistoryManager {
 
-    private static final Logger log = Logger.getLogger(History.class.getName());
+    private static final Logger LOG = Logger.getLogger(History.class.getName());
     private boolean isEnabled;
 
     private static Document prepareDocument() throws ParserConfigurationException {
@@ -70,7 +70,7 @@ public class History implements HistoryManager {
         try {
             local = InetAddress.getLocalHost();
         } catch (UnknownHostException ex) {
-            log.log(Level.FINE, "Local address not found, using loopback", ex);
+            LOG.log(Level.FINE, "Local address not found, using loopback", ex);
             local = GlobalConstants.IP_LOOPBACK;
         }
         localHost = local;
@@ -79,8 +79,8 @@ public class History implements HistoryManager {
         try {
             defaultDoc = prepareDocument();
         } catch (ParserConfigurationException ex) {
-            log.log(Level.WARNING, "Failed to create DocumentBuilder, disabling history logging.");
-            log.log(Level.FINE, "Failed to create DocumentBuilder.", ex);
+            LOG.log(Level.WARNING, "Failed to create DocumentBuilder, disabling history logging.");
+            LOG.log(Level.FINE, "Failed to create DocumentBuilder.", ex);
             isEnabled = false;
         }
         
@@ -92,7 +92,7 @@ public class History implements HistoryManager {
         if (isEnabled) {
             final HistoryRecord r = new HistoryRecord(localHost, ipDestination, targetId, data, accepted, answer, defaultDoc, true);
             records.add(r);
-            log.log(Level.FINE, "Sent message stored to history - " + r);
+            LOG.log(Level.FINE, "Sent message stored to history - " + r);
         }
     }
 
@@ -101,7 +101,7 @@ public class History implements HistoryManager {
         if (isEnabled) {
             final HistoryRecord r = new HistoryRecord(ipSource, localHost, sourceId, data, accepted, answer, defaultDoc, false);
             records.add(r);
-            log.log(Level.FINE, "Received message stored to history - " + r);
+            LOG.log(Level.FINE, "Received message stored to history - " + r);
         }
     }
 
@@ -124,16 +124,16 @@ public class History implements HistoryManager {
             exportDocumentToXML(target, doc);
             result = true;
 
-            log.log(Level.FINE, "History successfully exported to {0}, sorted using {1}", new Object[]{target.getAbsolutePath(), sorter.getClass().getCanonicalName()});
+            LOG.log(Level.FINE, "History successfully exported to {0}, sorted using {1}", new Object[]{target.getAbsolutePath(), sorter.getClass().getCanonicalName()});
         } catch (TransformerConfigurationException ex) {
-            log.log(Level.WARNING, "Failed to create Transformer, export failed.");
-            log.log(Level.FINE, "Failed to create Transformer.", ex);
+            LOG.log(Level.WARNING, "Failed to create Transformer, export failed.");
+            LOG.log(Level.FINE, "Failed to create Transformer.", ex);
         } catch (TransformerException ex) {
-            log.log(Level.WARNING, "Failed to transform history into XML, export failed.");
-            log.log(Level.FINE, "Failed to transform history into XML.", ex);
+            LOG.log(Level.WARNING, "Failed to transform history into XML, export failed.");
+            LOG.log(Level.FINE, "Failed to transform history into XML.", ex);
         } catch (ParserConfigurationException ex) {
-            log.log(Level.WARNING, "Failed to create DocumentBuilder, export failed.");
-            log.log(Level.FINE, "Failed to create DocumentBuilder.", ex);
+            LOG.log(Level.WARNING, "Failed to create DocumentBuilder, export failed.");
+            LOG.log(Level.FINE, "Failed to create DocumentBuilder.", ex);
         }
 
         return result;

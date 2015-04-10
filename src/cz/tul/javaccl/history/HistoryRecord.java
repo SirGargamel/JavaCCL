@@ -26,7 +26,7 @@ import org.w3c.dom.Node;
  */
 public class HistoryRecord {
 
-    private static final Logger log = Logger.getLogger(HistoryRecord.class.getName());
+    private static final Logger LOG = Logger.getLogger(HistoryRecord.class.getName());
     private final InetAddress ipSource;
     private final InetAddress ipDestination;
     private final UUID id;
@@ -155,7 +155,7 @@ public class HistoryRecord {
                 t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
                 t.transform(new DOMSource(node), new StreamResult(sw));
             } catch (TransformerException te) {
-                log.warning("nodeToString Transformer Exception");
+                LOG.warning("nodeToString Transformer Exception");
             }
             result = sw.toString();
             result = result.replaceAll("<", "[").replaceAll(">", "]");

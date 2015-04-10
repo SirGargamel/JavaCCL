@@ -15,7 +15,7 @@ import org.w3c.dom.Element;
  */
 public class Exporter extends ExportUnit {
 
-    private static final Logger log = Logger.getLogger(Exporter.class.getName());
+    private static final Logger LOG = Logger.getLogger(Exporter.class.getName());
     private static final String ARRAY_NAME = "Array";
     private static final Map<Class<?>, ExportUnit> EXPORTERS;
 
@@ -61,7 +61,7 @@ public class Exporter extends ExportUnit {
      */
     public static void registerExporterUnit(final ExportUnit unit) {
         EXPORTERS.put(unit.getExportedClass(), unit);
-        log.log(Level.FINE, "New exporter for class " + unit.getExportedClass().getName() + " registered.");
+        LOG.log(Level.FINE, "New exporter for class " + unit.getExportedClass().getName() + " registered.");
     }
 
     @Override

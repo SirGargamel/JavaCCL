@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  */
 public class ServerSideJob implements Job {
 
-    private static final Logger log = Logger.getLogger(ServerSideJob.class.getName());
+    private static final Logger LOG = Logger.getLogger(ServerSideJob.class.getName());
     private final JobCancelManager jcm;
     private final Object task;
     private final UUID jobId;
@@ -47,7 +47,7 @@ public class ServerSideJob implements Job {
                     try {
                         this.wait();
                     } catch (InterruptedException ex) {
-                        log.log(Level.WARNING, "Job waiting for result has been interrupted", ex);
+                        LOG.log(Level.WARNING, "Job waiting for result has been interrupted", ex);
                     }
                 }
             }

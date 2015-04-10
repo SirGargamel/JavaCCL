@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  */
 class SocketReader extends Observable implements Runnable {
 
-    private static final Logger log = Logger.getLogger(SocketReader.class.getName());
+    private static final Logger LOG = Logger.getLogger(SocketReader.class.getName());
     private final Socket socket;
     private final DataPacketHandler dpHandler;
     private final MessagePullDaemon mpd;
@@ -91,28 +91,28 @@ class SocketReader extends Observable implements Runnable {
                 if (header != null && header.equals(SystemMessageHeaders.MSG_PULL_REQUEST)) {
                     mpd.handleMessagePullRequest(socket, m.getData(), in);
                 } else {
-                    log.log(Level.WARNING, "Received Message with unidentifined header - " + m.toString());
+                    LOG.log(Level.WARNING, "Received Message with unidentifined header - " + m.toString());
                     sendReply(ip, null, dataIn, dataRead, GenericResponses.ILLEGAL_HEADER);
                 }
             } else {
-                log.log(Level.WARNING, "Received data is not an instance of DataPacket or Message - " + dataIn);
+                LOG.log(Level.WARNING, "Received data is not an instance of DataPacket or Message - " + dataIn);
                 sendReply(ip, null, dataIn, dataRead, GenericResponses.ILLEGAL_DATA);
             }
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error reading data from socket.");
-            log.log(Level.FINE, "Error reading data from socket.", ex);
+            LOG.log(Level.WARNING, "Error reading data from socket.");
+            LOG.log(Level.FINE, "Error reading data from socket.", ex);
             sendReply(ip, null, null, false, GenericResponses.CONNECTION_ERROR);
         } catch (ClassNotFoundException ex) {
-            log.log(Level.WARNING, "Invalid data received from sender.");
-            log.log(Level.FINE, "Invalid data received from sender.", ex);
+            LOG.log(Level.WARNING, "Invalid data received from sender.");
+            LOG.log(Level.FINE, "Invalid data received from sender.", ex);
             sendReply(ip, null, null, false, GenericResponses.ILLEGAL_DATA);
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException ex) {
-                    log.log(Level.WARNING, "Error operating socket.");
-                    log.log(Level.FINE, "Error operating socket.", ex);
+                    LOG.log(Level.WARNING, "Error operating socket.");
+                    LOG.log(Level.FINE, "Error operating socket.", ex);
                 }
             }
         }
@@ -122,8 +122,8 @@ class SocketReader extends Observable implements Runnable {
                 socket.close();
             }
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error closing socket.");
-            log.log(Level.FINE, "Error closing socket.", ex);
+            LOG.log(Level.WARNING, "Error closing socket.");
+            LOG.log(Level.FINE, "Error closing socket.", ex);
         }
     }
 
@@ -134,15 +134,15 @@ class SocketReader extends Observable implements Runnable {
             out.writeObject(response);
             out.flush();
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error writing result data to socket.");
-            log.log(Level.FINE, "Error writing result data to socket.", ex);
+            LOG.log(Level.WARNING, "Error writing result data to socket.");
+            LOG.log(Level.FINE, "Error writing result data to socket.", ex);
         } finally {
             if (out != null) {
                 try {
                     out.close();
                 } catch (IOException ex) {
-                    log.log(Level.WARNING, "Error closing socket.");
-                    log.log(Level.FINE, "Error closing socket.", ex);
+                    LOG.log(Level.WARNING, "Error closing socket.");
+                    LOG.log(Level.FINE, "Error closing socket.", ex);
                 }
             }
         }

@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  */
 public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobManager {
 
-    private static final Logger log = Logger.getLogger(ClientJobManagerImpl.class.getName());
+    private static final Logger LOG = Logger.getLogger(ClientJobManagerImpl.class.getName());
     private static final int WAIT_TIME = 500;
     private AssignmentListener assignmentListener;
     private final ServerInterface server;
@@ -88,14 +88,14 @@ public class ClientJobManagerImpl implements Listener<Identifiable>, ClientJobMa
 
     private void waitForSever() {
         if (!server.isServerUp()) {
-            log.fine("Waiting for server to become online.");
+            LOG.fine("Waiting for server to become online.");
             do {
                 synchronized (this) {
                     try {
                         this.wait(WAIT_TIME);
                     } catch (InterruptedException ex) {
-                        log.log(Level.WARNING, "Waiting for server being available for data request has been interrupted.");
-                        log.log(Level.FINE, "Waiting for server being available for data request has been interrupted.", ex);
+                        LOG.log(Level.WARNING, "Waiting for server being available for data request has been interrupted.");
+                        LOG.log(Level.FINE, "Waiting for server being available for data request has been interrupted.", ex);
                     }
                 }
             } while (!server.isServerUp());

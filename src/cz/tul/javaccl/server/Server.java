@@ -25,7 +25,7 @@ import java.util.logging.Logger;
  */
 public abstract class Server extends CCLEntity implements IService, ComponentManager {
 
-    private static final Logger log = Logger.getLogger(Server.class.getName());
+    private static final Logger LOG = Logger.getLogger(Server.class.getName());
 
     static {
         Utils.initConsoleLogging();

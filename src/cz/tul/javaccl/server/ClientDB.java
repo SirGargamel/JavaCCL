@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  */
 class ClientDB extends ClientManager implements Observer, IDFilter {
 
-    private static final Logger log = Logger.getLogger(ClientDB.class.getName());
+    private static final Logger LOG = Logger.getLogger(ClientDB.class.getName());
     private final Set<Communicator> clients;
     private Collection<UUID> allowedIDs;
     private HistoryManager hm;
@@ -58,9 +58,9 @@ class ClientDB extends ClientManager implements Observer, IDFilter {
             prepareAllowedIDs();
 
             notifyChange(REGISTER, new Object[]{address, port, id});
-            log.log(Level.INFO, "New client with IP " + address.getHostAddress() + " on port " + port + " registered with ID " + id);
+            LOG.log(Level.INFO, "New client with IP " + address.getHostAddress() + " on port " + port + " registered with ID " + id);
         } else {
-            log.warning("Illegal login response received - " + id);
+            LOG.warning("Illegal login response received - " + id);
         }
 
         return cc;
@@ -77,7 +77,7 @@ class ClientDB extends ClientManager implements Observer, IDFilter {
         prepareAllowedIDs();
 
         notifyChange(REGISTER, new Object[]{address, port, clientId});
-        log.log(Level.INFO, "New client with IP " + address.getHostAddress() + " on port " + port + " with ID " + clientId + " registered");
+        LOG.log(Level.INFO, "New client with IP " + address.getHostAddress() + " on port " + port + " with ID " + clientId + " registered");
 
         return ccI;
     }
@@ -99,7 +99,7 @@ class ClientDB extends ClientManager implements Observer, IDFilter {
             }
         }
         notifyChange(DEREGISTER, new Object[]{id});
-        log.log(Level.INFO, "Client with ID " + id + " deregistered");
+        LOG.log(Level.INFO, "Client with ID " + id + " deregistered");
     }
 
     @Override

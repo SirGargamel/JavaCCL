@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  */
 class SystemMessageHandler extends CCLObservable implements Listener<Identifiable> {
 
-    private static final Logger log = Logger.getLogger(SystemMessageHandler.class.getName());
+    private static final Logger LOG = Logger.getLogger(SystemMessageHandler.class.getName());
     private final IDFilter idFIlter;
     private final ServerInterface serverInterface;
 
@@ -48,12 +48,12 @@ class SystemMessageHandler extends CCLObservable implements Listener<Identifiabl
                         final Object mData = m.getData();
                         if (mData instanceof UUID) {
                             serverInterface.setServerInfo(dp.getSourceIP(), GlobalConstants.DEFAULT_PORT, (UUID) mData);
-                            log.log(
+                            LOG.log(
                                     Level.INFO,
                                     "Registered to new server at " + dp.getSourceIP().getHostAddress() + " on port " + GlobalConstants.DEFAULT_PORT + " with client ID " + mData.toString());
                             result = idFIlter.getLocalID();
                         } else {
-                            log.log(Level.WARNING, "Illegal data received with LOGIN message - [" + mData.toString() + "].");
+                            LOG.log(Level.WARNING, "Illegal data received with LOGIN message - [" + mData.toString() + "].");
                         }
                     } else if (header.equals(SystemMessageHeaders.LOGOUT)) {
                         serverInterface.disconnectFromServer();

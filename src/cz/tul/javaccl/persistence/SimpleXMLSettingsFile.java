@@ -32,7 +32,7 @@ import org.xml.sax.SAXException;
  */
 public class SimpleXMLSettingsFile {
 
-    private static final Logger log = Logger.getLogger(SimpleXMLSettingsFile.class.getName());
+    private static final Logger LOG = Logger.getLogger(SimpleXMLSettingsFile.class.getName());
     private static final String SETTINGS_NODE_NAME = "JavaCCL";
 
     /**
@@ -70,7 +70,7 @@ public class SimpleXMLSettingsFile {
                 addAllChildNodes(nodesForParsing, node.getChildNodes());
             }
         } catch (ParserConfigurationException ex) {
-            log.log(Level.SEVERE, "Illegal parser config used.", ex);
+            LOG.log(Level.SEVERE, "Illegal parser config used.", ex);
         }
 
         return fields;
@@ -140,9 +140,9 @@ public class SimpleXMLSettingsFile {
 
             result = true;
         } catch (ParserConfigurationException ex) {
-            log.log(Level.SEVERE, "Wrong parser configuration used.", ex);
+            LOG.log(Level.SEVERE, "Wrong parser configuration used.", ex);
         } catch (TransformerException ex) {
-            log.log(Level.SEVERE, "Transformer exception occured.", ex);
+            LOG.log(Level.SEVERE, "Transformer exception occured.", ex);
         }
 
         return result;

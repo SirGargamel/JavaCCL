@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  */
 public class SystemMessagesHandler implements Listener<Identifiable> {
 
-    private static final Logger log = Logger.getLogger(SystemMessagesHandler.class.getName());
+    private static final Logger LOG = Logger.getLogger(SystemMessagesHandler.class.getName());
     private final ClientManager clientManager;
     private final UUID localId;
 
@@ -48,13 +48,13 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                         try {
                             final Integer port = Integer.parseInt(m.getData().toString());
                             clientManager.addClient(dp.getSourceIP(), port, dp.getSourceId());
-                            log.log(Level.FINE, "LOGIN received from {0} with id {1}", new Object[]{dp.getSourceIP().getHostAddress(), dp.getSourceId()});
+                            LOG.log(Level.FINE, "LOGIN received from {0} with id {1}", new Object[]{dp.getSourceIP().getHostAddress(), dp.getSourceId()});
                             return localId;                        
                         } catch (NumberFormatException ex) {
-                            log.log(Level.WARNING, "Illegal login data received - {0}", m.getData());
+                            LOG.log(Level.WARNING, "Illegal login data received - {0}", m.getData());
                             return GenericResponses.ILLEGAL_DATA;
                         } catch (NullPointerException ex) {
-                            log.log(Level.WARNING, "Null login data received.");
+                            LOG.log(Level.WARNING, "Null login data received.");
                             return GenericResponses.ILLEGAL_DATA;
                         }
                     } else if (header.equals(SystemMessageHeaders.LOGOUT)) {
@@ -63,7 +63,7 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                             clientManager.deregisterClient((UUID) id);
                             return GenericResponses.OK;
                         } else {
-                            log.log(Level.WARNING, "Invalid client id received - {0}", id);
+                            LOG.log(Level.WARNING, "Invalid client id received - {0}", id);
                             return GenericResponses.ILLEGAL_DATA;
                         }
                     } else if (header.equals(SystemMessageHeaders.STATUS_CHECK)) {
@@ -76,17 +76,17 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                 }
             } else {
                 if (innerData != null) {
-                    log.log(Level.WARNING, "Invalid data received - {0}", innerData);
+                    LOG.log(Level.WARNING, "Invalid data received - {0}", innerData);
                 } else {
-                    log.log(Level.WARNING, "Received NULL inner data.");
+                    LOG.log(Level.WARNING, "Received NULL inner data.");
                 }
                 return GenericResponses.ILLEGAL_DATA;
             }
         } else {
             if (data != null) {
-                log.log(Level.WARNING, "Invalid data received - {0}", data);
+                LOG.log(Level.WARNING, "Invalid data received - {0}", data);
             } else {
-                log.log(Level.WARNING, "Received NULL data.");
+                LOG.log(Level.WARNING, "Received NULL data.");
             }
             return GenericResponses.ILLEGAL_DATA;
         }

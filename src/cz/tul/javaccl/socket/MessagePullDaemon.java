@@ -32,7 +32,7 @@ import java.util.logging.Logger;
  */
 public class MessagePullDaemon extends Thread implements IService {
 
-    private static final Logger log = Logger.getLogger(MessagePullDaemon.class.getName());
+    private static final Logger LOG = Logger.getLogger(MessagePullDaemon.class.getName());
     private static final int WAIT_TIME = 500;
     private final ClientLister clientLister;
     private final DataPacketHandler dpHandler;
@@ -110,20 +110,20 @@ public class MessagePullDaemon extends Thread implements IService {
 
                                         if (dataIn instanceof GenericResponses) {
                                             if (!dataIn.equals(GenericResponses.OK)) {
-                                                log.log(Level.WARNING, "Error occured during message pull request - " + dataIn.toString());
+                                                LOG.log(Level.WARNING, "Error occured during message pull request - " + dataIn.toString());
                                             }
                                         } else if (dataIn instanceof DataPacket) {
                                             final DataPacket dp = (DataPacket) dataIn;
                                             response = dpHandler.handleDataPacket(dp);
-                                            log.log(Level.FINE, "Pulled message [" + dataIn + "], responding with " + response);
+                                            LOG.log(Level.FINE, "Pulled message [" + dataIn + "], responding with " + response);
                                             out.writeObject(response);
                                             out.flush();
                                         } else {
-                                            log.log(Level.WARNING, "Pulled unknown data.");
+                                            LOG.log(Level.WARNING, "Pulled unknown data.");
                                         }
                                     } catch (ClassNotFoundException ex) {
-                                        log.log(Level.WARNING, "Illegal class received.");
-                                        log.log(Level.FINE, "Illegal class received.", ex);
+                                        LOG.log(Level.WARNING, "Illegal class received.");
+                                        LOG.log(Level.FINE, "Illegal class received.", ex);
                                     }
                                 } finally {
                                     if (in != null) {
@@ -136,18 +136,18 @@ public class MessagePullDaemon extends Thread implements IService {
                                 }
                             }
                         } catch (SocketTimeoutException ex) {
-                            log.log(Level.FINE, "Client on IP " + ipComm.getHostAddress() + " is not responding to request.");
+                            LOG.log(Level.FINE, "Client on IP " + ipComm.getHostAddress() + " is not responding to request.");
                         } catch (IOException ex) {
-                            log.log(Level.WARNING, "Error operating socket.");
-                            log.log(Level.FINE, "Error operating socket.", ex);
+                            LOG.log(Level.WARNING, "Error operating socket.");
+                            LOG.log(Level.FINE, "Error operating socket.", ex);
                         } finally {
                             try {
                                 if (s != null) {
                                     s.close();
                                 }
                             } catch (IOException ex) {
-                                log.log(Level.WARNING, "Error operating socket.");
-                                log.log(Level.FINE, "Error operating socket.", ex);
+                                LOG.log(Level.WARNING, "Error operating socket.");
+                                LOG.log(Level.FINE, "Error operating socket.", ex);
                             }
                         }
 
@@ -167,8 +167,8 @@ public class MessagePullDaemon extends Thread implements IService {
                         this.wait(wait);
                     }
                 } catch (InterruptedException ex) {
-                    log.log(Level.WARNING, "Waiting between message pulls has been interrupted.");
-                    log.log(Level.FINE, "Waiting between message pulls has been interrupted.", ex);
+                    LOG.log(Level.WARNING, "Waiting between message pulls has been interrupted.");
+                    LOG.log(Level.FINE, "Waiting between message pulls has been interrupted.", ex);
                 }
             }
         }
@@ -212,17 +212,17 @@ public class MessagePullDaemon extends Thread implements IService {
                         final Queue<DataPacket> q = communicator.getUnsentData();
                         if (!q.isEmpty()) {
                             msg = q.poll();
-                            log.log(Level.FINE, "Data prepared for UUID msg pull [" + msg + "].");
+                            LOG.log(Level.FINE, "Data prepared for UUID msg pull [" + msg + "].");
                         } else {
                             msg = GenericResponses.OK;
-                            log.log(Level.FINE, "No data for UUID " + id);
+                            LOG.log(Level.FINE, "No data for UUID " + id);
                         }
                     }
                 }
             }
             if (msg == null) {
                 msg = GenericResponses.UUID_UNKNOWN;
-                log.log(Level.FINE, "Unknown UUID requested data - " + id);
+                LOG.log(Level.FINE, "Unknown UUID requested data - " + id);
             }
         } else {
             msg = GenericResponses.ILLEGAL_DATA;
@@ -241,19 +241,19 @@ public class MessagePullDaemon extends Thread implements IService {
                         communicator.storeResponse((DataPacket) msg, response);
                     }
                 } catch (ClassNotFoundException ex) {
-                    log.log(Level.WARNING, "Unkonwn data class received as reply.");
-                    log.log(Level.FINE, "Unkonwn data class received as reply.", ex);
+                    LOG.log(Level.WARNING, "Unkonwn data class received as reply.");
+                    LOG.log(Level.FINE, "Unkonwn data class received as reply.", ex);
                 }
             }
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error operating socket.");
-            log.log(Level.FINE, "Error operating socket.", ex);
+            LOG.log(Level.WARNING, "Error operating socket.");
+            LOG.log(Level.FINE, "Error operating socket.", ex);
         } finally {
             if (out != null) {
                 try {
                     out.close();
                 } catch (IOException ex) {
-                    log.warning("Error closing OutputStream.");
+                    LOG.warning("Error closing OutputStream.");
                 }
             }
         }

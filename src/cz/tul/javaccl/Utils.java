@@ -16,7 +16,7 @@ import java.util.logging.XMLFormatter;
  */
 public class Utils {
 
-    private static final Logger log = Logger.getLogger(Utils.class.getName());
+    private static final Logger LOG = Logger.getLogger(Utils.class.getName());
     private static final String LOG_FILE_NAME_S = "systemLogServer.xml";
     private static final String LOG_FILE_NAME_C = "systemLogClient.xml";
 
@@ -84,14 +84,14 @@ public class Utils {
                 l.addHandler(console);
             }
         } catch (SecurityException ex) {
-            log.log(Level.SEVERE, "Error preparing file logger.", ex);
-            log.log(Level.FINE, "Error preparing file logger.", ex);
+            LOG.log(Level.SEVERE, "Error preparing file logger.", ex);
+            LOG.log(Level.FINE, "Error preparing file logger.", ex);
         }
     }
 
     /**
-     * Creates a log file and stores all logging info in this file. Server and
-     * client have separate log files.
+     * Creates a LOG file and stores all logging info in this file. Server and
+     * client have separate LOG files.
      *
      * @param isServer to determine which file to use for logging
      */
@@ -110,11 +110,11 @@ public class Utils {
             l.setLevel(Level.FINE);
             l.addHandler(fh);
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Error preparing file logger.");
-            log.log(Level.FINE, "Error preparing file logger.", ex);
+            LOG.log(Level.WARNING, "Error preparing file logger.");
+            LOG.log(Level.FINE, "Error preparing file logger.", ex);
         } catch (SecurityException ex) {
-            log.log(Level.SEVERE, "Error preparing file logger.", ex);
-            log.log(Level.FINE, "Error preparing file logger.", ex);
+            LOG.log(Level.SEVERE, "Error preparing file logger.", ex);
+            LOG.log(Level.FINE, "Error preparing file logger.", ex);
         }
     }
 

@@ -43,7 +43,7 @@ import java.util.logging.Logger;
  */
 public class ClientImpl extends Client implements ServerInterface, IDFilter, ClientLister, Observer {
 
-    private static final Logger log = Logger.getLogger(ClientImpl.class.getName());
+    private static final Logger LOG = Logger.getLogger(ClientImpl.class.getName());
     private ServerSocket serverSocket;
     private final HistoryManager history;
     private CommunicatorInner comm;
@@ -63,7 +63,7 @@ public class ClientImpl extends Client implements ServerInterface, IDFilter, Cli
     public static Client initNewClient(final int port) throws IOException {
         final ClientImpl result = new ClientImpl();
         result.start(port);
-        log.log(Level.INFO, "New client created on port {0}", port);
+        LOG.log(Level.INFO, "New client created on port {0}", port);
 
         return result;
     }
@@ -80,14 +80,14 @@ public class ClientImpl extends Client implements ServerInterface, IDFilter, Cli
             try {
                 result = initNewClient(++port);
             } catch (IOException ex) {                
-                log.log(Level.WARNING, "Error initializing client on port {0}", (port - 1));
-                log.log(Level.FINE, "Error initializing client on port " + (port - 1), ex);
+                LOG.log(Level.WARNING, "Error initializing client on port {0}", (port - 1));
+                LOG.log(Level.FINE, "Error initializing client on port " + (port - 1), ex);
             }
 
         }
 
         if (result == null) {
-            log.log(Level.WARNING, "Error initializing client, no free port found");
+            LOG.log(Level.WARNING, "Error initializing client, no free port found");
         }
 
         return result;
@@ -104,7 +104,7 @@ public class ClientImpl extends Client implements ServerInterface, IDFilter, Cli
         try {
             sdd = new ServerDiscoveryDaemon(this);
         } catch (SocketException ex) {
-            log.log(Level.FINE, "Failed to initiate server discovery daemon.", ex);
+            LOG.log(Level.FINE, "Failed to initiate server discovery daemon.", ex);
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -124,7 +124,7 @@ public class ClientImpl extends Client implements ServerInterface, IDFilter, Cli
     public boolean registerToServer(final InetAddress address, final int port) throws ConnectionException {
         final CommunicatorInner oldComm = comm;
 
-        log.log(Level.INFO, "Registering new server IP and port - " + address.getHostAddress() + ":" + port);
+        LOG.log(Level.INFO, "Registering new server IP and port - " + address.getHostAddress() + ":" + port);
         boolean result = false;
         comm = CommunicatorImpl.initNewCommunicator(address, port, getId());
         comm.registerHistory(history);
@@ -134,18 +134,18 @@ public class ClientImpl extends Client implements ServerInterface, IDFilter, Cli
             if (id instanceof UUID) {
                 comm.setTargetId(((UUID) id));
                 result = true;
-                log.log(Level.INFO, "Client has been registered to new server (ID " + id + ")");
+                LOG.log(Level.INFO, "Client has been registered to new server (ID " + id + ")");
                 notifyChange(REGISTER, new Object[]{address, port, id});
                 setMaxNumberOfConcurrentAssignments(concurentJobCount);
                 setMaxJobComplexity(jobComplexity);
             } else {
                 comm = oldComm;
-                log.log(Level.WARNING, "Invalid response received - " + id.toString());
-                log.log(Level.INFO, "Registration failed, server sent invalid data.");
+                LOG.log(Level.WARNING, "Invalid response received - " + id.toString());
+                LOG.log(Level.INFO, "Registration failed, server sent invalid data.");
             }
         } catch (ConnectionException ex) {
             comm = oldComm;
-            log.log(Level.INFO, "Registration failed - " + ex.getExceptionCause());
+            LOG.log(Level.INFO, "Registration failed - " + ex.getExceptionCause());
             throw ex;
         }
 
@@ -184,9 +184,9 @@ public class ClientImpl extends Client implements ServerInterface, IDFilter, Cli
     @Override
     public Object sendDataToServer(final Object data, final int timeout) throws ConnectionException {
         if (data != null) {
-            log.log(Level.INFO, "Sending data to server - " + data.toString());
+            LOG.log(Level.INFO, "Sending data to server - " + data.toString());
         } else {
-            log.log(Level.INFO, "Sending NULL data to server.");
+            LOG.log(Level.INFO, "Sending NULL data to server.");
         }
         if (comm == null) {
             throw new ConnectionException(ConnectionExceptionCause.CONNECTION_ERROR);
@@ -197,7 +197,7 @@ public class ClientImpl extends Client implements ServerInterface, IDFilter, Cli
 
     @Override
     public boolean exportHistory() {
-        log.info("Exporting histry to default location with no sorting.");
+        LOG.info("Exporting histry to default location with no sorting.");
         return history.export(new File(""), new DefaultSorter());
     }
 
@@ -235,11 +235,11 @@ public class ClientImpl extends Client implements ServerInterface, IDFilter, Cli
         if (sdd != null) {
             sdd.start();
         } else if (!isServerUp()) {
-            log.fine("Could not init server discovery, trying to connect to local host.");
+            LOG.fine("Could not init server discovery, trying to connect to local host.");
             try {
                 registerToServer(GlobalConstants.IP_LOOPBACK, GlobalConstants.DEFAULT_PORT);
             } catch (ConnectionException ex) {
-                log.fine("Could not reach server at localhost on default port.");
+                LOG.fine("Could not reach server at localhost on default port.");
             }
         }
     }
@@ -249,7 +249,7 @@ public class ClientImpl extends Client implements ServerInterface, IDFilter, Cli
         try {
             deregisterFromServer();
         } catch (ConnectionException ex) {
-            log.warning("Server could not be reached for deregistration.");
+            LOG.warning("Server could not be reached for deregistration.");
         }
         disconnectFromServer();
 
@@ -267,7 +267,7 @@ public class ClientImpl extends Client implements ServerInterface, IDFilter, Cli
         } catch (Exception ex) {
             // error closing some resource, ignore
         }
-        log.info("Client has been stopped.");
+        LOG.info("Client has been stopped.");
     }
 
     @Override
@@ -318,14 +318,14 @@ public class ClientImpl extends Client implements ServerInterface, IDFilter, Cli
                 final Object response = sendDataToServer(m);
                 result = GenericResponses.OK.equals(response);
             } catch (ConnectionException ex) {
-                log.log(Level.WARNING, "Communication with server failed - " + ex.getExceptionCause());
+                LOG.log(Level.WARNING, "Communication with server failed - " + ex.getExceptionCause());
             }
         }
 
         if (result) {
-            log.log(Level.FINE, "Concurrent job count set on server to " + assignmentCount);
+            LOG.log(Level.FINE, "Concurrent job count set on server to " + assignmentCount);
         } else {
-            log.log(Level.FINE, "Failed to update concurrent job count on server.");
+            LOG.log(Level.FINE, "Failed to update concurrent job count on server.");
         }
         return result;
     }
@@ -344,14 +344,14 @@ public class ClientImpl extends Client implements ServerInterface, IDFilter, Cli
                 final Object response = sendDataToServer(m);
                 result = GenericResponses.OK.equals(response);
             } catch (ConnectionException ex) {
-                log.log(Level.WARNING, "Communication with server failed - " + ex.getExceptionCause());
+                LOG.log(Level.WARNING, "Communication with server failed - " + ex.getExceptionCause());
             }
         }
 
         if (result) {
-            log.log(Level.FINE, "Maximal job complexity set on server to " + maxJobComplexity);
+            LOG.log(Level.FINE, "Maximal job complexity set on server to " + maxJobComplexity);
         } else {
-            log.log(Level.FINE, "Failed to update maximal job complexity on server.");
+            LOG.log(Level.FINE, "Failed to update maximal job complexity on server.");
         }
         return result;
     }

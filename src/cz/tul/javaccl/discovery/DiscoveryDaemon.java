@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 abstract class DiscoveryDaemon extends Thread implements IService {
 
     protected static final Charset CHARSET = Charset.forName("UTF-8");
-    private static final Logger log = Logger.getLogger(DiscoveryDaemon.class.getName());    
+    private static final Logger LOG = Logger.getLogger(DiscoveryDaemon.class.getName());    
     private static final String MULTICAST_IP_S= "230.50.11.2";
     private static final int MULTICAST_PORT = GlobalConstants.DEFAULT_PORT + 1;
     private static final InetAddress MULTICAST_IP;
@@ -40,7 +40,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
         try {
             group = InetAddress.getByName(MULTICAST_IP_S);
         } catch (UnknownHostException ex) {
-            log.warning("Error retreiving multicast address.");
+            LOG.warning("Error retreiving multicast address.");
         }
         MULTICAST_IP = group;
     }
@@ -55,7 +55,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
             msS = new MulticastSocket(MULTICAST_PORT);
             msS.joinGroup(MULTICAST_IP);
         } catch (IOException ex) {
-            log.warning("Error initializing multicast socket.");
+            LOG.warning("Error initializing multicast socket.");
         }
         ms = msS;
 
@@ -69,24 +69,24 @@ abstract class DiscoveryDaemon extends Thread implements IService {
                         // Receive a packet
                         final byte[] recvBuf = new byte[15000];
                         final DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
-                        log.log(Level.FINE, "Starting listening for discovery packets.");
+                        LOG.log(Level.FINE, "Starting listening for discovery packets.");
                         ds.setSoTimeout(GlobalConstants.getDEFAULT_TIMEOUT());
                         ds.receive(packet);
 
                         // Packet received            
                         final String message = new String(packet.getData(), CHARSET).trim();
-                        log.log(Level.FINE, "Broadcast discovery packet received from " + packet.getAddress().getHostAddress() + " - " + message);
+                        LOG.log(Level.FINE, "Broadcast discovery packet received from " + packet.getAddress().getHostAddress() + " - " + message);
                         receiveBroadcast(message, packet.getAddress());
                     } catch (SocketTimeoutException ex) {
                         // everything is OK, we want to wait only for limited time
                     } catch (SocketException ex) {
                         if (runThread) {
-                            log.log(Level.WARNING, "Error operating socket.");
-                            log.log(Level.FINE, "Error operating socket.", ex);
+                            LOG.log(Level.WARNING, "Error operating socket.");
+                            LOG.log(Level.FINE, "Error operating socket.", ex);
                         }
                     } catch (IOException ex) {
-                        log.log(Level.WARNING, "Error receiving or answering to client discovery packet");
-                        log.log(Level.FINE, "Error receiving or answering to client discovery packet", ex);
+                        LOG.log(Level.WARNING, "Error receiving or answering to client discovery packet");
+                        LOG.log(Level.FINE, "Error receiving or answering to client discovery packet", ex);
                     }
                 }
             }
@@ -100,24 +100,24 @@ abstract class DiscoveryDaemon extends Thread implements IService {
                         // Receive a packet
                         final byte[] recvBuf = new byte[15000];
                         final DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
-                        log.log(Level.FINE, "Starting listening for discovery packets.");
+                        LOG.log(Level.FINE, "Starting listening for discovery packets.");
                         ms.setSoTimeout(GlobalConstants.getDEFAULT_TIMEOUT());
                         ms.receive(packet);
 
                         // Packet received            
                         final String message = new String(packet.getData(), CHARSET).trim();
-                        log.log(Level.FINE, "Multicast discovery packet received from {0} - {1}", new Object[]{packet.getAddress().getHostAddress(), message});
+                        LOG.log(Level.FINE, "Multicast discovery packet received from {0} - {1}", new Object[]{packet.getAddress().getHostAddress(), message});
                         receiveBroadcast(message, packet.getAddress());
                     } catch (SocketTimeoutException ex) {
                         // everything is OK, we want to wait only for limited time
                     } catch (SocketException ex) {
                         if (runThread) {
-                            log.log(Level.WARNING, "Error operating socket.");
-                            log.log(Level.FINE, "Error operating socket.", ex);
+                            LOG.log(Level.WARNING, "Error operating socket.");
+                            LOG.log(Level.FINE, "Error operating socket.", ex);
                         }
                     } catch (IOException ex) {
-                        log.log(Level.WARNING, "Error receiving or answering to client discovery packet");
-                        log.log(Level.FINE, "Error receiving or answering to client discovery packet", ex);
+                        LOG.log(Level.WARNING, "Error receiving or answering to client discovery packet");
+                        LOG.log(Level.FINE, "Error receiving or answering to client discovery packet", ex);
                     }
                 }
             }
@@ -185,10 +185,10 @@ abstract class DiscoveryDaemon extends Thread implements IService {
             synchronized (this) {
                 this.notifyAll();
             }
-            log.fine("DiscoveryDaemon has been enabled.");
+            LOG.fine("DiscoveryDaemon has been enabled.");
         } else {
             pauseThread = true;
-            log.fine("DiscoveryDaemon has been disabled.");
+            LOG.fine("DiscoveryDaemon has been disabled.");
         }
     }
 
@@ -198,7 +198,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
                 this.wait(time);
             }
         } catch (InterruptedException ex) {
-            log.warning("Waiting of DiscoveryDaemon has been interrupted.");
+            LOG.warning("Waiting of DiscoveryDaemon has been interrupted.");
         }
         pauseThread = false;
     }

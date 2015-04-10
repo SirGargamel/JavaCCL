@@ -22,12 +22,12 @@ import org.w3c.dom.NodeList;
  */
 public class UUIDSorter extends HistorySorter {
 
-    private static final Logger log = Logger.getLogger(UUIDSorter.class.getName());
+    private static final Logger LOG = Logger.getLogger(UUIDSorter.class.getName());
     private static final String FIELD_NAME_UUID = "UUID";
 
     @Override
     public List<Element> sortHistory(final Collection<HistoryRecord> records, final Document doc) {
-        log.fine("Sotring messages by UUID.");
+        LOG.fine("Sotring messages by UUID.");
 
         // group Nodes by UUID        
         final SortedMap<UUID, List<HistoryRecord>> idGroups = new TreeMap<UUID, List<HistoryRecord>>();

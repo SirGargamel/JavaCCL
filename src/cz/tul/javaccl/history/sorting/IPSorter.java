@@ -20,7 +20,7 @@ import org.w3c.dom.Element;
  */
 public class IPSorter extends HistorySorter {
 
-    private static final Logger log = Logger.getLogger(IPSorter.class.getName());
+    private static final Logger LOG = Logger.getLogger(IPSorter.class.getName());
 
     private static int compareIp(final InetAddress adr1, final InetAddress adr2) {
         byte[] ba1 = adr1.getAddress();
@@ -64,7 +64,7 @@ public class IPSorter extends HistorySorter {
 
     @Override
     public List<Element> sortHistory(final Collection<HistoryRecord> records, final Document doc) {
-        log.fine("Sorting nodes by time.");
+        LOG.fine("Sorting nodes by time.");
 
         final List<HistoryRecord> sortedList = new ArrayList<HistoryRecord>(records);
         final Comparator<HistoryRecord> comp = byDestination ? new IpSorterDestination() : new IpSorterSource();

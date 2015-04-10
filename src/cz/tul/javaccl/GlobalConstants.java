@@ -41,7 +41,7 @@ public abstract class GlobalConstants {
      * Splitting character
      */
     public static final String DELIMITER = "-";
-    private static final Logger log = Logger.getLogger(GlobalConstants.class.getName());
+    private static final Logger LOG = Logger.getLogger(GlobalConstants.class.getName());
     /**
      * IP for loopback communication
      */
@@ -52,11 +52,11 @@ public abstract class GlobalConstants {
         try {
             tmp = InetAddress.getByName("127.0.0.1");
         } catch (UnknownHostException ex) {
-            log.warning("Error obtaining loopback IP.");
+            LOG.warning("Error obtaining loopback IP.");
             try {
                 tmp = InetAddress.getLocalHost();                
             } catch (UnknownHostException ex1) {
-                log.severe("Error obtaining local IP.");
+                LOG.severe("Error obtaining local IP.");
             }
         }
         IP_LOOPBACK = tmp;

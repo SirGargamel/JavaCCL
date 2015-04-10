@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  */
 public class JobTest {
 
-    private static final Logger log = Logger.getLogger(JobTest.class.getName());
+    private static final Logger LOG = Logger.getLogger(JobTest.class.getName());
     private Server s;
     private Client c;
     List<Client> clients;
@@ -43,7 +43,7 @@ public class JobTest {
                 s = ServerImpl.initNewServer();
                 c = ClientImpl.initNewClient(5253);
                 c.registerToServer(GlobalConstants.IP_LOOPBACK);
-                log.log(Level.INFO, "Server and client are up.");
+                LOG.log(Level.INFO, "Server and client are up.");
             } catch (IOException ex) {
                 fail("Initialization failed due to IO - " + ex);
             } catch (ConnectionException ex) {
@@ -65,12 +65,12 @@ public class JobTest {
                     c.deregisterFromServer();
                     c.stopService();
                 }
-                log.wait(1000);
+                LOG.wait(1000);
                 if (s != null) {
                     s.stopService();
                 }
-                log.wait(1000);
-                log.log(Level.INFO, "Server and clients are down.");
+                LOG.wait(1000);
+                LOG.log(Level.INFO, "Server and clients are down.");
             } catch (ConnectionException ex) {
                 fail("Initialization failed due to ConnectionException - " + ex);
             } catch (InterruptedException ex) {
@@ -884,13 +884,13 @@ public class JobTest {
             jobs.add(s.submitJob(val));
         }
         final Job jobForCancelation = s.submitJob(2000);
-        log.log(Level.INFO, "Cancel JobID, Job - {0}, {1}", new Object[]{jobForCancelation.getId(), jobForCancelation.toString()});
+        LOG.log(Level.INFO, "Cancel JobID, Job - {0}, {1}", new Object[]{jobForCancelation.getId(), jobForCancelation.toString()});
 
         while (!jobForCancelation.getStatus().equals(JobStatus.ACCEPTED) && !jobForCancelation.isDone()) {
             try {
                 synchronized (jobForCancelation) {
                     jobForCancelation.wait();
-                    log.log(Level.INFO, "{0}, {1}", new Object[]{jobForCancelation.getStatus().toString(), jobForCancelation.toString()});
+                    LOG.log(Level.INFO, "{0}, {1}", new Object[]{jobForCancelation.getStatus().toString(), jobForCancelation.toString()});
                 }
             } catch (InterruptedException ex) {
                 fail("Waiting for cancelation failed - " + ex);

@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  */
 public class ObjectQueue<O extends Identifiable> {
 
-    private static final Logger log = Logger.getLogger(ObjectQueue.class.getName());
+    private static final Logger LOG = Logger.getLogger(ObjectQueue.class.getName());
     private final Map<Object, Queue<O>> data;
 
     /**
@@ -44,7 +44,7 @@ public class ObjectQueue<O extends Identifiable> {
 
         if (id != null) {
             data.put(id, result);
-            log.log(Level.FINE, "New queue prepared for id " + id.toString());
+            LOG.log(Level.FINE, "New queue prepared for id " + id.toString());
         }
 
         return result;
@@ -67,7 +67,7 @@ public class ObjectQueue<O extends Identifiable> {
      */
     public void removeListener(final Object id) {
         data.remove(id);
-        log.log(Level.FINE, "Listener deregistered for id " + id.toString());
+        LOG.log(Level.FINE, "Listener deregistered for id " + id.toString());
     }
 
     /**
@@ -81,7 +81,7 @@ public class ObjectQueue<O extends Identifiable> {
             final Queue<O> q = this.data.get(id);
             if (q != null) {
                 q.add(data);
-                log.log(Level.FINE, "Data [" + data.toString() + "] stored.");
+                LOG.log(Level.FINE, "Data [" + data.toString() + "] stored.");
             }
         }
     }

@@ -21,11 +21,11 @@ import org.w3c.dom.Element;
  */
 public class InOutSorter extends HistorySorter {
 
-    private static final Logger log = Logger.getLogger(InOutSorter.class.getName());
+    private static final Logger LOG = Logger.getLogger(InOutSorter.class.getName());
 
     @Override
     public List<Element> sortHistory(final Collection<HistoryRecord> records, final Document doc) {
-        log.fine("Sorting nodes by direction (In | Out).");
+        LOG.fine("Sorting nodes by direction (In | Out).");
 
         final List<Element> result = new ArrayList<Element>(2);
         final Element groupIn = doc.createElement("In");
@@ -35,7 +35,7 @@ public class InOutSorter extends HistorySorter {
         try {
             localHost = InetAddress.getLocalHost();
         } catch (UnknownHostException ex) {
-            log.log(Level.FINE, "Could not obtain local IP address, using loopback.", ex);
+            LOG.log(Level.FINE, "Could not obtain local IP address, using loopback.", ex);
             localHost = GlobalConstants.IP_LOOPBACK;
         }
 

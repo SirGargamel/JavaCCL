@@ -36,7 +36,7 @@ import java.util.logging.Logger;
  */
 public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
-    private static final Logger log = Logger.getLogger(CommunicatorImpl.class.getName());
+    private static final Logger LOG = Logger.getLogger(CommunicatorImpl.class.getName());
     private static final Object dummy = "dummyObject";
 
     /**
@@ -154,13 +154,13 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             try {
                 in = new ObjectInputStream(s.getInputStream());
                 response = in.readObject();
-                log.log(Level.FINE, "Received reply from client - " + response);
+                LOG.log(Level.FINE, "Received reply from client - " + response);
             } catch (IOException ex) {
-                log.log(Level.WARNING, "Error receiving response from output socket.");
-                log.log(Level.FINE, "Error receiving response from output socket.", ex);
+                LOG.log(Level.WARNING, "Error receiving response from output socket.");
+                LOG.log(Level.FINE, "Error receiving response from output socket.", ex);
             } catch (ClassNotFoundException ex) {
-                log.log(Level.WARNING, "Unknown class object received.");
-                log.log(Level.FINE, "Unknown class object received.", ex);
+                LOG.log(Level.WARNING, "Unknown class object received.");
+                LOG.log(Level.FINE, "Unknown class object received.", ex);
                 response = GenericResponses.ILLEGAL_DATA;
             } finally {
                 if (in != null) {
@@ -172,15 +172,15 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         } catch (NotSerializableException ex) {
             throw new IllegalArgumentException("Data for sending (and all of its members) must be serializable (eg. implement Serializable or Externalizable interface.)");
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Cannot write to output socket.");
-            log.log(Level.FINE, "Cannot write to output socket.", ex);
+            LOG.log(Level.WARNING, "Cannot write to output socket.");
+            LOG.log(Level.FINE, "Cannot write to output socket.", ex);
         } finally {
             if (s != null) {
                 try {
                     s.close();
                 } catch (IOException ex) {
-                    log.warning("Error closing socket.");
-                    log.log(Level.FINE, "Error closing socket.", ex);
+                    LOG.warning("Error closing socket.");
+                    LOG.log(Level.FINE, "Error closing socket.", ex);
                 }
             }
         }
@@ -205,7 +205,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                             responses.put(question, response);
                         }
                     } catch (ConnectionException ex) {
-                        log.log(Level.WARNING, "Online client connection failed - {0}", ex.getExceptionCause());
+                        LOG.log(Level.WARNING, "Online client connection failed - {0}", ex.getExceptionCause());
                     }
 
                 }
@@ -257,30 +257,30 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                         || targetId.equals(response))) {
                     stat = Status.ONLINE;
                 } else {
-                    log.log(Level.WARNING, "STATUS_CHECK response received for another ID - {0} , should be {1}. Local ID {2}", new Object[]{response, targetId, sourceId});
+                    LOG.log(Level.WARNING, "STATUS_CHECK response received for another ID - {0} , should be {1}. Local ID {2}", new Object[]{response, targetId, sourceId});
                 }
                 result = true;
             } catch (IOException ex) {
-                log.log(Level.FINE, "Client on IP " + address.getHostAddress() + " did not open stream for answer.");
+                LOG.log(Level.FINE, "Client on IP " + address.getHostAddress() + " did not open stream for answer.");
             } catch (ClassNotFoundException ex) {
-                log.log(Level.WARNING, "Illegal class received from client for KEEP_ALIVE");
-                log.log(Level.FINE, "Illegal class received from client for KEEP_ALIVE", ex);
+                LOG.log(Level.WARNING, "Illegal class received from client for KEEP_ALIVE");
+                LOG.log(Level.FINE, "Illegal class received from client for KEEP_ALIVE", ex);
             } finally {
                 if (in != null) {
                     in.close();
                 }
             }
         } catch (SocketTimeoutException ex) {
-            log.log(Level.FINE, "Client on IP " + address.getHostAddress() + " is not responding to request.");
+            LOG.log(Level.FINE, "Client on IP " + address.getHostAddress() + " is not responding to request.");
         } catch (IOException ex) {
-            log.log(Level.FINE, "Status check IO error.", ex);
+            LOG.log(Level.FINE, "Status check IO error.", ex);
         } finally {
             if (s != null && !s.isClosed()) {
                 try {
                     s.close();
                 } catch (IOException ex) {
-                    log.warning("Error closing socket.");
-                    log.log(Level.FINE, "Error closing socket.", ex);
+                    LOG.warning("Error closing socket.");
+                    LOG.log(Level.FINE, "Error closing socket.", ex);
                 }
             }
         }

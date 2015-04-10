@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  */
 public class ClientDiscoveryDaemon extends DiscoveryDaemon {
 
-    private static final Logger log = Logger.getLogger(ClientDiscoveryDaemon.class.getName());
+    private static final Logger LOG = Logger.getLogger(ClientDiscoveryDaemon.class.getName());
     private static final int PAUSE_TIME = 5000;
     private final ClientManager clientManager;
 
@@ -44,7 +44,7 @@ public class ClientDiscoveryDaemon extends DiscoveryDaemon {
     @Override
     public void stopService() {
         super.stopService();
-        log.fine("ClientDiscoveryDaemon has been stopped.");
+        LOG.fine("ClientDiscoveryDaemon has been stopped.");
     }
 
     @Override
@@ -57,13 +57,13 @@ public class ClientDiscoveryDaemon extends DiscoveryDaemon {
                 try {
                     clientManager.registerClient(address, port);
                 } catch (ConnectionException ex) {
-                    log.log(Level.WARNING, "Could not contact server at IP {0} and port {1} - {2}", new Object[]{address, port, ex.getExceptionCause()});
+                    LOG.log(Level.WARNING, "Could not contact server at IP {0} and port {1} - {2}", new Object[]{address, port, ex.getExceptionCause()});
                 }
             } catch (NumberFormatException ex) {
                 try {
                     clientManager.registerClient(address, GlobalConstants.DEFAULT_PORT);
                 } catch (ConnectionException ex2) {
-                    log.log(Level.WARNING, "Could not contact server at IP {0} on default port {1} - {2}", new Object[]{address, GlobalConstants.DEFAULT_PORT, ex2.getExceptionCause()});
+                    LOG.log(Level.WARNING, "Could not contact server at IP {0} on default port {1} - {2}", new Object[]{address, GlobalConstants.DEFAULT_PORT, ex2.getExceptionCause()});
                 }
             }
         }
