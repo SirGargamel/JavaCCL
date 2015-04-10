@@ -575,7 +575,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
     }
 
     @Override
-    public void cancelJobByServer(ServerSideJob job) throws ConnectionException {
+    public void cancelJobByServer(Job job) throws ConnectionException {
         synchronized (activeJobs) {
             final Iterator<JobRecord> it = activeJobs.iterator();
             JobRecord jr;
@@ -584,9 +584,9 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 jr = it.next();
                 j = jr.getJob();
                 if (job == j) {
-                    JobTask jt = new JobTask(job.getId(), JobConstants.JOB_CANCEL, null);
+                    final JobTask jt = new JobTask(job.getId(), JobConstants.JOB_CANCEL, null);
                     jr.getOwner().sendData(jt);
-                    job.setStatus(JobStatus.CANCELED);
+                    ((ServerSideJob) job).setStatus(JobStatus.CANCELED);
                     jr.updateTime();
                     it.remove();
                     jobHistory.remove(j);

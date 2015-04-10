@@ -16,6 +16,6 @@ public interface JobCancelManager {
      * @throws ConnectionException could not contact the client that is
      * computing the job
      */
-    void cancelJobByServer(final ServerSideJob job) throws ConnectionException;
+    void cancelJobByServer(final Job job) throws ConnectionException;
 
 }

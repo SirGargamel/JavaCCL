@@ -3,7 +3,6 @@ package cz.tul.javaccl.history;
 import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.history.export.ExportUnit;
 import cz.tul.javaccl.history.export.Exporter;
-import cz.tul.javaccl.history.sorting.DefaultSorter;
 import cz.tul.javaccl.history.sorting.HistorySorter;
 import java.io.File;
 import java.net.InetAddress;
@@ -108,7 +107,7 @@ public class History implements HistoryManager {
         boolean result = false;
 
         if (sorter == null) {
-            sorter = new DefaultSorter();
+            throw new IllegalArgumentException("Null sorter not allowed");
         }
 
         try {
@@ -122,7 +121,7 @@ public class History implements HistoryManager {
             exportDocumentToXML(target, doc);
             result = true;
 
-            log.log(Level.FINE, "History successfully exported to " + target.getAbsolutePath() + ", sorted using " + sorter.getClass().getCanonicalName());
+            log.log(Level.FINE, "History successfully exported to {0}, sorted using {1}", new Object[]{target.getAbsolutePath(), sorter.getClass().getCanonicalName()});
         } catch (TransformerConfigurationException ex) {
             log.log(Level.WARNING, "Failed to create Transformer, export failed.");
             log.log(Level.FINE, "Failed to create Transformer.", ex);

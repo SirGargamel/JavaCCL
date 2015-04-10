@@ -2,7 +2,6 @@ package cz.tul.javaccl.server;
 
 import cz.tul.javaccl.ComponentManager;
 import cz.tul.javaccl.GlobalConstants;
-import cz.tul.javaccl.IService;
 import cz.tul.javaccl.communicator.Communicator;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import cz.tul.javaccl.history.History;
@@ -46,6 +45,46 @@ public final class ServerImpl extends Server implements Observer {
     private final HistoryManager history;
     private final ServerJobManagerImpl jobManager;
     private ClientDiscoveryDaemon cdd;
+
+    /**
+     * Create and initialize new instance of server.
+     *
+     * @param port server port (muse be valid port nuber between 0 and 65535)
+     * @return new instance of ServerImpl
+     * @throws IOException error opening socket on given port
+     */
+    public static Server initNewServer(final int port) throws IOException {
+        final ServerImpl result = new ServerImpl(port);
+        result.start();
+        log.log(Level.INFO, "New server created on port {0}", port);
+
+        return result;
+    }
+
+    /**
+     * Create and initialize new instance of server on default port.
+     *
+     * @return new instance of ServerImpl
+     */
+    public static Server initNewServer() {
+        Server server = null;
+        int port = GlobalConstants.DEFAULT_PORT;
+
+        while (server == null && port < 65535) {
+            try {
+                server = initNewServer(port++);
+            } catch (IOException ex) {
+                log.log(Level.WARNING, "Error initializing server on port " + (port - 1));
+                log.log(Level.FINE, "Error initializing server on port " + (port - 1), ex);
+            }
+        }
+
+        if (server == null) {
+            log.log(Level.WARNING, "Error initializing server, no free port found");
+        }
+
+        return server;
+    }
 
     ServerImpl(final int port) throws IOException {
         super();

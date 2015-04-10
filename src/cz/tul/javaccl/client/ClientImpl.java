@@ -5,7 +5,6 @@ import cz.tul.javaccl.discovery.ServerDiscoveryDaemon;
 import cz.tul.javaccl.socket.ClientLister;
 import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.GenericResponses;
-import cz.tul.javaccl.IService;
 import cz.tul.javaccl.communicator.Communicator;
 import cz.tul.javaccl.communicator.CommunicatorImpl;
 import cz.tul.javaccl.communicator.CommunicatorInner;
@@ -53,6 +52,46 @@ public class ClientImpl extends Client implements ServerInterface, IDFilter, Cli
     private ServerDiscoveryDaemon sdd;
     private int concurentJobCount, jobCountBackup;
     private int jobComplexity;
+
+    /**
+     * Create and initialize new instance of client at given port.
+     *
+     * @param port target listening port
+     * @return new Client instance
+     * @throws IOException target port is already in use
+     */
+    public static Client initNewClient(final int port) throws IOException {
+        final ClientImpl result = new ClientImpl();
+        result.start(port);
+        log.log(Level.INFO, "New client created on port {0}", port);
+
+        return result;
+    }
+
+    /**
+     *
+     * @return new client instance on default port
+     */
+    public static Client initNewClient() {
+        Client result = null;
+        int port = GlobalConstants.DEFAULT_PORT;
+
+        while (result == null && port < 65535) {
+            try {
+                result = initNewClient(++port);
+            } catch (IOException ex) {                
+                log.log(Level.WARNING, "Error initializing client on port {0}", (port - 1));
+                log.log(Level.FINE, "Error initializing client on port " + (port - 1), ex);
+            }
+
+        }
+
+        if (result == null) {
+            log.log(Level.WARNING, "Error initializing client, no free port found");
+        }
+
+        return result;
+    }
 
     ClientImpl() {
         super();

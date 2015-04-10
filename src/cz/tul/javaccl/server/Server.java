@@ -29,47 +29,7 @@ public abstract class Server extends CCLEntity implements IService, ComponentMan
 
     static {
         Utils.initConsoleLogging();
-    }
-
-    /**
-     * Create and initialize new instance of server.
-     *
-     * @param port server port (muse be valid port nuber between 0 and 65535)
-     * @return new instance of ServerImpl
-     * @throws IOException error opening socket on given port
-     */
-    public static Server initNewServer(final int port) throws IOException {
-        final ServerImpl result = new ServerImpl(port);
-        result.start();
-        log.log(Level.INFO, "New server created on port " + port);
-
-        return result;
-    }
-
-    /**
-     * Create and initialize new instance of server on default port.
-     *
-     * @return new instance of ServerImpl
-     */
-    public static Server initNewServer() {
-        Server s = null;
-        int port = GlobalConstants.DEFAULT_PORT;
-
-        while (s == null && port < 65535) {
-            try {
-                s = initNewServer(port++);
-            } catch (IOException ex) {
-                log.log(Level.WARNING, "Error initializing server on port " + (port - 1));
-                log.log(Level.FINE, "Error initializing server on port " + (port - 1), ex);
-            }
-        }
-
-        if (s == null) {
-            log.log(Level.WARNING, "Error initializing server, no free port found");
-        }
-
-        return s;
-    }
+    }    
 
     /**
      * @param dataStorage class handling data requests
