@@ -9,7 +9,7 @@ import org.w3c.dom.Element;
  *
  * @author Petr Ječmen
  */
-public interface ExportUnit {
+public abstract class ExportUnit {
 
     /**
      * Create XML representation of given object, IXMLExporter can help with
@@ -19,10 +19,10 @@ public interface ExportUnit {
      * @param data data for exporting
      * @return XML element representing given object.
      */
-    Element exportData(final Document doc, final Object data);
+    public abstract Element exportData(final Document doc, final Object data);
 
     /**
      * @return Class which can be exported using this class.
      */
-    Class<?> getExportedClass();
+    public abstract Class<?> getExportedClass();        
 }

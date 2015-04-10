@@ -1,6 +1,7 @@
 package cz.tul.javaccl.history;
 
 import cz.tul.javaccl.GlobalConstants;
+import cz.tul.javaccl.history.export.ExportMessage;
 import cz.tul.javaccl.history.export.ExportUnit;
 import cz.tul.javaccl.history.export.Exporter;
 import cz.tul.javaccl.history.sorting.HistorySorter;
@@ -82,6 +83,8 @@ public class History implements HistoryManager {
             log.log(Level.FINE, "Failed to create DocumentBuilder.", ex);
             isEnabled = false;
         }
+        
+        Exporter.registerExporterUnit(new ExportMessage());
     }
 
     @Override

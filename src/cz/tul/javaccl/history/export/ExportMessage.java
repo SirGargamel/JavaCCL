@@ -13,26 +13,28 @@ import org.w3c.dom.Node;
  *
  * @author Petr Ječmen
  */
-public class ExportMessage implements ExportUnit {
+public class ExportMessage extends ExportUnit {
 
-    private static void appendStringDataToNode(final Node n, final Document d, final String name, final String data) {
-        final Element e = d.createElement(name);
-        e.appendChild(d.createTextNode(data));
-        n.appendChild(e);
+    private static void appendStringDataToNode(final Node node, final Document doc, final String name, final String data) {
+        final Element e = doc.createElement(name);
+        e.appendChild(doc.createTextNode(data));
+        node.appendChild(e);
     }
 
     @Override
-    public Element exportData(Document doc, Object data) {
-        Element result = null;
+    public Element exportData(final Document doc, final Object data) {
+        Element result;
         if (data instanceof Message) {
-            final Message m = (Message) data;
+            final Message msg = (Message) data;
             result = doc.createElement("Message");
 
-            appendStringDataToNode(result, doc, "UUID", m.getId().toString());
-            appendStringDataToNode(result, doc, "Header", m.getHeader());
-            if (m.getData() != null) {
-                result.appendChild(Exporter.exportObject(m.getData(), doc));
+            appendStringDataToNode(result, doc, "UUID", msg.getId().toString());
+            appendStringDataToNode(result, doc, "Header", msg.getHeader());
+            if (msg.getData() != null) {
+                result.appendChild(new Exporter().exportData(doc, msg.getData()));
             }
+        } else {
+            result = doc.createElement("null");
         }
 
         return result;

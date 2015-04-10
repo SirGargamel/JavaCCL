@@ -1,6 +1,7 @@
 package cz.tul.javaccl.history;
 
 import cz.tul.javaccl.history.export.Exporter;
+import cz.tul.javaccl.history.export.ExportUnit;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.util.Date;
@@ -39,12 +40,13 @@ public class HistoryRecord {
         this.ipSource = ipSource;
         this.ipDestination = ipDestination;
         this.id = sourceId;
-        this.data = Exporter.exportObject(data, doc);
-        this.answer = Exporter.exportObject(answer, doc);
         this.accepted = accepted;
         this.send = send;
-
         time = new Date();
+
+        final ExportUnit exporter = new Exporter();
+        this.data = exporter.exportData(doc, data);
+        this.answer = exporter.exportData(doc, answer);
     }
 
     /**

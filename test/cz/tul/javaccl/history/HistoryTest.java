@@ -48,7 +48,7 @@ public class HistoryTest {
     private static final String COMPARE_FILE_NAME = "exportCompare.xml";
     private static final String IP_SOURCE_TEMPLATE = "<IPSource></IPSource>";
     private static final String IP_DESTINATION_TEMPLATE = "<IPDestination></IPDestination>";
-    private static final String FIELD_NAME_HEADER = "Header";    
+    private static final String FIELD_NAME_HEADER = "Header";
     private static File exportTarget, compareTarget;
 
     public HistoryTest() {
@@ -88,7 +88,12 @@ public class HistoryTest {
 
         prepareFile(exportTarget);
         prepareFile(compareTarget);
-        assertTrue(h.export(exportTarget, null));
+        try {
+            h.export(exportTarget, null);
+            fail();
+        } catch (IllegalArgumentException ex) {
+            // expected
+        }
         prepareLocalIp(new File(HistoryTest.class.getResource("testExportDefault.xml").getFile()), compareTarget);
         assertFiles(compareTarget, exportTarget);
 
@@ -165,7 +170,6 @@ public class HistoryTest {
         } catch (ConnectionException ex) {
             fail("Communication failed - " + ex.getExceptionCause());
         }
-
 
     }
 

@@ -1,5 +1,6 @@
 package cz.tul.javaccl.history.export;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -12,16 +13,14 @@ import org.w3c.dom.Element;
  *
  * @author Petr Ječmen
  */
-public abstract class Exporter {
+public class Exporter extends ExportUnit {
 
     private static final Logger log = Logger.getLogger(Exporter.class.getName());
     private static final String ARRAY_NAME = "Array";
-    private static final Map<Class<?>, ExportUnit> exporters;
+    private static final Map<Class<?>, ExportUnit> EXPORTERS;
 
     static {
-        exporters = new HashMap<Class<?>, ExportUnit>();
-
-        registerExporterUnit(new ExportMessage());
+        EXPORTERS = new HashMap<Class<?>, ExportUnit>();
     }
 
     /**
@@ -32,25 +31,24 @@ public abstract class Exporter {
      * @param doc target XML document
      * @return XML node containing given objects data
      */
-    public static Element exportObject(Object data, Document doc) {
-        final Element result;
-
-        if (data != null) {
-            Class<?> c = data.getClass();
-            if (exporters.containsKey(c)) {
-                result = exporters.get(c).exportData(doc, data);
+    @Override
+    public Element exportData(final Document doc, final Object data) {
+        Element result;
+        if (data == null) {
+            result = doc.createElement("null");
+        } else {
+            final Class<?> cls = data.getClass();
+            if (EXPORTERS.containsKey(cls)) {
+                result = EXPORTERS.get(cls).exportData(doc, data);
             } else {
                 if (data.getClass().isArray()) {
                     result = doc.createElement(ARRAY_NAME);
-                    result.appendChild(doc.createTextNode(data.toString()));
-                    // TODO output array data
+                    result.appendChild(doc.createTextNode(Arrays.toString((Object[]) data)));
                 } else {
                     result = doc.createElement(data.getClass().getSimpleName());
                     result.appendChild(doc.createTextNode(data.toString()));
                 }
             }
-        } else {
-            result = doc.createElement("null");
         }
 
         return result;
@@ -59,13 +57,16 @@ public abstract class Exporter {
     /**
      * Register new exporting unit.
      *
-     * @param eu new exporter class
+     * @param unit new exporter class
      */
-    public static void registerExporterUnit(final ExportUnit eu) {
-        exporters.put(eu.getExportedClass(), eu);
-        log.log(Level.FINE, "New exporter for class " + eu.getExportedClass().getName() + " registered.");
+    public static void registerExporterUnit(final ExportUnit unit) {
+        EXPORTERS.put(unit.getExportedClass(), unit);
+        log.log(Level.FINE, "New exporter for class " + unit.getExportedClass().getName() + " registered.");
     }
 
-    private Exporter() {
+    @Override
+    public Class<?> getExportedClass() {
+        // not general class to export, holds map of other exporters
+        return Exporter.class;
     }
 }
