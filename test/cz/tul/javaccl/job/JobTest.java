@@ -1114,8 +1114,7 @@ public class JobTest {
                 }
 
                 @Override
-                public void cancelTask(Assignment task) {
-                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                public void cancelTask(Assignment task) {                    
                 }
             });
 
