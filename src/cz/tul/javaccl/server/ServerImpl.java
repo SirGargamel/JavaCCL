@@ -251,15 +251,13 @@ public final class ServerImpl extends Server implements Observer {
     }
 
     @Override
-    public boolean generateClientSettings(File settingsFile) {
+    public boolean generateClientSettings(final File settingsFile) {
         LOG.log(Level.FINE, "Generating client settings.");
 
         final SimpleXMLSettingsFile xml = new SimpleXMLSettingsFile();
 
         boolean result = false;
-        try {
-            result = xml.storeXML(settingsFile);
-
+        try {            
             final Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
 
             for (NetworkInterface n : Collections.list(nets)) {
@@ -271,6 +269,8 @@ public final class ServerImpl extends Server implements Observer {
                     }
                 }
             }
+            
+            result = xml.storeXML(settingsFile);
         } catch (SocketException ex) {
             LOG.log(Level.WARNING, "Error listing available network interfaces.", settingsFile.getAbsolutePath());
             LOG.log(Level.FINE, "Error listing available network interfaces.", ex);
