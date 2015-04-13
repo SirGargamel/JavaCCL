@@ -20,8 +20,4 @@ public interface SystemMessageHeaders {
      * check
      */
     String STATUS_CHECK = "statusCheck";
-    /**
-     * request for pulling messages
-     */
-    String MSG_PULL_REQUEST = "msgPullRequest";
 }

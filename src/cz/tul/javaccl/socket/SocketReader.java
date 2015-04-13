@@ -3,8 +3,6 @@ package cz.tul.javaccl.socket;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.communicator.DataPacketImpl;
 import cz.tul.javaccl.history.HistoryManager;
-import cz.tul.javaccl.messaging.Message;
-import cz.tul.javaccl.messaging.SystemMessageHeaders;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -39,20 +37,22 @@ class SocketReader extends Observable implements Runnable {
     SocketReader(
             final Socket socket,
             final DataPacketHandler dpHandler, final MessagePullDaemon mpd) {
+        super();
+        
         if (socket != null) {
             this.socket = socket;
         } else {
-            throw new NullPointerException("Socket cannot be null");
+            throw new IllegalArgumentException("Socket cannot be null");
         }
         if (dpHandler != null) {
             this.dpHandler = dpHandler;
         } else {
-            throw new NullPointerException("ID listeners cannot be null");
+            throw new IllegalArgumentException("ID listeners cannot be null");
         }
         if (mpd != null) {
             this.mpd = mpd;
         } else {
-            throw new NullPointerException("MessagePullDaemon cannot be null");
+            throw new IllegalArgumentException("MessagePullDaemon cannot be null");
         }
     }
 
@@ -67,36 +67,24 @@ class SocketReader extends Observable implements Runnable {
 
     @Override
     public void run() {
-        boolean dataRead = false;
         final InetAddress ip = socket.getInetAddress();
-        Object dataIn = null;
+        Object dataIn;
 
-        ObjectInputStream in = null;
-        UUID id = null;
+        ObjectInputStream in = null;        
         try {
             in = new ObjectInputStream(socket.getInputStream());
             dataIn = in.readObject();
-            dataRead = true;
 
             if (dataIn instanceof DataPacketImpl) {
-                final DataPacketImpl dp = (DataPacketImpl) dataIn;
-                id = dp.getSourceId();
-                dp.setSourceIP(ip);
-                final Object response = dpHandler.handleDataPacket(dp);
-                sendReply(ip, id, dp.getData(), dataRead, response);
-            } else if (dataIn instanceof Message) {
-                final Message m = (Message) dataIn;
-
-                final String header = m.getHeader();
-                if (header != null && header.equals(SystemMessageHeaders.MSG_PULL_REQUEST)) {
-                    mpd.handleMessagePullRequest(socket, m.getData(), in);
-                } else {
-                    LOG.log(Level.WARNING, "Received Message with unidentifined header - " + m.toString());
-                    sendReply(ip, null, dataIn, dataRead, GenericResponses.ILLEGAL_HEADER);
-                }
+                final DataPacketImpl packet = (DataPacketImpl) dataIn;                
+                packet.setSourceIP(ip);
+                final Object response = dpHandler.handleDataPacket(packet);
+                sendReply(ip, packet.getSourceId(), packet.getData(), true, response);
+            } else if (dataIn instanceof MessagePullRequest) {
+                mpd.handleMessagePullRequest(socket, dataIn, in);
             } else {
-                LOG.log(Level.WARNING, "Received data is not an instance of DataPacket or Message - " + dataIn);
-                sendReply(ip, null, dataIn, dataRead, GenericResponses.ILLEGAL_DATA);
+                LOG.log(Level.WARNING, "Received illegal type of data - {0}", dataIn);
+                sendReply(ip, null, dataIn, true, GenericResponses.ILLEGAL_DATA);
             }
         } catch (IOException ex) {
             LOG.log(Level.WARNING, "Error reading data from socket.");
@@ -127,7 +115,7 @@ class SocketReader extends Observable implements Runnable {
         }
     }
 
-    private void sendReply(final InetAddress ip, final UUID id, Object dataIn, boolean dataRead, final Object response) {
+    private void sendReply(final InetAddress ip, final UUID id, final Object dataIn, final boolean dataRead, final Object response) {
         ObjectOutputStream out = null;
         try {
             out = new ObjectOutputStream(socket.getOutputStream());

@@ -7,8 +7,6 @@ import cz.tul.javaccl.communicator.CommunicatorInner;
 import cz.tul.javaccl.communicator.DataPacket;
 import cz.tul.javaccl.communicator.Status;
 import cz.tul.javaccl.history.HistoryManager;
-import cz.tul.javaccl.messaging.Message;
-import cz.tul.javaccl.messaging.SystemMessageHeaders;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -64,14 +62,14 @@ public class MessagePullDaemon extends Thread implements IService {
     public void run() {
         Collection<Communicator> comms = new ArrayList<Communicator>(clientLister.getClients().size());
         CommunicatorInner commI;
-        Message m;
+        MessagePullRequest m;
         InetAddress ipComm;
         int port;
         Object dataIn = null, response = null;
-        boolean dataRead = false;
+        boolean dataRead;
         Calendar lastTime, now;
         long dif, wait;
-
+        Socket s = null;
         while (run) {
             lastTime = Calendar.getInstance(Locale.getDefault());
 
@@ -85,14 +83,13 @@ public class MessagePullDaemon extends Thread implements IService {
                 if (comm instanceof CommunicatorInner) {
                     commI = (CommunicatorInner) comm;
                     final UUID id = commI.getSourceId();
-                    final Status status = comm.getStatus();
+                    final Status status = comm.checkStatus();
                     if (status.equals(Status.ONLINE)) {
                         ipComm = comm.getAddress();
                         port = comm.getPort();
+                        dataRead = false;
 
-                        m = new Message(SystemMessageHeaders.MSG_PULL_REQUEST, id);
-
-                        Socket s = null;
+                        m = new MessagePullRequest(id);
                         try {
                             s = new Socket(ipComm, port);
                             ObjectOutputStream out = null;
@@ -110,12 +107,12 @@ public class MessagePullDaemon extends Thread implements IService {
 
                                         if (dataIn instanceof GenericResponses) {
                                             if (!dataIn.equals(GenericResponses.OK)) {
-                                                LOG.log(Level.WARNING, "Error occured during message pull request - " + dataIn.toString());
+                                                LOG.log(Level.WARNING, "Error occured during message pull request - {0}", dataIn.toString());
                                             }
                                         } else if (dataIn instanceof DataPacket) {
                                             final DataPacket dp = (DataPacket) dataIn;
                                             response = dpHandler.handleDataPacket(dp);
-                                            LOG.log(Level.FINE, "Pulled message [" + dataIn + "], responding with " + response);
+                                            LOG.log(Level.FINE, "Pulled message [{0}], responding with {1}", new Object[]{dataIn, response});
                                             out.writeObject(response);
                                             out.flush();
                                         } else {
@@ -136,13 +133,13 @@ public class MessagePullDaemon extends Thread implements IService {
                                 }
                             }
                         } catch (SocketTimeoutException ex) {
-                            LOG.log(Level.FINE, "Client on IP " + ipComm.getHostAddress() + " is not responding to request.");
+                            LOG.log(Level.FINE, "Client on IP {0} is not responding to request.", ipComm.getHostAddress());
                         } catch (IOException ex) {
                             LOG.log(Level.WARNING, "Error operating socket.");
                             LOG.log(Level.FINE, "Error operating socket.", ex);
                         } finally {
                             try {
-                                if (s != null) {
+                                if (s != null && !s.isClosed()) {
                                     s.close();
                                 }
                             } catch (IOException ex) {
@@ -196,7 +193,7 @@ public class MessagePullDaemon extends Thread implements IService {
 
         if (pullData instanceof UUID) {
             final UUID id = (UUID) pullData;
-            Collection<Communicator> comms = new ArrayList<Communicator>(clientLister.getClients());
+            final Collection<Communicator> comms = new ArrayList<Communicator>(clientLister.getClients());
 
             for (Communicator comm : comms) {
                 if (comm instanceof CommunicatorInner) {
@@ -215,14 +212,14 @@ public class MessagePullDaemon extends Thread implements IService {
                             LOG.log(Level.FINE, "Data prepared for UUID msg pull [" + msg + "].");
                         } else {
                             msg = GenericResponses.OK;
-                            LOG.log(Level.FINE, "No data for UUID " + id);
+                            LOG.log(Level.FINE, "No data for UUID {0}", id);
                         }
                     }
                 }
             }
             if (msg == null) {
                 msg = GenericResponses.UUID_UNKNOWN;
-                LOG.log(Level.FINE, "Unknown UUID requested data - " + id);
+                LOG.log(Level.FINE, "Unknown UUID requested data - {0}", id);
             }
         } else {
             msg = GenericResponses.ILLEGAL_DATA;
@@ -235,10 +232,9 @@ public class MessagePullDaemon extends Thread implements IService {
             out.flush();
 
             if (communicator != null && !(msg instanceof GenericResponses)) {
-                try {
-                    final Object response = in.readObject();
+                try {                    
                     if (msg instanceof DataPacket) {
-                        communicator.storeResponse((DataPacket) msg, response);
+                        communicator.storeResponse((DataPacket) msg, in.readObject());
                     }
                 } catch (ClassNotFoundException ex) {
                     LOG.log(Level.WARNING, "Unkonwn data class received as reply.");

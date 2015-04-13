@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  *
  * @author Petr Ječmen
  */
-public class ServerSocket extends Thread implements IService, ListenerRegistrator, DataPacketHandler {
+public final class ServerSocket extends Thread implements IService, ListenerRegistrator, DataPacketHandler {
 
     private static final Logger LOG = Logger.getLogger(ServerSocket.class.getName());
 
@@ -59,10 +59,12 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     private final ObjectQueue<Identifiable> dataStorageId;
     private final Set<Observer> dataListeners;
     private final MessagePullDaemon mpd;
-    private HistoryManager hm;
+    private HistoryManager hManager;
     private boolean run;
 
     private ServerSocket(final int port, final IDFilter idFilter, final ClientLister clientLister) throws IOException {
+        super();
+
         socket = new java.net.ServerSocket(port);
         this.idFilter = idFilter;
         exec = Executors.newCachedThreadPool();
@@ -102,45 +104,45 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     }
 
     @Override
-    public void setIdListener(final Object id, final Listener<Identifiable> idListener) {
-        LOG.log(Level.FINE, "Added new listener " + idListener.toString() + " for ID " + id.toString());
-        listenersId.put(id, idListener);
+    public void setIdListener(final Object msgId, final Listener<Identifiable> idListener) {
+        LOG.log(Level.FINE, "Added new listener " + idListener.toString() + " for ID " + msgId.toString());
+        listenersId.put(msgId, idListener);
     }
 
     @Override
-    public Queue<Identifiable> createIdMessageQueue(final Object id) {
-        if (dataStorageId.isListenerRegistered(id)) {
-            return dataStorageId.getDataQueue(id);
+    public Queue<Identifiable> createIdMessageQueue(final Object msgId) {
+        if (dataStorageId.isListenerRegistered(msgId)) {
+            return dataStorageId.getDataQueue(msgId);
         } else {
-            return dataStorageId.prepareQueue(id);
+            return dataStorageId.prepareQueue(msgId);
         }
     }
 
     @Override
-    public void removeIdListener(Object id) {
-        if (id != null) {
-            dataStorageId.removeListener(id);
-            listenersId.remove(id);
-            LOG.log(Level.FINE, "Removed listener for ID " + id.toString());
+    public void removeIdListener(final Object msgId) {
+        if (msgId != null) {
+            dataStorageId.removeListener(msgId);
+            listenersId.remove(msgId);
+            LOG.log(Level.FINE, "Removed listener for ID " + msgId.toString());
         } else {
             LOG.log(Level.FINE, "NULL message id received for deregistration");
         }
     }
 
     @Override
-    public void addMessageObserver(Observer msgObserver) {
+    public void addMessageObserver(final Observer msgObserver) {
         dataListeners.add(msgObserver);
         LOG.log(Level.FINE, "Added new message observer - " + msgObserver.toString());
     }
 
     @Override
-    public void removeMessageObserver(Observer msgObserver) {
+    public void removeMessageObserver(final Observer msgObserver) {
         dataListeners.remove(msgObserver);
         LOG.log(Level.FINE, "Removed message observer - " + msgObserver.toString());
     }
 
     @Override
-    public void setMessageListener(Listener<DataPacket> listener) {
+    public void setMessageListener(final Listener<DataPacket> listener) {
         this.messageListener = listener;
         LOG.log(Level.FINE, "Set new message listener - " + listener.toString());
     }
@@ -167,10 +169,9 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         while (run) {
             try {
                 s = socket.accept();
-                s.setSoTimeout(GlobalConstants.getDEFAULT_TIMEOUT());
                 LOG.log(Level.FINE, "Connection accepted from IP " + s.getInetAddress().getHostAddress() + ":" + s.getPort());
                 final SocketReader sr = new SocketReader(s, this, mpd);
-                sr.registerHistory(hm);
+                sr.registerHistory(hManager);
                 for (Observer o : dataListeners) {
                     sr.addObserver(o);
                 }
@@ -195,10 +196,10 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
     /**
      * Register history manager that will store info about received messages.
      *
-     * @param hm instance of history manager
+     * @param manager instance of history manager
      */
-    public void registerHistory(final HistoryManager hm) {
-        this.hm = hm;
+    public void registerHistory(final HistoryManager manager) {
+        this.hManager = manager;
     }
 
     @Override
@@ -213,7 +214,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
             run = false;
             mpd.stopService();
             exec.shutdownNow();
-            socket.close();            
+            socket.close();
         } catch (IOException ex) {
             // expected exception due to listening interruption
         }
@@ -227,7 +228,10 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         Object result = GenericResponses.NOT_HANDLED;
 
         boolean allowed = false;
-        if (idFilter != null) {
+        if (idFilter == null) {
+            LOG.log(Level.FINE, "Data [{0}] received, no ID filter set, forwarding to listeners.", data.toString());
+            allowed = true;
+        } else {
             if (!idFilter.isTargetIdValid(dp.getTargetId())) {
                 if (data instanceof Message) {
                     final UUID mId = ((Message) data).getId();
@@ -239,24 +243,21 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                 }
 
                 if (!allowed) {
-                    LOG.log(Level.FINE, "Received data not for this client - client id " + clientId + ", data packet [" + dp.toString() + "]");
+                    LOG.log(Level.FINE, "Received data not for this client - client id {0}, data packet [{1}]", new Object[]{clientId, dp.toString()});
                     result = GenericResponses.ILLEGAL_TARGET_ID;
                 }
             } else if (!idFilter.isIdAllowed(clientId)) {
-                LOG.log(Level.FINE, "Received data from unregistered client - id " + clientId + ", data [" + data.toString() + "]");
+                LOG.log(Level.FINE, "Received data from unregistered client - id {0}, data [{1}]", new Object[]{clientId, data.toString()});
                 result = GenericResponses.UUID_NOT_ALLOWED;
             } else {
-                LOG.log(Level.FINE, "Data [" + data.toString() + "] received, forwarding to listeners.");
+                LOG.log(Level.FINE, "Data [{0}] received, forwarding to listeners.", data.toString());
                 allowed = true;
             }
-        } else {
-            LOG.log(Level.FINE, "Data [" + data.toString() + "] received, no ID filter set, forwarding to listeners.");
-            allowed = true;
         }
 
         if (allowed) {
             boolean sysMsg = false;
-            boolean handled = false;
+            boolean handled;
             if (data instanceof Identifiable) {
                 final Identifiable iData = (Identifiable) data;
                 final Object id = iData.getId();
@@ -270,6 +271,8 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                 } else if (listenersClient.containsKey(clientId)) {
                     result = listenersClient.get(clientId).receiveData(dp);
                     handled = true;
+                } else {
+                    handled = false;
                 }
                 if (dataStorageId.isListenerRegistered(id)) {
                     dataStorageId.storeData(id, dp);
@@ -277,6 +280,8 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
                         result = GenericResponses.NOT_HANDLED_DIRECTLY;
                     }
                 }
+            } else {
+                handled = false;
             }
 
             if (!sysMsg) {
@@ -320,7 +325,7 @@ public class ServerSocket extends Thread implements IService, ListenerRegistrato
         return result;
     }
 
-    public void setIdFilter(IDFilter idFilter) {
+    public void setIdFilter(final IDFilter idFilter) {
         this.idFilter = idFilter;
     }
 }
