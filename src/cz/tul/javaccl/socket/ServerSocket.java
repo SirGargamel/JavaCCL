@@ -236,8 +236,7 @@ public final class ServerSocket extends Thread implements IService, ListenerRegi
                 if (data instanceof Message) {
                     final UUID mId = ((Message) data).getId();
                     final String header = ((Message) data).getHeader();
-                    if (mId.equals(GlobalConstants.ID_SYS_MSG) && ((header.equals(SystemMessageHeaders.LOGIN))
-                            || header.equals(SystemMessageHeaders.STATUS_CHECK))) {
+                    if (mId.equals(GlobalConstants.ID_SYS_MSG) && header.equals(SystemMessageHeaders.LOGIN)) {
                         allowed = true;
                     }
                 }

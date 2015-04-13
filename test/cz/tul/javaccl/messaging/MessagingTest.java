@@ -13,7 +13,6 @@ import cz.tul.javaccl.server.Server;
 import cz.tul.javaccl.server.ServerImpl;
 import cz.tul.javaccl.socket.Listener;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Queue;
@@ -81,7 +80,7 @@ public class MessagingTest {
             comm.sendData("data");
             fail("Should have failed, because this communicator is not registered.");
         } catch (ConnectionException ex) {
-            assertEquals(ConnectionExceptionCause.TARGET_OFFLINE, ex.getExceptionCause());
+            assertEquals(ConnectionExceptionCause.UUID_NOT_ALLOWED, ex.getExceptionCause());
         } catch (IllegalArgumentException ex) {
             fail(ex.getLocalizedMessage());
         }

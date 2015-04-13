@@ -66,8 +66,6 @@ public class SystemMessagesHandler implements Listener<Identifiable> {
                             LOG.log(Level.WARNING, "Invalid client id received - {0}", id);
                             return GenericResponses.ILLEGAL_DATA;
                         }
-                    } else if (header.equals(SystemMessageHeaders.STATUS_CHECK)) {
-                        return localId;
                     } else {
                         return GenericResponses.ILLEGAL_HEADER;
                     }

@@ -2,6 +2,7 @@ package cz.tul.javaccl.socket;
 
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.communicator.DataPacketImpl;
+import cz.tul.javaccl.communicator.StatusMessage;
 import cz.tul.javaccl.history.HistoryManager;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -82,6 +83,9 @@ class SocketReader extends Observable implements Runnable {
                 sendReply(ip, packet.getSourceId(), packet.getData(), true, response);
             } else if (dataIn instanceof MessagePullRequest) {
                 mpd.handleMessagePullRequest(socket, dataIn, in);
+            } else if (dataIn instanceof StatusMessage) {
+                final StatusMessage message = (StatusMessage) dataIn;
+                sendReply(ip, message.getId(), dataIn, true, GenericResponses.OK);
             } else {
                 LOG.log(Level.WARNING, "Received illegal type of data - {0}", dataIn);
                 sendReply(ip, null, dataIn, true, GenericResponses.ILLEGAL_DATA);

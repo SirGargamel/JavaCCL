@@ -15,9 +15,4 @@ public interface SystemMessageHeaders {
      * client is logging out
      */
     String LOGOUT = "logout";
-    /**
-     * keep alives should be ignored as they function only for cummunication
-     * check
-     */
-    String STATUS_CHECK = "statusCheck";
 }

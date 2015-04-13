@@ -7,6 +7,7 @@ package cz.tul.javaccl.history;
 import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.client.ClientImpl;
+import cz.tul.javaccl.communicator.StatusMessage;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import cz.tul.javaccl.history.export.ExportMessage;
 import cz.tul.javaccl.history.sorting.DefaultSorter;
@@ -14,7 +15,6 @@ import cz.tul.javaccl.history.sorting.IPSorter;
 import cz.tul.javaccl.history.sorting.InOutSorter;
 import cz.tul.javaccl.history.sorting.UUIDSorter;
 import cz.tul.javaccl.messaging.Message;
-import cz.tul.javaccl.messaging.SystemMessageHeaders;
 import cz.tul.javaccl.server.Server;
 import cz.tul.javaccl.server.ServerImpl;
 import java.io.BufferedReader;
@@ -265,11 +265,11 @@ public class HistoryTest {
         }
     }
 
-    private static void cleanUp(List<HistoryRecord> records) {
+    private static void cleanUp(final List<HistoryRecord> records) {
         // remove status checks, logins etc.
-        Iterator<HistoryRecord> it = records.iterator();
-
-        List<HistoryRecord> remove = new LinkedList<HistoryRecord>();
+        final String statusCheck = StatusMessage.class.getName();
+        final Iterator<HistoryRecord> it = records.iterator();
+        final List<HistoryRecord> remove = new LinkedList<HistoryRecord>();
         Element data;
         NodeList nl;
         for (HistoryRecord hr : records) {
@@ -277,7 +277,7 @@ public class HistoryTest {
             data = hr.getData();
             nl = data.getElementsByTagName(FIELD_NAME_HEADER);
             for (int i = 0; i < nl.getLength(); i++) {
-                if (SystemMessageHeaders.STATUS_CHECK.equals(nl.item(i).getTextContent())) {
+                if (statusCheck.equals(nl.item(i).getTextContent())) {
                     remove.add(hr);
                 }
             }

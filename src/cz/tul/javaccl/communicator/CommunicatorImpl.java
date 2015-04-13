@@ -5,8 +5,6 @@ import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import cz.tul.javaccl.exceptions.ConnectionExceptionCause;
 import cz.tul.javaccl.history.HistoryManager;
-import cz.tul.javaccl.messaging.Message;
-import cz.tul.javaccl.messaging.SystemMessageHeaders;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
@@ -235,8 +233,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     @Override
     public Status checkStatus() {
         boolean result = false;
-        final Object data = new Message(GlobalConstants.ID_SYS_MSG, SystemMessageHeaders.STATUS_CHECK, null);
-        final DataPacket dp = new DataPacketImpl(sourceId, targetId, data);
+        final Object message = new StatusMessage(sourceId);        
         Status stat = Status.OFFLINE;
 
         Socket s = null;
@@ -245,23 +242,21 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
             s.setSoTimeout(STATUS_CHECK_TIMEOUT);
 
             final ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-
-            out.writeObject(dp);
+            out.writeObject(message);
             out.flush();
 
             ObjectInputStream in = null;
             try {
                 in = new ObjectInputStream(s.getInputStream());
-                Object response = in.readObject();
-                if ((targetId == null
-                        || targetId.equals(response))) {
+                final Object response = in.readObject();
+                if (GenericResponses.OK.equals(response)) {
                     stat = Status.ONLINE;
                 } else {
-                    LOG.log(Level.WARNING, "STATUS_CHECK response received for another ID - {0} , should be {1}. Local ID {2}", new Object[]{response, targetId, sourceId});
+                    LOG.log(Level.WARNING, "Illegal response received for statuc check. Local ID {2}", new Object[]{response, targetId, sourceId});
                 }
                 result = true;
             } catch (IOException ex) {
-                LOG.log(Level.FINE, "Client on IP " + address.getHostAddress() + " did not open stream for answer.");
+                LOG.log(Level.FINE, "Client on IP {0} did not open stream for answer.", address.getHostAddress());
             } catch (ClassNotFoundException ex) {
                 LOG.log(Level.WARNING, "Illegal class received from client for KEEP_ALIVE");
                 LOG.log(Level.FINE, "Illegal class received from client for KEEP_ALIVE", ex);
@@ -271,7 +266,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
                 }
             }
         } catch (SocketTimeoutException ex) {
-            LOG.log(Level.FINE, "Client on IP " + address.getHostAddress() + " is not responding to request.");
+            LOG.log(Level.FINE, "Client on IP {0} is not responding to request.", address.getHostAddress());
         } catch (IOException ex) {
             LOG.log(Level.FINE, "Status check IO error.", ex);
         } finally {
@@ -286,7 +281,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         }
 
         if (hm != null) {
-            hm.logMessageSend(address, getTargetId(), data, result, stat);
+            hm.logMessageSend(address, getTargetId(), message, result, stat);
         }
 
         if (stat.equals(Status.OFFLINE) && lastMsgPull != null) {

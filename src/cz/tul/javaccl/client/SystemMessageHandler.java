@@ -42,9 +42,7 @@ class SystemMessageHandler extends CCLObservable implements Listener<Identifiabl
                 final String header = m.getHeader();
                 result = GenericResponses.ILLEGAL_HEADER;
                 if (header != null) {
-                    if (header.equals(SystemMessageHeaders.STATUS_CHECK)) {
-                        result = idFIlter.getLocalID();
-                    } else if (header.equals(SystemMessageHeaders.LOGIN)) {
+                    if (header.equals(SystemMessageHeaders.LOGIN)) {
                         final Object mData = m.getData();
                         if (mData instanceof UUID) {
                             serverInterface.setServerInfo(dp.getSourceIP(), GlobalConstants.DEFAULT_PORT, (UUID) mData);
