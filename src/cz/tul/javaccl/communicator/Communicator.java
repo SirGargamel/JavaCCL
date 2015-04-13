@@ -41,7 +41,8 @@ public interface Communicator {
     boolean isOnline();
 
     /**
-     * @return last known client status
+     * @return last known client status (either after checkStatus() call or
+     * after unsuccesfull connect)
      */
     Status getStatus();
 

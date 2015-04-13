@@ -106,10 +106,11 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     public Object sendData(final Object data, final int timeout) throws IllegalArgumentException, ConnectionException {
         boolean readAndReply = false;
         Object response = dummy;
-        Status stat = getStatus();
-        DataPacket dp = new DataPacketImpl(sourceId, targetId, data);
+        final Status stat = getStatus();
+        final DataPacket dp = new DataPacketImpl(sourceId, targetId, data);
 
-        if (stat.equals(Status.ONLINE)) {
+        if ((stat.equals(Status.OFFLINE) && checkStatus().equals(Status.ONLINE))
+                || stat.equals(Status.ONLINE)) {
             response = pushDataToOnlineClient(dp, timeout);
             if (response == GenericResponses.ILLEGAL_TARGET_ID) {
                 throw new ConnectionException(ConnectionExceptionCause.WRONG_TARGET);
@@ -172,6 +173,8 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
         } catch (IOException ex) {
             LOG.log(Level.WARNING, "Cannot write to output socket.");
             LOG.log(Level.FINE, "Cannot write to output socket.", ex);
+            setStatus(Status.OFFLINE);
+            throw new ConnectionException(ConnectionExceptionCause.TARGET_OFFLINE);
         } finally {
             if (s != null) {
                 try {
@@ -233,7 +236,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     @Override
     public Status checkStatus() {
         boolean result = false;
-        final Object message = new StatusMessage(sourceId);        
+        final Object message = new StatusMessage(sourceId);
         Status stat = Status.OFFLINE;
 
         Socket s = null;
@@ -319,12 +322,6 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     @Override
     public Status getStatus() {
-        Calendar lastUpdate = getLastStatusUpdate();
-        if (lastUpdate == null
-                || (Calendar.getInstance().getTimeInMillis() - lastUpdate.getTimeInMillis() > STATUS_CHECK_INTERVAL)) {
-            checkStatus();
-        }
-
         return status;
     }
 
