@@ -82,7 +82,7 @@ class SocketReader extends Observable implements Runnable {
                 final Object response = dpHandler.handleDataPacket(packet);
                 sendReply(ip, packet.getSourceId(), packet.getData(), true, response);
             } else if (dataIn instanceof MessagePullRequest) {
-                mpd.handleMessagePullRequest(socket, dataIn, in);
+                mpd.handleMessagePullRequest(socket, (MessagePullRequest) dataIn, in);
             } else if (dataIn instanceof StatusMessage) {
                 final StatusMessage message = (StatusMessage) dataIn;
                 sendReply(ip, message.getId(), dataIn, true, GenericResponses.OK);

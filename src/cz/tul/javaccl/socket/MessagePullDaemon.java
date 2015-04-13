@@ -187,42 +187,37 @@ public class MessagePullDaemon extends Thread implements IService {
      * @param pullData received data
      * @param in stream for reading a response
      */
-    public void handleMessagePullRequest(final Socket s, Object pullData, ObjectInputStream in) {
+    public void handleMessagePullRequest(final Socket s, MessagePullRequest pullData, ObjectInputStream in) {
+        final UUID clientId = pullData.getClientId();
+        final Collection<Communicator> comms = new ArrayList<Communicator>(clientLister.getClients());
+
         Object msg = null;
         CommunicatorInner communicator = null;
+        for (Communicator comm : comms) {
+            if (comm instanceof CommunicatorInner) {
+                communicator = (CommunicatorInner) comm;
 
-        if (pullData instanceof UUID) {
-            final UUID id = (UUID) pullData;
-            final Collection<Communicator> comms = new ArrayList<Communicator>(clientLister.getClients());
+                if (clientId.equals(communicator.getSourceId())) {
+                    msg = GenericResponses.OK;
+                    // no request on itself
+                    break;
+                }
 
-            for (Communicator comm : comms) {
-                if (comm instanceof CommunicatorInner) {
-                    communicator = (CommunicatorInner) comm;
-
-                    if (id.equals(communicator.getSourceId())) {
+                if (clientId.equals(comm.getTargetId())) {
+                    final Queue<DataPacket> q = communicator.getUnsentData();
+                    if (!q.isEmpty()) {
+                        msg = q.poll();
+                        LOG.log(Level.FINE, "Data prepared for UUID msg pull [" + msg + "].");
+                    } else {
                         msg = GenericResponses.OK;
-                        // no request on itself
-                        break;
-                    }
-
-                    if (id.equals(comm.getTargetId())) {
-                        final Queue<DataPacket> q = communicator.getUnsentData();
-                        if (!q.isEmpty()) {
-                            msg = q.poll();
-                            LOG.log(Level.FINE, "Data prepared for UUID msg pull [" + msg + "].");
-                        } else {
-                            msg = GenericResponses.OK;
-                            LOG.log(Level.FINE, "No data for UUID {0}", id);
-                        }
+                        LOG.log(Level.FINE, "No data for UUID {0}", clientId);
                     }
                 }
             }
-            if (msg == null) {
-                msg = GenericResponses.UUID_UNKNOWN;
-                LOG.log(Level.FINE, "Unknown UUID requested data - {0}", id);
-            }
-        } else {
-            msg = GenericResponses.ILLEGAL_DATA;
+        }
+        if (msg == null) {
+            msg = GenericResponses.UUID_UNKNOWN;
+            LOG.log(Level.FINE, "Unknown UUID requested data - {0}", clientId);
         }
 
         ObjectOutputStream out = null;
@@ -232,7 +227,7 @@ public class MessagePullDaemon extends Thread implements IService {
             out.flush();
 
             if (communicator != null && !(msg instanceof GenericResponses)) {
-                try {                    
+                try {
                     if (msg instanceof DataPacket) {
                         communicator.storeResponse((DataPacket) msg, in.readObject());
                     }
