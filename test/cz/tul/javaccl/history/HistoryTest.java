@@ -49,10 +49,7 @@ public class HistoryTest {
     private static final String IP_SOURCE_TEMPLATE = "<IPSource></IPSource>";
     private static final String IP_DESTINATION_TEMPLATE = "<IPDestination></IPDestination>";
     private static final String FIELD_NAME_HEADER = "Header";
-    private static File exportTarget, compareTarget;
-
-    public HistoryTest() {
-    }
+    private static File exportTarget, compareTarget;    
 
     @BeforeClass
     public static void setUpClass() {
@@ -70,17 +67,17 @@ public class HistoryTest {
     public void testHistoryDirectLogging() throws UnknownHostException {
         System.out.println("logHistoryDirectLoggin");
 
-        InetAddress ipLocal = GlobalConstants.IP_LOOPBACK;
+        final InetAddress ipLocal = GlobalConstants.IP_LOOPBACK;
 
-        HistoryManager h = new History();
+        final HistoryManager manager = new History();
 
         synchronized (this) {
             try {
-                h.logMessageSend(ipLocal, null, "dataOut", true, GenericResponses.OK);
+                manager.logMessageSend(ipLocal, null, "dataOut", true, GenericResponses.OK);
                 this.wait(100);
-                h.logMessageReceived(ipLocal, null, GenericResponses.ILLEGAL_DATA, true, "0000-0000");
+                manager.logMessageReceived(ipLocal, null, GenericResponses.ILLEGAL_DATA, true, "0000-0000");
                 this.wait(250);
-                h.logMessageReceived(ipLocal, null, "dataIn2", false, "response");
+                manager.logMessageReceived(ipLocal, null, "dataIn2", false, "response");
             } catch (InterruptedException ex) {
                 fail("Waiting interrupted");
             }
@@ -89,35 +86,33 @@ public class HistoryTest {
         prepareFile(exportTarget);
         prepareFile(compareTarget);
         try {
-            h.export(exportTarget, null);
-            fail();
+            manager.export(exportTarget, null);
+            fail("Export of NULL data should not be possible.");
         } catch (IllegalArgumentException ex) {
             // expected
-        }
+        }        
+
+        prepareFile(exportTarget);
+        prepareFile(compareTarget);
+        assertTrue(manager.export(exportTarget, new DefaultSorter()));
         prepareLocalIp(new File(HistoryTest.class.getResource("testExportDefault.xml").getFile()), compareTarget);
         assertFiles(compareTarget, exportTarget);
 
         prepareFile(exportTarget);
         prepareFile(compareTarget);
-        assertTrue(h.export(exportTarget, new DefaultSorter()));
-        prepareLocalIp(new File(HistoryTest.class.getResource("testExportDefault.xml").getFile()), compareTarget);
-        assertFiles(compareTarget, exportTarget);
-
-        prepareFile(exportTarget);
-        prepareFile(compareTarget);
-        assertTrue(h.export(exportTarget, new IPSorter(true)));
+        assertTrue(manager.export(exportTarget, new IPSorter(true)));
         prepareLocalIp(new File(HistoryTest.class.getResource("testExportIpTrue.xml").getFile()), compareTarget);
         assertFiles(compareTarget, exportTarget);
 
         prepareFile(exportTarget);
         prepareFile(compareTarget);
-        assertTrue(h.export(exportTarget, new IPSorter(false)));
+        assertTrue(manager.export(exportTarget, new IPSorter(false)));
         prepareLocalIp(new File(HistoryTest.class.getResource("testExportIpFalse.xml").getFile()), compareTarget);
         assertFiles(compareTarget, exportTarget);
 
         prepareFile(exportTarget);
         prepareFile(compareTarget);
-        assertTrue(h.export(exportTarget, new InOutSorter()));
+        assertTrue(manager.export(exportTarget, new InOutSorter()));
         prepareLocalIp(new File(HistoryTest.class.getResource("testExportInOut.xml").getFile()), compareTarget);
         assertFiles(compareTarget, exportTarget);
     }
