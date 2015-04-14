@@ -15,22 +15,22 @@ import java.util.logging.Logger;
 import org.xml.sax.SAXException;
 
 /**
- * Settings for client part. Default settings for server address is loopback
- * adress (eg. server and client are run on same machine) on default server
- * port.
+ * Settings for CLIENT part. Default settings for SERVER address is loopback
+ adress (eg. SERVER and CLIENT are run on same machine) on default SERVER
+ port.
  *
  * @author Petr Ječmen
  */
-public class ClientSettings {
-
+public final class ClientSettings {
+    
     private static final Logger LOG = Logger.getLogger(ClientSettings.class.getName());
-    public static final String FIELD_NAME_SERVER = "server";
+    private static final String DELIMITER = "-";
 
     /**
-     * Save client settings to disk.
+     * Save CLIENT settings to disk.
      *
      * @param settingsFile target settings file
-     * @param reg server parameters registrator
+     * @param reg SERVER parameters registrator
      * @return true for successfull deserialization
      */
     public static boolean deserialize(final File settingsFile, final ServerInterface reg) {
@@ -41,13 +41,13 @@ public class ClientSettings {
             InetAddress ip = null;
             int port = GlobalConstants.DEFAULT_PORT;
             try {
-                List<Map.Entry<String, String>> fields = SimpleXMLSettingsFile.loadSimpleXMLFile(settingsFile);
+                final List<Map.Entry<String, String>> fields = SimpleXMLSettingsFile.loadSimpleXMLFile(settingsFile);
                 String fieldName;
                 for (Map.Entry<String, String> e : fields) {
                     fieldName = e.getKey();
-                    if (!result && fieldName != null && fieldName.equals(FIELD_NAME_SERVER)) {
+                    if (!result && fieldName != null && fieldName.equals(XmlNodes.SERVER.toString())) {
                         try {
-                            String[] split = e.getValue().split(GlobalConstants.DELIMITER);
+                            final String[] split = e.getValue().split(DELIMITER);
                             ip = InetAddress.getByName(split[0]);
                             if (split.length > 1) {
                                 port = Integer.parseInt(split[1]);
@@ -92,26 +92,25 @@ public class ClientSettings {
     }
 
     /**
-     * Load client settings from disk.
+     * Load CLIENT settings from disk.
      *
      * @param settingsFile target settings file
-     * @param serverCommunicator server communicator
+     * @param serverCommunicator SERVER communicator
      * @return true for successfull save
      */
     public static boolean serialize(final File settingsFile, final Communicator serverCommunicator) {
         LOG.log(Level.FINE, "Serializing client settings.");
 
-        SimpleXMLSettingsFile xml = new SimpleXMLSettingsFile();
+        final SimpleXMLSettingsFile xml = new SimpleXMLSettingsFile();
 
-        xml.addField(
-                FIELD_NAME_SERVER,
+        xml.addField(XmlNodes.SERVER.toString(),
                 composeServerAddress(serverCommunicator.getAddress(), serverCommunicator.getPort()));
 
         boolean result = false;
         try {
             result = xml.storeXML(settingsFile);
         } catch (IOException ex) {
-            LOG.log(Level.WARNING, "Error accessing client settings at " + settingsFile.getAbsolutePath() + ".");
+            LOG.log(Level.WARNING, "Error accessing client settings at {0}.", settingsFile.getAbsolutePath());
             LOG.log(Level.FINE, "Error accessing client settings at " + settingsFile.getAbsolutePath() + ".", ex);
         }
 
@@ -119,9 +118,9 @@ public class ClientSettings {
     }
 
     public static String composeServerAddress(final InetAddress address, final int port) {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append(address.getHostAddress());
-        sb.append(GlobalConstants.DELIMITER);
+        sb.append(DELIMITER);
         sb.append(port);
         return sb.toString();
     }

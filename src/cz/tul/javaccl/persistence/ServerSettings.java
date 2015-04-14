@@ -1,6 +1,5 @@
 package cz.tul.javaccl.persistence;
 
-import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.communicator.Communicator;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import cz.tul.javaccl.server.ClientManager;
@@ -18,17 +17,17 @@ import java.util.logging.Logger;
 import org.xml.sax.SAXException;
 
 /**
- * Settings for server part.
+ * Settings for SERVER part.
  *
  * @author Petr Ječmen
  */
-public class ServerSettings implements Serializable {
+public final class ServerSettings implements Serializable {
 
     private static final Logger LOG = Logger.getLogger(ServerSettings.class.getName());
-    private static final String FIELD_NAME_CLIENT = "client";
+    private static final String DELIMITER = "-";
 
     /**
-     * Read and use server settings.
+     * Read and use SERVER settings.
      *
      * @param settingsFile target settings file
      * @param clientManager interface for managing clients
@@ -44,8 +43,8 @@ public class ServerSettings implements Serializable {
                 String fieldName;
                 for (Entry<String, String> e : fields) {
                     fieldName = e.getKey();
-                    if (fieldName != null && fieldName.equals(FIELD_NAME_CLIENT)) {
-                        final String[] split = e.getValue().split(GlobalConstants.DELIMITER);
+                    if (fieldName != null && fieldName.equals(XmlNodes.CLIENT.toString())) {
+                        final String[] split = e.getValue().split(DELIMITER);
                         try {
                             if (clientManager.registerClient(InetAddress.getByName(split[0]), Integer.parseInt(split[1])) != null) {
                                 result = true;
@@ -79,7 +78,7 @@ public class ServerSettings implements Serializable {
     }
 
     /**
-     * Store server settings to disk.
+     * Store SERVER settings to disk.
      *
      * @param settingsFile target settings file
      * @param clientManager interface for managing clients
@@ -90,12 +89,12 @@ public class ServerSettings implements Serializable {
         final SimpleXMLSettingsFile xml = new SimpleXMLSettingsFile();
 
         final Collection<Communicator> comms = clientManager.getClients();
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         for (Communicator c : comms) {
             sb.append(c.getAddress().getHostAddress());
-            sb.append(GlobalConstants.DELIMITER);
+            sb.append(DELIMITER);
             sb.append(c.getPort());
-            xml.addField(FIELD_NAME_CLIENT, sb.toString());
+            xml.addField(XmlNodes.CLIENT.toString(), sb.toString());
             sb.setLength(0);
         }
 
@@ -103,7 +102,7 @@ public class ServerSettings implements Serializable {
         try {
             result = xml.storeXML(settingsFile);
         } catch (IOException ex) {
-            LOG.log(Level.WARNING, "Error accessing server settings at " + settingsFile.getAbsolutePath() + ".");
+            LOG.log(Level.WARNING, "Error accessing server settings at {0}.", settingsFile.getAbsolutePath());
             LOG.log(Level.FINE, "Error accessing server settings at " + settingsFile.getAbsolutePath() + ".", ex);
         }
 

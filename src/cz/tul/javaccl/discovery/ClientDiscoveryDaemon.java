@@ -1,7 +1,6 @@
 package cz.tul.javaccl.discovery;
 
 import cz.tul.javaccl.GlobalConstants;
-import cz.tul.javaccl.IService;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import cz.tul.javaccl.server.ClientManager;
 import java.net.InetAddress;
@@ -50,8 +49,8 @@ public class ClientDiscoveryDaemon extends DiscoveryDaemon {
     @Override
     protected void receiveBroadcast(final String data, final InetAddress address) {
         // See if the packet holds the right message                    
-        if (data.startsWith(GlobalConstants.DISCOVERY_QUESTION)) {
-            final String portS = data.substring(GlobalConstants.DISCOVERY_QUESTION.length() + GlobalConstants.DELIMITER.length());
+        if (data.startsWith(DISCOVERY_QUESTION)) {
+            final String portS = data.substring(DISCOVERY_QUESTION.length() + DELIMITER.length());
             try {
                 final int port = Integer.parseInt(portS);
                 try {

@@ -55,8 +55,8 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
 
     private void broadcastServerDiscovery() {
         StringBuilder sb = new StringBuilder();
-        sb.append(GlobalConstants.DISCOVERY_QUESTION);
-        sb.append(GlobalConstants.DELIMITER);
+        sb.append(DISCOVERY_QUESTION);
+        sb.append(DELIMITER);
         sb.append(sr.getLocalSocketPort());
 
         try {
@@ -73,12 +73,12 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
     @Override
     protected void receiveBroadcast(String data, InetAddress address) {
         // See if the packet holds the right message                    
-        if (sr.getServerComm() != null && data.startsWith(GlobalConstants.DISCOVERY_QUESTION)) {
+        if (sr.getServerComm() != null && data.startsWith(DISCOVERY_QUESTION)) {
             broadcastServerInfo();
-        } else if (sr.getServerComm() == null && data.startsWith(GlobalConstants.DISCOVERY_INFO)) {
-            final String ipAndPort = data.substring(GlobalConstants.DISCOVERY_QUESTION.length() + GlobalConstants.DELIMITER.length());
-            final String ipS = ipAndPort.substring(0, ipAndPort.indexOf(GlobalConstants.DELIMITER));
-            final String portS = ipAndPort.substring(ipAndPort.indexOf(GlobalConstants.DELIMITER));                         
+        } else if (sr.getServerComm() == null && data.startsWith(DISCOVERY_INFO)) {
+            final String ipAndPort = data.substring(DISCOVERY_QUESTION.length() + DELIMITER.length());
+            final String ipS = ipAndPort.substring(0, ipAndPort.indexOf(DELIMITER));
+            final String portS = ipAndPort.substring(ipAndPort.indexOf(DELIMITER));                         
             try {
                 final InetAddress ipAddr = InetAddress.getByName(ipS);
 
@@ -106,8 +106,8 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
         final Communicator comm = sr.getServerComm();
         if (comm != null) {
             StringBuilder sb = new StringBuilder();
-            sb.append(GlobalConstants.DISCOVERY_INFO);
-            sb.append(GlobalConstants.DELIMITER);
+            sb.append(DISCOVERY_INFO);
+            sb.append(DELIMITER);
             InetAddress address = comm.getAddress();
             try {
                 if (InetAddress.getByName("127.0.0.1").equals(address)) {
@@ -117,7 +117,7 @@ public class ServerDiscoveryDaemon extends DiscoveryDaemon {
                 address = comm.getAddress();
             }
             sb.append(address);
-            sb.append(GlobalConstants.DELIMITER);
+            sb.append(DELIMITER);
             sb.append(comm.getPort());
 
             try {

@@ -5,6 +5,7 @@ import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.exceptions.ConnectionException;
 import cz.tul.javaccl.exceptions.ConnectionExceptionCause;
 import cz.tul.javaccl.history.HistoryManager;
+import cz.tul.javaccl.persistence.Timeout;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
@@ -48,9 +49,9 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
     public static CommunicatorInner initNewCommunicator(final InetAddress targetAddress, final int targetPort, final UUID sourceId) {
         return new CommunicatorImpl(targetAddress, targetPort, sourceId);
     }
-    private final int MSG_PULL_TIME_LIMIT = 2000;
-    private final int STATUS_CHECK_TIMEOUT = 250;
-    private final int STATUS_CHECK_INTERVAL = 500;
+    private static final int MSG_PULL_TIME_LIMIT = 2000;
+    private static final int STATUS_CHECK_TIMEOUT = 250;
+    private static final int STATUS_CHECK_INTERVAL = 500;
     private final InetAddress address;
     private final int port;
     private final Queue<DataPacket> unsentData;
@@ -99,7 +100,7 @@ public class CommunicatorImpl extends Observable implements CommunicatorInner {
 
     @Override
     public Object sendData(final Object data) throws IllegalArgumentException, ConnectionException {
-        return sendData(data, GlobalConstants.getDEFAULT_TIMEOUT());
+        return sendData(data, Timeout.getTimeout(Timeout.TimeoutType.MESSAGE));
     }
 
     @Override

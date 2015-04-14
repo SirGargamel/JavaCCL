@@ -2,6 +2,7 @@ package cz.tul.javaccl.discovery;
 
 import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.IService;
+import cz.tul.javaccl.persistence.Timeout;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -26,13 +27,16 @@ import java.util.logging.Logger;
 abstract class DiscoveryDaemon extends Thread implements IService {
 
     protected static final Charset CHARSET = Charset.forName("UTF-8");
-    private static final Logger LOG = Logger.getLogger(DiscoveryDaemon.class.getName());    
-    private static final String MULTICAST_IP_S= "230.50.11.2";
+    protected static final String DISCOVERY_QUESTION = "DISCOVER_CLIENT";
+    protected static final String DISCOVERY_INFO = "DISCOVER_SERVER";
+    protected static final String DELIMITER = "-";
+    private static final Logger LOG = Logger.getLogger(DiscoveryDaemon.class.getName());
+    private static final String MULTICAST_IP_S = "230.50.11.2";
     private static final int MULTICAST_PORT = GlobalConstants.DEFAULT_PORT + 1;
     private static final InetAddress MULTICAST_IP;
     private final ExecutorService exec;
     private final DatagramSocket ds;
-    private final MulticastSocket ms;    
+    private final MulticastSocket ms;
     protected boolean runThread, pauseThread, broadcast;
 
     static {
@@ -48,7 +52,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
     public DiscoveryDaemon() throws SocketException {
         ds = new DatagramSocket(GlobalConstants.DEFAULT_PORT);
         ds.setBroadcast(true);
-        ds.setSoTimeout(GlobalConstants.getDEFAULT_TIMEOUT());
+        ds.setSoTimeout(Timeout.getTimeout(Timeout.TimeoutType.DISCOVERY));
 
         MulticastSocket msS = null;
         try {
@@ -59,7 +63,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
         }
         ms = msS;
 
-        exec = Executors.newFixedThreadPool(2);        
+        exec = Executors.newFixedThreadPool(2);
         exec.execute(new Runnable() {
 
             @Override
@@ -70,12 +74,12 @@ abstract class DiscoveryDaemon extends Thread implements IService {
                         final byte[] recvBuf = new byte[15000];
                         final DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                         LOG.log(Level.FINE, "Starting listening for discovery packets.");
-                        ds.setSoTimeout(GlobalConstants.getDEFAULT_TIMEOUT());
+                        ds.setSoTimeout(Timeout.getTimeout(Timeout.TimeoutType.DISCOVERY));
                         ds.receive(packet);
 
                         // Packet received            
                         final String message = new String(packet.getData(), CHARSET).trim();
-                        LOG.log(Level.FINE, "Broadcast discovery packet received from " + packet.getAddress().getHostAddress() + " - " + message);
+                        LOG.log(Level.FINE, "Broadcast discovery packet received from {0} - {1}", new Object[]{packet.getAddress().getHostAddress(), message});
                         receiveBroadcast(message, packet.getAddress());
                     } catch (SocketTimeoutException ex) {
                         // everything is OK, we want to wait only for limited time
@@ -101,7 +105,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
                         final byte[] recvBuf = new byte[15000];
                         final DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                         LOG.log(Level.FINE, "Starting listening for discovery packets.");
-                        ms.setSoTimeout(GlobalConstants.getDEFAULT_TIMEOUT());
+                        ms.setSoTimeout(Timeout.getTimeout(Timeout.TimeoutType.DISCOVERY));
                         ms.receive(packet);
 
                         // Packet received            
@@ -179,7 +183,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
         exec.shutdownNow();
     }
 
-    public void enable(boolean enable) {
+    public void enable(final boolean enable) {
         if (enable) {
             pauseThread = false;
             synchronized (this) {
@@ -202,7 +206,7 @@ abstract class DiscoveryDaemon extends Thread implements IService {
         }
         pauseThread = false;
     }
-    
+
     protected void pause() {
         pause(0);
     }

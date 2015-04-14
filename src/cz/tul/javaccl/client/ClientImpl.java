@@ -20,6 +20,7 @@ import cz.tul.javaccl.job.client.ClientJobManagerImpl;
 import cz.tul.javaccl.messaging.Message;
 import cz.tul.javaccl.messaging.SystemMessageHeaders;
 import cz.tul.javaccl.persistence.ClientSettings;
+import cz.tul.javaccl.persistence.Timeout;
 import cz.tul.javaccl.socket.IDFilter;
 import cz.tul.javaccl.socket.ListenerRegistrator;
 import cz.tul.javaccl.socket.ServerSocket;
@@ -178,7 +179,7 @@ public class ClientImpl extends Client implements ServerInterface, IDFilter, Cli
 
     @Override
     public Object sendDataToServer(final Object data) throws ConnectionException {
-        return sendDataToServer(data, GlobalConstants.getDEFAULT_TIMEOUT());
+        return sendDataToServer(data, Timeout.getTimeout(Timeout.TimeoutType.MESSAGE));
     }
 
     @Override

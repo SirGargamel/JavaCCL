@@ -1,6 +1,5 @@
 package cz.tul.javaccl.job.server;
 
-import cz.tul.javaccl.GlobalConstants;
 import cz.tul.javaccl.GenericResponses;
 import cz.tul.javaccl.IService;
 import cz.tul.javaccl.communicator.Communicator;
@@ -15,6 +14,7 @@ import cz.tul.javaccl.server.ClientManager;
 import cz.tul.javaccl.server.DataStorage;
 import cz.tul.javaccl.socket.ListenerRegistrator;
 import cz.tul.javaccl.messaging.Identifiable;
+import cz.tul.javaccl.persistence.Timeout;
 import cz.tul.javaccl.socket.Listener;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -149,7 +149,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
             }
             synchronized (this) {
                 try {
-                    this.wait(GlobalConstants.getDEFAULT_TIMEOUT());
+                    this.wait(Timeout.getTimeout(Timeout.TimeoutType.JOB_CHECK));
                 } catch (InterruptedException ex) {
                     LOG.log(Level.WARNING, "Waiting of JobManager has been interrupted.");
                     LOG.log(Level.FINE, "Waiting of JobManager has been interrupted.", ex);
@@ -170,7 +170,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 j = jr.getJob();
                 if (j.getStatus().equals(JobStatus.SENT)) {
                     dif = Calendar.getInstance().getTimeInMillis() - jr.getLastAction().getTimeInMillis();
-                    if (dif > GlobalConstants.getDEFAULT_TIMEOUT()) {
+                    if (dif > Timeout.getTimeout(Timeout.TimeoutType.JOB_CHECK)) {
                         try {
                             j.cancelJob();
                             j.setStatus(JobStatus.SUBMITTED);
@@ -211,7 +211,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                         }
 
                         dif = Calendar.getInstance().getTimeInMillis() - lastOnline.getTimeInMillis();
-                        if (dif > GlobalConstants.getDEFAULT_TIMEOUT()) {
+                        if (dif > Timeout.getTimeout(Timeout.TimeoutType.JOB_CHECK)) {
                             try {
                                 j.cancelJob();
                                 j.setStatus(JobStatus.SUBMITTED);
@@ -341,7 +341,7 @@ public class ServerJobManagerImpl extends Thread implements IService, Listener<I
                 if (actionList != null) {
                     cal = lastCancelTime(actionList, comm);
                     if (cal != null) {
-                        if ((Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - cal.getTimeInMillis()) > GlobalConstants.getDEFAULT_TIMEOUT()) {
+                        if ((Calendar.getInstance(Locale.getDefault()).getTimeInMillis() - cal.getTimeInMillis()) > Timeout.getTimeout(Timeout.TimeoutType.JOB_CHECK)) {
                             result = job;
                             break;
                         }

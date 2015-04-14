@@ -33,7 +33,6 @@ import org.xml.sax.SAXException;
 public class SimpleXMLSettingsFile {
 
     private static final Logger LOG = Logger.getLogger(SimpleXMLSettingsFile.class.getName());
-    private static final String SETTINGS_NODE_NAME = "JavaCCL";
 
     /**
      * Load contents of a simple XML file.
@@ -44,26 +43,27 @@ public class SimpleXMLSettingsFile {
      * @throws SAXException error parsing XML file
      */
     public static List<Entry<String, String>> loadSimpleXMLFile(final File source) throws IOException, SAXException {
-        List<Entry<String, String>> fields = new LinkedList<Entry<String, String>>();
+        final List<Entry<String, String>> fields = new LinkedList<Entry<String, String>>();
 
         try {
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(source);
+            final DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            final DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            final Document doc = dBuilder.parse(source);
 
             //optional, but recommended
             //read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
             doc.getDocumentElement().normalize();
 
-            Queue<Node> nodesForParsing = new ConcurrentLinkedQueue<Node>();
-            addAllChildNodes(nodesForParsing, doc.getElementsByTagName(SETTINGS_NODE_NAME));
+            final Queue<Node> nodesForParsing = new ConcurrentLinkedQueue<Node>();
+            addAllChildNodes(nodesForParsing, doc.getElementsByTagName(XmlNodes.ROOT.toString()));
 
             Node node;
+            Element eElement;
             while (!nodesForParsing.isEmpty()) {
                 node = nodesForParsing.poll();
 
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
-                    Element eElement = (Element) node;
+                    eElement = (Element) node;
                     fields.add(new AbstractMap.SimpleImmutableEntry<String, String>(eElement.getTagName(), eElement.getTextContent()));
                 }
 
@@ -120,7 +120,7 @@ public class SimpleXMLSettingsFile {
 
             // root element
             final Document doc = docBuilder.newDocument();
-            final Element rootElement = doc.createElement(SETTINGS_NODE_NAME);
+            final Element rootElement = doc.createElement(XmlNodes.ROOT.toString());
             doc.appendChild(rootElement);
             // data elements
             Element el;

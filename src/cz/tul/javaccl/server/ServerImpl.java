@@ -15,6 +15,7 @@ import cz.tul.javaccl.persistence.ServerSettings;
 import cz.tul.javaccl.discovery.ClientDiscoveryDaemon;
 import cz.tul.javaccl.persistence.ClientSettings;
 import cz.tul.javaccl.persistence.SimpleXMLSettingsFile;
+import cz.tul.javaccl.persistence.XmlNodes;
 import cz.tul.javaccl.socket.IDFilter;
 import cz.tul.javaccl.socket.ListenerRegistrator;
 import cz.tul.javaccl.socket.ServerSocket;
@@ -264,7 +265,7 @@ public final class ServerImpl extends Server implements Observer {
                 if (n.isUp()) {
                     for (InetAddress address : Collections.list(n.getInetAddresses())) {
                         xml.addField(
-                                ClientSettings.FIELD_NAME_SERVER,
+                                XmlNodes.SERVER.toString(),
                                 ClientSettings.composeServerAddress(address, serverSocket.getPort()));
                     }
                 }
